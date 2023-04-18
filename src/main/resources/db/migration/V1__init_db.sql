@@ -1,10 +1,10 @@
 CREATE TABLE IF NOT EXISTS players
 (
     id            BIGSERIAL PRIMARY KEY,
-    chat_id       BIGINT UNIQUE       NOT NULL,
-    username      VARCHAR(128) UNIQUE NOT NULL,
-    rank          BIGINT              NOT NULL,
-    registered_at TIMESTAMP           NOT NULL
+    chat_id       BIGINT UNIQUE NOT NULL,
+    username      VARCHAR(128) UNIQUE,
+    rank          BIGINT,
+    registered_at TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS eggs
