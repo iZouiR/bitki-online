@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import self.izouir.bitkionline.commander.MainMenuCommander;
+import self.izouir.bitkionline.commander.ProfileCommander;
 
 import static self.izouir.bitkionline.commander.BotCommander.sendMessage;
 
@@ -17,10 +18,13 @@ public class DispatcherBot extends TelegramLongPollingBot {
     private String botToken;
 
     private final MainMenuCommander mainMenuCommander;
+    private final ProfileCommander profileCommander;
 
     @Autowired
-    public DispatcherBot(MainMenuCommander mainMenuCommander) {
+    public DispatcherBot(MainMenuCommander mainMenuCommander,
+                         ProfileCommander profileCommander) {
         this.mainMenuCommander = mainMenuCommander;
+        this.profileCommander = profileCommander;
     }
 
     @Override
@@ -35,7 +39,12 @@ public class DispatcherBot extends TelegramLongPollingBot {
             case "/eggs" -> mainMenuCommander.eggs(this, update);
             case "/profile" -> mainMenuCommander.profile(this, update);
             case "/help" -> mainMenuCommander.help(this, update);
-            default -> sendMessage(this, chatId, "Command not found");
+            default -> {
+                if (profileCommander.register(this, update, command)) {
+                    return;
+                }
+                sendMessage(this, chatId, "Command not found");
+            }
         }
     }
 
