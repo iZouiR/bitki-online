@@ -4,6 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import self.izouir.bitkionline.bot.DispatcherBot;
+import self.izouir.bitkionline.entity.player.BotState;
+import self.izouir.bitkionline.entity.player.Player;
+import self.izouir.bitkionline.entity.player.PlayerBot;
 import self.izouir.bitkionline.service.egg.EggService;
 import self.izouir.bitkionline.service.player.PlayerBotService;
 import self.izouir.bitkionline.service.player.PlayerService;
@@ -34,6 +37,25 @@ public class MainMenuCommander {
     }
 
     public void start(DispatcherBot bot, Update update) {
+        Long chatId = update.getMessage().getChatId();
+
+        if (playerService.existsByChatId(chatId)) {
+            Player player = playerService.findByChatId(chatId);
+            sendMessage(bot, chatId, "Greetings, " + player.getUsername() + "!");
+        } else {
+            sendMessage(bot, chatId, "Sorry, it seems, you are not registered yet, please, enter your username");
+
+            Player player = Player.builder()
+                    .chatId(chatId)
+                    .build();
+            playerService.save(player);
+
+            PlayerBot playerBot = PlayerBot.builder()
+                    .playerId(player.getId())
+                    .lastBotState(BotState.AWAIT_USERNAME)
+                    .build();
+            playerBotService.save(playerBot);
+        }
     }
 
     public void play(DispatcherBot bot, Update update) {
