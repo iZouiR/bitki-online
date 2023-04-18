@@ -17,13 +17,13 @@ public class PlayerService {
         this.playerRepository = playerRepository;
     }
 
-    public Player findById(Long chatId) {
-        Optional<Player> optional = playerRepository.findById(chatId);
-        return optional.orElseThrow(() -> new PlayerNotFoundException("Player with id = " + chatId + " was not found"));
+    public Player findByChatId(Long chatId) {
+        Optional<Player> optional = playerRepository.findByChatId(chatId);
+        return optional.orElseThrow(() -> new PlayerNotFoundException("Player with chatId = " + chatId + " was not found"));
     }
 
-    public boolean existsById(Long chatId) {
-        return playerRepository.findById(chatId).isPresent();
+    public boolean existsByChatId(Long chatId) {
+        return playerRepository.findByChatId(chatId).isPresent();
     }
 
     public boolean existsByUsername(String username) {
