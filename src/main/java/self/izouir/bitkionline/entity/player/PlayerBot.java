@@ -23,5 +23,5 @@ public class PlayerBot {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "last_bot_state")
-    private String lastBotState;
+    private BotState lastBotState;
 }
