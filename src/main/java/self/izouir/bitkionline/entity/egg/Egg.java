@@ -1,10 +1,11 @@
-package self.izouir.bitkionline.entity;
+package self.izouir.bitkionline.entity.egg;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import self.izouir.bitkionline.entity.player.Player;
 
 import java.sql.Timestamp;
 

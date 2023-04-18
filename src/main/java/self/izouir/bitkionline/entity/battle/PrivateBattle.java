@@ -5,8 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import self.izouir.bitkionline.entity.Egg;
-import self.izouir.bitkionline.entity.Player;
+import self.izouir.bitkionline.entity.egg.Egg;
+import self.izouir.bitkionline.entity.player.Player;
 
 @Builder
 @AllArgsConstructor
