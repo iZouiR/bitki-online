@@ -7,6 +7,7 @@ import self.izouir.bitkionline.entity.player.Player;
 import self.izouir.bitkionline.exception.PlayerNotFoundException;
 import self.izouir.bitkionline.repository.player.PlayerRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -21,6 +22,14 @@ public class PlayerService {
     public Player findByChatId(Long chatId) {
         Optional<Player> optional = playerRepository.findByChatId(chatId);
         return optional.orElseThrow(() -> new PlayerNotFoundException("Player with chatId = " + chatId + " was not found"));
+    }
+
+    public List<Player> findAllOrderedByRankDesc() {
+        return playerRepository.findAllOrderedByRankDesc();
+    }
+
+    public List<Player> findAllOrderedByRankDesc(Long limitCount) {
+        return playerRepository.findAllOrderedByRankDesc(limitCount);
     }
 
     public boolean existsByChatId(Long chatId) {
