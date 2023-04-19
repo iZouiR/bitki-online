@@ -29,22 +29,33 @@ public class DispatcherBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        Long chatId = update.getMessage().getChatId();
-        String command = update.getMessage().getText();
+        if (update.hasMessage() && update.getMessage().hasText()) {
+            Long chatId = update.getMessage().getChatId();
+            String command = update.getMessage().getText();
 
-        switch (command) {
-            case "/start" -> mainMenuCommander.start(this, update);
-            case "/play" -> mainMenuCommander.play(this, update);
-            case "/rank" -> mainMenuCommander.rank(this, update);
-            case "/eggs" -> mainMenuCommander.eggs(this, update);
-            case "/profile" -> mainMenuCommander.profile(this, update);
-            case "/help" -> mainMenuCommander.help(this, update);
-            default -> {
-                if (profileCommander.register(this, update, command)) {
-                    return;
+            switch (command) {
+                case "/start" -> mainMenuCommander.start(this, chatId);
+                case "/play" -> mainMenuCommander.play(this, chatId);
+                case "/rank" -> mainMenuCommander.rank(this, chatId);
+                case "/eggs" -> mainMenuCommander.eggs(this, chatId);
+                case "/profile" -> mainMenuCommander.profile(this, chatId);
+                case "/help" -> mainMenuCommander.help(this, chatId);
+                default -> {
+                    if (profileCommander.register(this, chatId, command)) {
+                        return;
+                    }
+                    if (profileCommander.changeUsername(this, chatId, command)) {
+                        return;
+                    }
+                    sendMessage(this, chatId, "Command not found");
                 }
-                sendMessage(this, chatId, "Command not found");
             }
+        } else if (update.hasCallbackQuery()) {
+            Long chatId = update.getCallbackQuery().getMessage().getChatId();
+            Integer messageId = update.getCallbackQuery().getMessage().getMessageId();
+            String callbackData = update.getCallbackQuery().getData();
+
+            profileCommander.processCallbackQuery(this, chatId, messageId, callbackData);
         }
     }
 
