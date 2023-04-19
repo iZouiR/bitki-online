@@ -13,18 +13,22 @@ import self.izouir.bitkionline.service.player.PlayerService;
 import java.sql.Timestamp;
 import java.time.Instant;
 
-import static self.izouir.bitkionline.commander.BotCommander.sendMessage;
+import static self.izouir.bitkionline.commander.util.BotCommander.sendMessage;
 
 @Component
 public class ProfileCommander {
     private final PlayerService playerService;
     private final PlayerBotService playerBotService;
 
+    private final EggCommander eggCommander;
+
     @Autowired
     public ProfileCommander(PlayerService playerService,
-                            PlayerBotService playerBotService) {
+                            PlayerBotService playerBotService,
+                            EggCommander eggCommander) {
         this.playerService = playerService;
         this.playerBotService = playerBotService;
+        this.eggCommander = eggCommander;
     }
 
     // register player when entering username
@@ -48,6 +52,8 @@ public class ProfileCommander {
                         playerBotService.save(playerBot);
 
                         sendMessage(dispatcherBot, chatId, "Congratulations, you are now registered with username " + username + "!");
+
+                        eggCommander.generateStarterEggs(dispatcherBot, update, player);
                     } else {
                         sendMessage(dispatcherBot, chatId, "Player with username " + username + " already exists, try another variant");
                     }
