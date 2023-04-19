@@ -5,10 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import self.izouir.bitkionline.entity.egg.Egg;
 
 import java.sql.Timestamp;
-import java.util.Set;
 
 @Builder
 @AllArgsConstructor
@@ -33,8 +31,4 @@ public class Player {
 
     @Column(name = "registered_at")
     private Timestamp registeredAt;
-
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_id")
-    private Set<Egg> ownedEggs;
 }
