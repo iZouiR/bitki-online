@@ -38,7 +38,7 @@ public class ProfileCommander {
             if (playerBotService.existsByPlayerId(player.getId())) {
                 PlayerBot playerBot = playerBotService.findByPlayerId(player.getId());
                 if (playerBot.getLastBotState() == BotState.AWAIT_USERNAME) {
-                    if (!playerService.existsByUsername(username)) {
+                    if (!playerService.existsByUsernameIgnoreCase(username)) {
                         player.setUsername(username);
                         player.setRank(0L);
                         player.setRegisteredAt(Timestamp.from(Instant.now()));

@@ -26,8 +26,8 @@ public class PlayerService {
         return playerRepository.findByChatId(chatId).isPresent();
     }
 
-    public boolean existsByUsername(String username) {
-        return playerRepository.findByUsername(username).isPresent();
+    public boolean existsByUsernameIgnoreCase(String username) {
+        return playerRepository.findByUsernameIgnoreCase(username).isPresent();
     }
 
     public void save(Player player) {
