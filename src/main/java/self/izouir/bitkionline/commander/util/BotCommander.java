@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -19,6 +20,22 @@ public class BotCommander {
                             .chatId(String.valueOf(chatId))
                             .text(text)
                     .build());
+        } catch (TelegramApiException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    public static void sendMessage(TelegramLongPollingBot bot, SendMessage message) {
+        try {
+            bot.execute(message);
+        } catch (TelegramApiException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    public static void sendEditMessageText(TelegramLongPollingBot bot, EditMessageText message) {
+        try {
+            bot.execute(message);
         } catch (TelegramApiException e) {
             log.error(e.getMessage());
         }
