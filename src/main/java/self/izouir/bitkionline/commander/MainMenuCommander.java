@@ -2,7 +2,7 @@ package self.izouir.bitkionline.commander;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import self.izouir.bitkionline.bot.DispatcherBot;
 import self.izouir.bitkionline.entity.player.BotState;
 import self.izouir.bitkionline.entity.player.Player;
@@ -22,23 +22,24 @@ public class MainMenuCommander {
     private final EggService eggService;
     private final MatchMakingBattleService matchMakingBattleService;
     private final PrivateBattleService privateBattleService;
+    private final ProfileCommander profileCommander;
 
     @Autowired
     public MainMenuCommander(PlayerService playerService,
                              PlayerBotService playerBotService,
                              EggService eggService,
                              MatchMakingBattleService matchMakingBattleService,
-                             PrivateBattleService privateBattleService) {
+                             PrivateBattleService privateBattleService,
+                             ProfileCommander profileCommander) {
         this.playerService = playerService;
         this.playerBotService = playerBotService;
         this.eggService = eggService;
         this.matchMakingBattleService = matchMakingBattleService;
         this.privateBattleService = privateBattleService;
+        this.profileCommander = profileCommander;
     }
 
-    public void start(DispatcherBot bot, Update update) {
-        Long chatId = update.getMessage().getChatId();
-
+    public void start(DispatcherBot bot, Long chatId) {
         if (playerService.existsByChatId(chatId)) {
             Player player = playerService.findByChatId(chatId);
             sendMessage(bot, chatId, "Greetings, " + player.getUsername() + "!");
@@ -58,24 +59,34 @@ public class MainMenuCommander {
         }
     }
 
-    public void play(DispatcherBot bot, Update update) {
+    public void play(DispatcherBot bot, Long chatId) {
 
     }
 
-    public void rank(DispatcherBot bot, Update update) {
+    public void rank(DispatcherBot bot, Long chatId) {
 
     }
 
-    public void eggs(DispatcherBot bot, Update update) {
+    public void eggs(DispatcherBot bot, Long chatId) {
 
     }
 
-    public void profile(DispatcherBot bot, Update update) {
+    public void profile(DispatcherBot bot, Long chatId) {
+        if (playerService.existsByChatId(chatId)) {
+            Player player = playerService.findByChatId(chatId);
 
+            SendMessage message = SendMessage.builder()
+                    .chatId(String.valueOf(chatId))
+                    .text(profileCommander.getPlayerInfo(player))
+                    .build();
+            message.setReplyMarkup(profileCommander.getProfileInlineKeyboardMarkup());
+            sendMessage(bot, message);
+        } else {
+            sendMessage(bot, chatId, "You are not authorized, fix - /start");
+        }
     }
 
-    public void help(DispatcherBot bot, Update update) {
-        Long chatId = update.getMessage().getChatId();
+    public void help(DispatcherBot bot, Long chatId) {
         sendMessage(bot, chatId, """
                 At beta testing you enter the game with 3 random eggs
                 
