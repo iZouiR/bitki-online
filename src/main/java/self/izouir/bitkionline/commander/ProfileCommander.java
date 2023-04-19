@@ -40,6 +40,15 @@ public class ProfileCommander {
         Player player = playerService.findByChatId(chatId);
 
         switch (callbackData) {
+            case "REFRESH_RANK" -> {
+                EditMessageText message = EditMessageText.builder()
+                        .chatId(String.valueOf(chatId))
+                        .messageId(messageId)
+                        .text(getRankInfo(chatId))
+                        .build();
+                message.setReplyMarkup(getRankInlineKeyboardMarkup());
+                sendEditMessageText(bot, message);
+            }
             case "CHANGE_USERNAME" -> {
                 EditMessageText message = EditMessageText.builder()
                         .chatId(String.valueOf(chatId))
@@ -63,7 +72,7 @@ public class ProfileCommander {
                 sendEditMessageText(bot, message);
             }
             case "CONFIRM_REFRESH_EGGS" -> {
-                eggCommander.deleteAllPlayersEggs(player);
+                eggCommander.deleteAllPlayerEggs(player);
                 EditMessageText message = EditMessageText.builder()
                         .chatId(String.valueOf(chatId))
                         .messageId(messageId)
@@ -99,7 +108,7 @@ public class ProfileCommander {
                 message.setReplyMarkup(getProfileInlineKeyboardMarkup());
                 sendEditMessageText(bot, message);
             }
-            case "CLOSE_PROFILE" -> deleteMessage(bot, chatId, messageId);
+            case "CLOSE_RANK", "CLOSE_PROFILE" -> deleteMessage(bot, chatId, messageId);
         }
     }
 
@@ -159,15 +168,100 @@ public class ProfileCommander {
     }
 
     private void dropPlayer(Player player) {
-        eggCommander.deleteAllPlayersEggs(player);
+        eggCommander.deleteAllPlayerEggs(player);
         playerBotService.deleteByPlayerId(player.getId());
         playerService.delete(player);
+    }
+
+    public String getRankInfo(Long chatId) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(getTopPlayersRankInfo());
+        if (playerService.existsByChatId(chatId)) {
+            stringBuilder.append("--------------------------------------------------------------\n");
+
+            Player player = playerService.findByChatId(chatId);
+            stringBuilder.append(getPlayerRankInfo(player));
+        }
+        return stringBuilder.toString();
+    }
+
+    private String getTopPlayersRankInfo() {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        List<Player> topPlayers = playerService.findAllOrderedByRankDesc(3L);
+        if (!topPlayers.isEmpty()) {
+            for (int i = 0; i < topPlayers.size(); i++) {
+                if (i == 0) {
+                    stringBuilder.append("\uD83E\uDD47");
+                }
+                if (i == 1) {
+                    stringBuilder.append("\uD83E\uDD48");
+                }
+                if (i == 2) {
+                    stringBuilder.append("\uD83E\uDD49");
+                }
+                stringBuilder.append(topPlayers.get(i).getUsername());
+                stringBuilder.append(" - ");
+                stringBuilder.append(topPlayers.get(i).getRank());
+                stringBuilder.append("\n");
+            }
+        } else {
+            stringBuilder.append("Looks like there are no players at all, come back later");
+        }
+
+        return stringBuilder.toString();
+    }
+
+    private String getPlayerRankInfo(Player player) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        List<Player> players = playerService.findAllOrderedByRankDesc();
+        long place = players.indexOf(player) + 1;
+
+        stringBuilder.append("You are top-");
+        stringBuilder.append(place);
+        if (place == 1) {
+            stringBuilder.append(" (\uD83E\uDD47)");
+        }
+        if (place == 2) {
+            stringBuilder.append(" (\uD83E\uDD48)");
+        }
+        if (place == 3) {
+            stringBuilder.append(" (\uD83E\uDD49)");
+        }
+        stringBuilder.append(" player with ");
+        stringBuilder.append(player.getRank());
+        stringBuilder.append(" points");
+
+        return stringBuilder.toString();
     }
 
     public String getPlayerInfo(Player player) {
         return "Username: " + player.getUsername() + "\n" +
                "Rank: " + player.getRank() + " points\n" +
                "Registered: " + player.getRegisteredAt().toLocalDateTime().format(DateTimeFormatter.ofPattern("dd.MM.yyyy [hh:mm]")) + "\n";
+    }
+
+    public InlineKeyboardMarkup getRankInlineKeyboardMarkup() {
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+
+        List<InlineKeyboardButton> refreshRankRow = new ArrayList<>();
+        InlineKeyboardButton refreshRankButton = new InlineKeyboardButton();
+        refreshRankButton.setText("Refresh");
+        refreshRankButton.setCallbackData("REFRESH_RANK");
+        refreshRankRow.add(refreshRankButton);
+
+        List<InlineKeyboardButton> closeRankRow = new ArrayList<>();
+        InlineKeyboardButton closeRankButton = new InlineKeyboardButton();
+        closeRankButton.setText("Close");
+        closeRankButton.setCallbackData("CLOSE_RANK");
+        closeRankRow.add(closeRankButton);
+
+        keyboard.add(refreshRankRow);
+        keyboard.add(closeRankRow);
+        markup.setKeyboard(keyboard);
+        return markup;
     }
 
     public InlineKeyboardMarkup getProfileInlineKeyboardMarkup() {

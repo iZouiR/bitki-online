@@ -38,7 +38,7 @@ public class EggCommander {
         }
     }
 
-    public void deleteAllPlayersEggs(Player player) {
+    public void deleteAllPlayerEggs(Player player) {
         eggService.deleteAllByOwner(player);
     }
 
