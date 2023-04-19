@@ -9,4 +9,6 @@ import java.util.Optional;
 @Repository
 public interface PlayerBotRepository extends JpaRepository<PlayerBot, Long> {
     Optional<PlayerBot> findByPlayerId(Long playerId);
+
+    void deleteByPlayerId(Long playerId);
 }
