@@ -64,7 +64,12 @@ public class MainMenuCommander {
     }
 
     public void rank(DispatcherBot bot, Long chatId) {
-
+        SendMessage message = SendMessage.builder()
+                .chatId(String.valueOf(chatId))
+                .text(profileCommander.getRankInfo(chatId))
+                .build();
+        message.setReplyMarkup(profileCommander.getRankInlineKeyboardMarkup());
+        sendMessage(bot, message);
     }
 
     public void eggs(DispatcherBot bot, Long chatId) {
