@@ -7,13 +7,13 @@ import self.izouir.bitkionline.bot.DispatcherBot;
 import self.izouir.bitkionline.entity.player.BotState;
 import self.izouir.bitkionline.entity.player.Player;
 import self.izouir.bitkionline.entity.player.PlayerBot;
+import self.izouir.bitkionline.service.battle.MatchMakingBattleService;
+import self.izouir.bitkionline.service.battle.PrivateBattleService;
 import self.izouir.bitkionline.service.egg.EggService;
 import self.izouir.bitkionline.service.player.PlayerBotService;
 import self.izouir.bitkionline.service.player.PlayerService;
-import self.izouir.bitkionline.service.battle.MatchMakingBattleService;
-import self.izouir.bitkionline.service.battle.PrivateBattleService;
 
-import static self.izouir.bitkionline.commander.BotCommander.sendMessage;
+import static self.izouir.bitkionline.commander.util.BotCommander.sendMessage;
 
 @Component
 public class MainMenuCommander {

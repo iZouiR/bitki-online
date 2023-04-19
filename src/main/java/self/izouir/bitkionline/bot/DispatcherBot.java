@@ -8,7 +8,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import self.izouir.bitkionline.commander.MainMenuCommander;
 import self.izouir.bitkionline.commander.ProfileCommander;
 
-import static self.izouir.bitkionline.commander.BotCommander.sendMessage;
+import static self.izouir.bitkionline.commander.util.BotCommander.sendMessage;
 
 @Component
 public class DispatcherBot extends TelegramLongPollingBot {
