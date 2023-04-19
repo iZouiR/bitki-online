@@ -26,11 +26,15 @@ public class PlayerService {
         return playerRepository.findByChatId(chatId).isPresent();
     }
 
-    public boolean existsByUsernameIgnoreCase(String username) {
-        return playerRepository.findByUsernameIgnoreCase(username).isPresent();
+    public boolean notExistsByUsernameIgnoreCase(String username) {
+        return playerRepository.findByUsernameIgnoreCase(username).isEmpty();
     }
 
     public void save(Player player) {
         playerRepository.save(player);
+    }
+
+    public void delete(Player player) {
+        playerRepository.delete(player);
     }
 }
