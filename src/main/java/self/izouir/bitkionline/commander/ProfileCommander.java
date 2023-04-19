@@ -18,8 +18,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static self.izouir.bitkionline.commander.util.BotCommander.sendEditMessageText;
-import static self.izouir.bitkionline.commander.util.BotCommander.sendMessage;
+import static self.izouir.bitkionline.commander.util.BotCommander.*;
 
 @Component
 public class ProfileCommander {
@@ -100,6 +99,7 @@ public class ProfileCommander {
                 message.setReplyMarkup(getProfileInlineKeyboardMarkup());
                 sendEditMessageText(bot, message);
             }
+            case "CLOSE_PROFILE" -> deleteMessage(bot, chatId, messageId);
         }
     }
 
@@ -192,9 +192,16 @@ public class ProfileCommander {
         dropProfileButton.setCallbackData("DROP_PROFILE");
         dropProfileRow.add(dropProfileButton);
 
+        List<InlineKeyboardButton> closeProfileRow = new ArrayList<>();
+        InlineKeyboardButton closeProfileButton = new InlineKeyboardButton();
+        closeProfileButton.setText("Close");
+        closeProfileButton.setCallbackData("CLOSE_PROFILE");
+        closeProfileRow.add(closeProfileButton);
+
         keyboard.add(changeUsernameRow);
         keyboard.add(refreshEggsRow);
         keyboard.add(dropProfileRow);
+        keyboard.add(closeProfileRow);
         markup.setKeyboard(keyboard);
         return markup;
     }
