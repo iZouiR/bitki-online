@@ -2,7 +2,6 @@ package self.izouir.bitkionline.commander;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.Update;
 import self.izouir.bitkionline.bot.DispatcherBot;
 import self.izouir.bitkionline.entity.egg.Egg;
 import self.izouir.bitkionline.entity.egg.EggType;
@@ -14,7 +13,8 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Random;
 
-import static self.izouir.bitkionline.commander.util.BotCommander.*;
+import static self.izouir.bitkionline.commander.util.BotCommander.sendMessage;
+import static self.izouir.bitkionline.commander.util.BotCommander.sendSticker;
 import static self.izouir.bitkionline.commander.util.ImageCommander.generateEggImagePath;
 
 @Component
@@ -28,16 +28,18 @@ public class EggCommander {
         this.eggService = eggService;
     }
 
-    public void generateStarterEggs(DispatcherBot dispatcherBot, Update update, Player player) {
-        Long chatId = update.getMessage().getChatId();
-
+    public void generateStarterEggs(DispatcherBot bot, Long chatId, Player player) {
         for (int i = 0; i < 3; i++) {
             Egg egg = generateEgg();
             egg.setOwner(player);
             eggService.save(egg);
-            sendSticker(dispatcherBot, chatId, Path.of(egg.getImagePath()));
-            sendMessage(dispatcherBot, chatId, "You obtained " + egg.getType().toString().toLowerCase() + " egg");
+            sendSticker(bot, chatId, Path.of(egg.getImagePath()));
+            sendMessage(bot, chatId, "You obtained " + egg.getType().toString().toLowerCase() + " egg");
         }
+    }
+
+    public void deleteAllPlayersEggs(Player player) {
+        eggService.deleteAllByOwner(player);
     }
 
     public Egg generateEgg() {
@@ -54,7 +56,6 @@ public class EggCommander {
 
         return egg;
     }
-
     // endurance 5-10
     // luck 0-3
     // intelligence 0-3
@@ -77,7 +78,6 @@ public class EggCommander {
 
         return egg;
     }
-
     // endurance 8-18
     // luck 1-5
     // intelligence 1-5
@@ -100,7 +100,6 @@ public class EggCommander {
 
         return egg;
     }
-
     // endurance 12-24
     // luck 3-7
     // intelligence 3-7
