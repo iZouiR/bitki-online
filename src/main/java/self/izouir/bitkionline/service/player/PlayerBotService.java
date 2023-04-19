@@ -29,4 +29,8 @@ public class PlayerBotService {
     public void save(PlayerBot playerBot) {
         playerBotRepository.save(playerBot);
     }
+
+    public void deleteByPlayerId(Long playerId) {
+        playerBotRepository.deleteByPlayerId(playerId);
+    }
 }
