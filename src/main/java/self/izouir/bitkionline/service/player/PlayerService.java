@@ -1,5 +1,6 @@
 package self.izouir.bitkionline.service.player;
 
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import self.izouir.bitkionline.entity.player.Player;
@@ -34,6 +35,7 @@ public class PlayerService {
         playerRepository.save(player);
     }
 
+    @Transactional
     public void delete(Player player) {
         playerRepository.delete(player);
     }
