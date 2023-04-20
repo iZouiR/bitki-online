@@ -37,7 +37,7 @@ public class StartCommander {
             Player player = playerService.findByChatId(chatId);
             sendMessage(bot, chatId, "Greetings, " + player.getUsername() + "!");
         } else {
-            sendMessage(bot, chatId, "It seems, you aren't authorized yet, enter your username");
+            sendMessage(bot, chatId, "Looks like you aren't authorized yet, enter your username");
             createNewPlayerAwaitingUsername(chatId);
         }
     }
@@ -66,7 +66,7 @@ public class StartCommander {
                     player.setRegisteredAt(Timestamp.from(Instant.now()));
                     playerService.save(player);
 
-                    sendMessage(bot, chatId, "Congratulations, you are now registered with username " + username + "!");
+                    sendMessage(bot, chatId, "Congratulations, you're now registered with username " + username + "!");
 
                     List<Egg> inventory = eggService.generateStartInventory(bot, player);
                     playerBot.setLastBotState(null);

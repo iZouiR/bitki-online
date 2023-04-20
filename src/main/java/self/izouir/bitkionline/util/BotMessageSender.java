@@ -17,7 +17,7 @@ import java.nio.file.Path;
 public class BotMessageSender {
     public static void sendMessage(TelegramLongPollingBot bot, Long chatId, String text) {
         try {
-            bot.execute(SendMessage.builder()
+            bot.executeAsync(SendMessage.builder()
                     .chatId(String.valueOf(chatId))
                     .text(text)
                     .build());
@@ -28,7 +28,7 @@ public class BotMessageSender {
 
     public static void sendMessage(TelegramLongPollingBot bot, SendMessage message) {
         try {
-            bot.execute(message);
+            bot.executeAsync(message);
         } catch (TelegramApiException e) {
             log.error(e.getMessage());
         }
@@ -36,7 +36,7 @@ public class BotMessageSender {
 
     public static void sendEditMessageText(TelegramLongPollingBot bot, Long chatId, Integer messageId, String text) {
         try {
-            bot.execute(EditMessageText.builder()
+            bot.executeAsync(EditMessageText.builder()
                     .chatId(String.valueOf(chatId))
                     .messageId(messageId)
                     .text(text)
@@ -48,34 +48,26 @@ public class BotMessageSender {
 
     public static void sendEditMessageText(TelegramLongPollingBot bot, EditMessageText message) {
         try {
-            bot.execute(message);
+            bot.executeAsync(message);
         } catch (TelegramApiException e) {
             log.error(e.getMessage());
         }
     }
 
     public static void sendSticker(TelegramLongPollingBot bot, Long chatId, Path image) {
-        try {
-            bot.execute(SendSticker.builder()
-                    .chatId(String.valueOf(chatId))
-                    .sticker(new InputFile(image.toFile()))
-                    .build());
-        } catch (TelegramApiException e) {
-            log.error(e.getMessage());
-        }
+        bot.executeAsync(SendSticker.builder()
+                .chatId(String.valueOf(chatId))
+                .sticker(new InputFile(image.toFile()))
+                .build());
     }
 
     public static void sendSticker(TelegramLongPollingBot bot, SendSticker sticker) {
-        try {
-            bot.execute(sticker);
-        } catch (TelegramApiException e) {
-            log.error(e.getMessage());
-        }
+        bot.executeAsync(sticker);
     }
 
     public static void deleteMessage(TelegramLongPollingBot bot, Long chatId, Integer messageId) {
         try {
-            bot.execute(DeleteMessage.builder()
+            bot.executeAsync(DeleteMessage.builder()
                     .chatId(String.valueOf(chatId))
                     .messageId(messageId)
                     .build());

@@ -69,7 +69,7 @@ public class ProfileCommander {
             case "PROFILE_DROP_YES" -> {
                 Player player = playerService.findByChatId(chatId);
                 dropProfile(player);
-                sendEditMessageText(bot, chatId, messageId, "Your profile was deleted");
+                sendEditMessageText(bot, chatId, messageId, "Your profile was dropped");
             }
             case "PROFILE_REFRESH_EGGS_NO", "PROFILE_DROP_NO" -> {
                 Player player = playerService.findByChatId(chatId);
@@ -113,7 +113,7 @@ public class ProfileCommander {
                 if (playerService.notExistsByUsernameIgnoreCase(username)) {
                     player.setUsername(username);
                     playerService.save(player);
-                    sendMessage(bot, chatId, "Success, you are now named " + username);
+                    sendMessage(bot, chatId, "Success, you're now named " + username);
                     playerBot.setLastBotState(null);
                     playerBotService.save(playerBot);
                 } else {
