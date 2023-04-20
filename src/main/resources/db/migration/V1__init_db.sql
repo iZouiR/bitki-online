@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS players
     id            BIGSERIAL PRIMARY KEY,
     chat_id       BIGINT UNIQUE NOT NULL,
     username      VARCHAR(128) UNIQUE,
-    rank          BIGINT,
+    rank          INT,
     registered_at TIMESTAMP
 );
 
@@ -11,9 +11,10 @@ CREATE TABLE IF NOT EXISTS eggs
 (
     id           BIGSERIAL PRIMARY KEY,
     type         VARCHAR(32)  NOT NULL,
-    endurance    BIGINT       NOT NULL,
-    luck         BIGINT       NOT NULL,
-    intelligence BIGINT       NOT NULL,
+    is_cracked   BOOLEAN      NOT NULL,
+    endurance    INT          NOT NULL,
+    luck         INT          NOT NULL,
+    intelligence INT          NOT NULL,
     image_path   VARCHAR(256) NOT NULL,
     created_at   TIMESTAMP    NOT NULL,
     owner_id     BIGINT REFERENCES players (id)

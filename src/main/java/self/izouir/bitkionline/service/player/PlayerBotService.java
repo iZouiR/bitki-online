@@ -23,10 +23,6 @@ public class PlayerBotService {
         return optional.orElseThrow(() -> new PlayerBotNotFoundException("Player bot with playerId = " + playerId + " was not found"));
     }
 
-    public boolean existsByPlayerId(Long playerId) {
-        return playerBotRepository.findByPlayerId(playerId).isPresent();
-    }
-
     public void save(PlayerBot playerBot) {
         playerBotRepository.save(playerBot);
     }

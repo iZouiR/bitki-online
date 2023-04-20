@@ -1,4 +1,4 @@
-package self.izouir.bitkionline.commander.util;
+package self.izouir.bitkionline.util;
 
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -14,12 +14,12 @@ import java.nio.file.Path;
 
 @Slf4j
 @UtilityClass
-public class BotCommander {
+public class BotMessageSender {
     public static void sendMessage(TelegramLongPollingBot bot, Long chatId, String text) {
         try {
             bot.execute(SendMessage.builder()
-                            .chatId(String.valueOf(chatId))
-                            .text(text)
+                    .chatId(String.valueOf(chatId))
+                    .text(text)
                     .build());
         } catch (TelegramApiException e) {
             log.error(e.getMessage());
@@ -34,6 +34,18 @@ public class BotCommander {
         }
     }
 
+    public static void sendEditMessageText(TelegramLongPollingBot bot, Long chatId, Integer messageId, String text) {
+        try {
+            bot.execute(EditMessageText.builder()
+                    .chatId(String.valueOf(chatId))
+                    .messageId(messageId)
+                    .text(text)
+                    .build());
+        } catch (TelegramApiException e) {
+            log.error(e.getMessage());
+        }
+    }
+
     public static void sendEditMessageText(TelegramLongPollingBot bot, EditMessageText message) {
         try {
             bot.execute(message);
@@ -42,12 +54,20 @@ public class BotCommander {
         }
     }
 
-    public static void sendSticker(TelegramLongPollingBot bot, long chatId, Path image) {
+    public static void sendSticker(TelegramLongPollingBot bot, Long chatId, Path image) {
         try {
             bot.execute(SendSticker.builder()
-                            .chatId(String.valueOf(chatId))
-                            .sticker(new InputFile(image.toFile()))
+                    .chatId(String.valueOf(chatId))
+                    .sticker(new InputFile(image.toFile()))
                     .build());
+        } catch (TelegramApiException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    public static void sendSticker(TelegramLongPollingBot bot, SendSticker sticker) {
+        try {
+            bot.execute(sticker);
         } catch (TelegramApiException e) {
             log.error(e.getMessage());
         }

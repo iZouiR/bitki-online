@@ -27,7 +27,7 @@ public class Player {
     private String username;
 
     @Column(name = "rank")
-    private Long rank;
+    private Integer rank;
 
     @Column(name = "registered_at")
     private Timestamp registeredAt;

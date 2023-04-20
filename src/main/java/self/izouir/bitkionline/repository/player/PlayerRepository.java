@@ -13,10 +13,13 @@ import java.util.Optional;
 @Repository
 public interface PlayerRepository extends JpaRepository<Player, Long> {
     Optional<Player> findByChatId(Long chatId);
+
     Optional<Player> findByUsernameIgnoreCase(String username);
+
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("FROM Player ORDER BY rank DESC")
     List<Player> findAllOrderedByRankDesc();
+
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(value = "SELECT * FROM players ORDER BY rank DESC LIMIT :limitCount", nativeQuery = true)
     List<Player> findAllOrderedByRankDesc(@Param("limitCount") Long limitCount);

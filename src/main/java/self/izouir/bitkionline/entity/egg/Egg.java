@@ -25,14 +25,17 @@ public class Egg {
     @Column(name = "type")
     private EggType type;
 
+    @Column(name = "is_cracked")
+    private Boolean isCracked;
+
     @Column(name = "endurance")
-    private Long endurance;
+    private Integer endurance;
 
     @Column(name = "luck")
-    private Long luck;
+    private Integer luck;
 
     @Column(name = "intelligence")
-    private Long intelligence;
+    private Integer intelligence;
 
     @Column(name = "image_path")
     private String imagePath;

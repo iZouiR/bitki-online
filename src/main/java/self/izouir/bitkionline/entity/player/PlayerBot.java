@@ -24,4 +24,10 @@ public class PlayerBot {
     @Enumerated(EnumType.STRING)
     @Column(name = "last_bot_state")
     private BotState lastBotState;
+
+    @Column(name = "last_inventory_index")
+    private Integer lastInventoryIndex;
+
+    @Column(name = "last_inventory_size")
+    private Integer lastInventorySize;
 }

@@ -5,10 +5,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import self.izouir.bitkionline.commander.MainMenuCommander;
-import self.izouir.bitkionline.commander.ProfileCommander;
+import self.izouir.bitkionline.commander.*;
 
-import static self.izouir.bitkionline.commander.util.BotCommander.sendMessage;
+import static self.izouir.bitkionline.util.BotMessageSender.sendMessage;
 
 @Component
 public class DispatcherBot extends TelegramLongPollingBot {
@@ -17,14 +16,23 @@ public class DispatcherBot extends TelegramLongPollingBot {
     @Value("${telegram.bot.token}")
     private String botToken;
 
-    private final MainMenuCommander mainMenuCommander;
+    private final StartCommander startCommander;
+    private final RankCommander rankCommander;
+    private final EggsCommander eggsCommander;
     private final ProfileCommander profileCommander;
+    private final HelpCommander helpCommander;
 
     @Autowired
-    public DispatcherBot(MainMenuCommander mainMenuCommander,
-                         ProfileCommander profileCommander) {
-        this.mainMenuCommander = mainMenuCommander;
+    public DispatcherBot(StartCommander startCommander,
+                         RankCommander rankCommander,
+                         EggsCommander eggsCommander,
+                         ProfileCommander profileCommander,
+                         HelpCommander helpCommander) {
+        this.startCommander = startCommander;
+        this.rankCommander = rankCommander;
+        this.eggsCommander = eggsCommander;
         this.profileCommander = profileCommander;
+        this.helpCommander = helpCommander;
     }
 
     @Override
@@ -34,14 +42,13 @@ public class DispatcherBot extends TelegramLongPollingBot {
             String command = update.getMessage().getText();
 
             switch (command) {
-                case "/start" -> mainMenuCommander.start(this, chatId);
-                case "/play" -> mainMenuCommander.play(this, chatId);
-                case "/rank" -> mainMenuCommander.rank(this, chatId);
-                case "/eggs" -> mainMenuCommander.eggs(this, chatId);
-                case "/profile" -> mainMenuCommander.profile(this, chatId);
-                case "/help" -> mainMenuCommander.help(this, chatId);
+                case "/start" -> startCommander.start(this, chatId);
+                case "/rank" -> rankCommander.rank(this, chatId);
+                case "/eggs" -> eggsCommander.eggs(this, chatId);
+                case "/profile" -> profileCommander.profile(this, chatId);
+                case "/help" -> helpCommander.help(this, chatId);
                 default -> {
-                    if (profileCommander.register(this, chatId, command)) {
+                    if (startCommander.finishAuthorization(this, chatId, command)) {
                         return;
                     }
                     if (profileCommander.changeUsername(this, chatId, command)) {
@@ -55,7 +62,10 @@ public class DispatcherBot extends TelegramLongPollingBot {
             Integer messageId = update.getCallbackQuery().getMessage().getMessageId();
             String callbackData = update.getCallbackQuery().getData();
 
+            rankCommander.processCallbackQuery(this, chatId, messageId, callbackData);
+            eggsCommander.processCallbackQuery(this, chatId, messageId, callbackData);
             profileCommander.processCallbackQuery(this, chatId, messageId, callbackData);
+            helpCommander.processCallbackQuery(this, chatId, messageId, callbackData);
         }
     }
 
