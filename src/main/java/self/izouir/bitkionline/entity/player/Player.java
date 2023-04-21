@@ -26,6 +26,9 @@ public class Player {
     @Column(name = "username")
     private String username;
 
+    @Column(name = "is_playing")
+    private Boolean isPlaying;
+
     @Column(name = "rank")
     private Integer rank;
 
