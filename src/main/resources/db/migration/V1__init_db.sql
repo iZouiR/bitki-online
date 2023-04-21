@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS players
     id            BIGSERIAL PRIMARY KEY,
     chat_id       BIGINT UNIQUE NOT NULL,
     username      VARCHAR(128) UNIQUE,
+    is_playing    BOOLEAN,
     rank          INT,
     registered_at TIMESTAMP
 );
@@ -40,3 +41,12 @@ CREATE TABLE IF NOT EXISTS private_battles
     second_player_egg_id   BIGINT REFERENCES eggs (id),
     is_first_player_winner BOOLEAN
 );
+
+CREATE TABLE IF NOT EXISTS player_bots
+(
+    id                   BIGSERIAL PRIMARY KEY,
+    player_id            BIGINT REFERENCES players (id),
+    last_bot_state       VARCHAR(128),
+    last_inventory_index INT,
+    last_inventory_size  INT
+)
