@@ -1,5 +1,6 @@
 package self.izouir.bitkionline.commander;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
@@ -26,6 +27,7 @@ public class EggsCommander {
     private final PlayerService playerService;
     private final PlayerBotService playerBotService;
 
+    @Autowired
     public EggsCommander(EggService eggService,
                          PlayerService playerService,
                          PlayerBotService playerBotService) {
