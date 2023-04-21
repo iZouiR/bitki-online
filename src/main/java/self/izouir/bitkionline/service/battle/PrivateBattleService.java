@@ -86,4 +86,16 @@ public class PrivateBattleService {
         }
         return true;
     }
+
+    public void awaitConnection() {
+        try {
+            int counter = 0;
+            while (counter < 120) {
+                Thread.sleep(1000);
+                counter++;
+            }
+        } catch (InterruptedException e) {
+            log.error(e.getMessage());
+        }
+    }
 }
