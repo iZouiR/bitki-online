@@ -7,16 +7,20 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import self.izouir.bitkionline.commander.*;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import static self.izouir.bitkionline.util.BotMessageSender.sendMessage;
 
 @Component
 public class DispatcherBot extends TelegramLongPollingBot {
+    private static final ExecutorService EXECUTOR = Executors.newWorkStealingPool();
     @Value("${telegram.bot.username}")
     private String botUsername;
     @Value("${telegram.bot.token}")
     private String botToken;
-
     private final StartCommander startCommander;
+    private final PlayCommander playCommander;
     private final RankCommander rankCommander;
     private final EggsCommander eggsCommander;
     private final ProfileCommander profileCommander;
@@ -24,11 +28,13 @@ public class DispatcherBot extends TelegramLongPollingBot {
 
     @Autowired
     public DispatcherBot(StartCommander startCommander,
+                         PlayCommander playCommander,
                          RankCommander rankCommander,
                          EggsCommander eggsCommander,
                          ProfileCommander profileCommander,
                          HelpCommander helpCommander) {
         this.startCommander = startCommander;
+        this.playCommander = playCommander;
         this.rankCommander = rankCommander;
         this.eggsCommander = eggsCommander;
         this.profileCommander = profileCommander;
@@ -37,36 +43,43 @@ public class DispatcherBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        if (update.hasMessage() && update.getMessage().hasText()) {
-            Long chatId = update.getMessage().getChatId();
-            String command = update.getMessage().getText();
+        EXECUTOR.execute(() -> {
+            if (update.hasMessage() && update.getMessage().hasText()) {
+                Long chatId = update.getMessage().getChatId();
+                String command = update.getMessage().getText();
 
-            switch (command) {
-                case "/start" -> startCommander.start(this, chatId);
-                case "/rank" -> rankCommander.rank(this, chatId);
-                case "/eggs" -> eggsCommander.eggs(this, chatId);
-                case "/profile" -> profileCommander.profile(this, chatId);
-                case "/help" -> helpCommander.help(this, chatId);
-                default -> {
-                    if (startCommander.finishAuthorization(this, chatId, command)) {
-                        return;
+                switch (command) {
+                    case "/start" -> startCommander.start(this, chatId);
+                    case "/play" -> playCommander.play(this, chatId);
+                    case "/rank" -> rankCommander.rank(this, chatId);
+                    case "/eggs" -> eggsCommander.eggs(this, chatId);
+                    case "/profile" -> profileCommander.profile(this, chatId);
+                    case "/help" -> helpCommander.help(this, chatId);
+                    default -> {
+                        if (playCommander.connect(this, chatId, command)) {
+                            return;
+                        }
+                        if (startCommander.finishAuthorization(this, chatId, command)) {
+                            return;
+                        }
+                        if (profileCommander.changeUsername(this, chatId, command)) {
+                            return;
+                        }
+                        sendMessage(this, chatId, "Command not found");
                     }
-                    if (profileCommander.changeUsername(this, chatId, command)) {
-                        return;
-                    }
-                    sendMessage(this, chatId, "Command not found");
                 }
-            }
-        } else if (update.hasCallbackQuery()) {
-            Long chatId = update.getCallbackQuery().getMessage().getChatId();
-            Integer messageId = update.getCallbackQuery().getMessage().getMessageId();
-            String callbackData = update.getCallbackQuery().getData();
+            } else if (update.hasCallbackQuery()) {
+                Long chatId = update.getCallbackQuery().getMessage().getChatId();
+                Integer messageId = update.getCallbackQuery().getMessage().getMessageId();
+                String callbackData = update.getCallbackQuery().getData();
 
-            rankCommander.processCallbackQuery(this, chatId, messageId, callbackData);
-            eggsCommander.processCallbackQuery(this, chatId, messageId, callbackData);
-            profileCommander.processCallbackQuery(this, chatId, messageId, callbackData);
-            helpCommander.processCallbackQuery(this, chatId, messageId, callbackData);
-        }
+                playCommander.processCallbackQuery(this, chatId, messageId, callbackData);
+                rankCommander.processCallbackQuery(this, chatId, messageId, callbackData);
+                eggsCommander.processCallbackQuery(this, chatId, messageId, callbackData);
+                profileCommander.processCallbackQuery(this, chatId, messageId, callbackData);
+                helpCommander.processCallbackQuery(this, chatId, messageId, callbackData);
+            }
+        });
     }
 
     @Override
