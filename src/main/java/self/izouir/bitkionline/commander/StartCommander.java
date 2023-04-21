@@ -62,6 +62,7 @@ public class StartCommander {
             if (playerBot.getLastBotState() == BotState.AWAIT_USERNAME) {
                 if (playerService.notExistsByUsernameIgnoreCase(username)) {
                     player.setUsername(username);
+                    player.setIsPlaying(false);
                     player.setRank(0);
                     player.setRegisteredAt(Timestamp.from(Instant.now()));
                     playerService.save(player);
