@@ -18,10 +18,10 @@ public class HelpCommander {
             At beta you enter the game with 3 random eggs
                             
             All the eggs have their characteristics:
-                - Endurance (En) - Describes the max amount of damage the egg could take
-                - Power (Po) - Describes the max amount of damage the egg could deal
-                - Luck (Lu) - Describes the amount of chance to damage enemy egg
-                - Intelligence (In) - Describes the reduction of damage taken while attacking enemy egg
+                - Endurance (❤️‍🩹/🛡) - Describes the max amount of damage the egg could take
+                - Power (💥/💣) - Describes the max amount of damage the egg could deal
+                - Luck (☘️/🍀) - Describes the amount of chance to damage enemy egg
+                - Intelligence (🧿/🪬) - Describes the reduction of damage taken while attacking enemy egg
                       
             Types of battles:
                 Match Making Battle - ranked battle with random opponent based on player's rank
