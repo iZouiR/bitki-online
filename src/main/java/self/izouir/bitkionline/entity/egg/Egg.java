@@ -31,6 +31,9 @@ public class Egg {
     @Column(name = "endurance")
     private Integer endurance;
 
+    @Column(name = "power")
+    private Integer power;
+
     @Column(name = "luck")
     private Integer luck;
 
