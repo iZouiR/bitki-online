@@ -10,6 +10,7 @@ import self.izouir.bitkionline.entity.player.Player;
 import self.izouir.bitkionline.exception.PrivateBattleNotFoundException;
 import self.izouir.bitkionline.repository.battle.PrivateBattleRepository;
 
+import java.util.List;
 import java.util.Random;
 
 @Slf4j
@@ -50,6 +51,16 @@ public class PrivateBattleService {
     public void delete(PrivateBattle privateBattle) {
         playerBattleService.delete(privateBattle.getPlayerBattle());
         privateBattleRepository.delete(privateBattle);
+    }
+
+    @Transactional
+    public void deleteAllByPlayer(Player player) {
+        List<PrivateBattle> privateBattles = privateBattleRepository.findAllByPlayerBattle_FirstPlayerOrPlayerBattle_SecondPlayer(player, player);
+        for (PrivateBattle privateBattle : privateBattles) {
+            PlayerBattle battle = privateBattle.getPlayerBattle();
+            playerBattleService.delete(battle);
+            delete(privateBattle);
+        }
     }
 
     public PrivateBattle generatePrivateBattle(Player player) {
