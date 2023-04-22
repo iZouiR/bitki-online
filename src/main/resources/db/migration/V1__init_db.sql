@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS eggs
 (
     id           BIGSERIAL PRIMARY KEY,
     type         VARCHAR(32)  NOT NULL,
+    name         VARCHAR(128) NOT NULL,
     is_cracked   BOOLEAN      NOT NULL,
     endurance    INT          NOT NULL,
     power        INT          NOT NULL,
