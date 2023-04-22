@@ -117,12 +117,16 @@ public class ProfileCommander {
     public void profile(DispatcherBot bot, Long chatId) {
         if (playerService.existsByChatId(chatId)) {
             Player player = playerService.findByChatId(chatId);
-            SendMessage message = SendMessage.builder()
-                    .chatId(String.valueOf(chatId))
-                    .text(generatePlayerProfileInfo(player))
-                    .build();
-            message.setReplyMarkup(generateProfileReplyMarkup());
-            sendMessage(bot, message);
+            if (player.getRegisteredAt() != null) {
+                SendMessage message = SendMessage.builder()
+                        .chatId(String.valueOf(chatId))
+                        .text(generatePlayerProfileInfo(player))
+                        .build();
+                message.setReplyMarkup(generateProfileReplyMarkup());
+                sendMessage(bot, message);
+            } else {
+                sendMessage(bot, chatId, "Finish registration before continuing");
+            }
         } else {
             sendMessage(bot, chatId, "You aren't authorized - /start");
         }

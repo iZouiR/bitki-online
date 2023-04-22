@@ -35,7 +35,11 @@ public class StartCommander {
     public void start(DispatcherBot bot, Long chatId) {
         if (playerService.existsByChatId(chatId)) {
             Player player = playerService.findByChatId(chatId);
-            sendMessage(bot, chatId, "Greetings, " + player.getUsername() + "!");
+            if (player.getRegisteredAt() != null) {
+                sendMessage(bot, chatId, "Greetings, " + player.getUsername() + "!");
+            } else {
+                sendMessage(bot, chatId, "Finish registration before continuing");
+            }
         } else {
             sendMessage(bot, chatId, "Looks like you aren't authorized yet, enter your username");
             createNewPlayerAwaitingUsername(chatId);
@@ -45,6 +49,9 @@ public class StartCommander {
     private void createNewPlayerAwaitingUsername(Long chatId) {
         Player player = Player.builder()
                 .chatId(chatId)
+                .username("new player")
+                .rank(0)
+                .isPlaying(false)
                 .build();
         playerService.save(player);
 
@@ -62,8 +69,6 @@ public class StartCommander {
             if (playerBot.getLastBotState() == BotState.AWAIT_USERNAME) {
                 if (playerService.notExistsByUsernameIgnoreCase(username)) {
                     player.setUsername(username);
-                    player.setIsPlaying(false);
-                    player.setRank(0);
                     player.setRegisteredAt(Timestamp.from(Instant.now()));
                     playerService.save(player);
 

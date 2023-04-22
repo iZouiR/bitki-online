@@ -258,21 +258,25 @@ public class PlayCommander {
     public void play(DispatcherBot bot, Long chatId) {
         if (playerService.existsByChatId(chatId)) {
             Player player = playerService.findByChatId(chatId);
-            List<Egg> notCrackedInventory = eggService.findAllByOwnerWhereIsNotCracked(player);
-            System.out.println(notCrackedInventory.size());
-            if (!notCrackedInventory.isEmpty()) {
-                if (!player.getIsPlaying()) {
-                    SendMessage message = SendMessage.builder()
-                            .chatId(String.valueOf(chatId))
-                            .text("Choose the way to play")
-                            .build();
-                    message.setReplyMarkup(generatePlayReplyMarkup());
-                    sendMessage(bot, message);
+            if (player.getRegisteredAt() != null) {
+                List<Egg> notCrackedInventory = eggService.findAllByOwnerWhereIsNotCracked(player);
+                System.out.println(notCrackedInventory.size());
+                if (!notCrackedInventory.isEmpty()) {
+                    if (!player.getIsPlaying()) {
+                        SendMessage message = SendMessage.builder()
+                                .chatId(String.valueOf(chatId))
+                                .text("Choose the way to play")
+                                .build();
+                        message.setReplyMarkup(generatePlayReplyMarkup());
+                        sendMessage(bot, message);
+                    } else {
+                        sendMessage(bot, chatId, "You're already playing, try later");
+                    }
                 } else {
-                    sendMessage(bot, chatId, "You're already playing, try later");
+                    sendMessage(bot, chatId, "You don't have eggs to play, try refreshing them");
                 }
             } else {
-                sendMessage(bot, chatId, "You don't have eggs to play, try refreshing them");
+                sendMessage(bot, chatId, "Finish registration before continuing");
             }
         } else {
             sendMessage(bot, chatId, "You aren't authorized - /start");
@@ -299,10 +303,10 @@ public class PlayCommander {
                     } else {
                         sendMessage(bot, chatId, "Private battle with link " + link + " is unavailable");
                     }
-                    return true;
                 } else {
                     sendMessage(bot, chatId, "Private battle with link " + link + " wasn't found");
                 }
+                return true;
             }
         }
         return false;

@@ -54,7 +54,12 @@ public class EggsCommander {
 
     public void eggs(DispatcherBot bot, Long chatId) {
         if (playerService.existsByChatId(chatId)) {
-            sendInventory(bot, chatId);
+            Player player = playerService.findByChatId(chatId);
+            if (player.getRegisteredAt() != null) {
+                sendInventory(bot, chatId);
+            } else {
+                sendMessage(bot, chatId, "Finish registration before continuing");
+            }
         } else {
             sendMessage(bot, chatId, "You aren't authorized - /start");
         }
@@ -103,25 +108,25 @@ public class EggsCommander {
                     .chatId(String.valueOf(chatId))
                     .sticker(new InputFile(Path.of(inventory.get(inventoryIndex).getImagePath()).toFile()))
                     .build();
-            sticker.setReplyMarkup(generateReplyMarkup(inventory.get(inventoryIndex), inventoryIndex, inventory.size()));
+            sticker.setReplyMarkup(generateReplyMarkup(inventory.get(inventoryIndex)));
             sendSticker(bot, sticker);
         } else {
             sendMessage(bot, chatId, "You don't have any eggs");
         }
     }
 
-    private ReplyKeyboard generateReplyMarkup(Egg egg, Integer inventoryIndex, Integer inventorySize) {
+    private ReplyKeyboard generateReplyMarkup(Egg egg) {
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
         List<InlineKeyboardButton> eggDescriptionRow = new ArrayList<>();
         InlineKeyboardButton eggDescriptionButton = new InlineKeyboardButton();
         if (egg.getIsCracked()) {
-            eggDescriptionButton.setText(egg.getName() + " (" + egg.getType().toString().toLowerCase() + ")"
-                                         + " egg, cracked! (" + (inventoryIndex + 1) + "/" + inventorySize + ")");
+            eggDescriptionButton.setText(egg.getName()
+                                         + " (" + egg.getType().toString().toLowerCase() + ")" + " egg, cracked!");
         } else {
-            eggDescriptionButton.setText(egg.getName() + " (" + egg.getType().toString().toLowerCase() + ")"
-                                         + " egg, not cracked (" + (inventoryIndex + 1) + "/" + inventorySize + ")");
+            eggDescriptionButton.setText(egg.getName()
+                                         + " (" + egg.getType().toString().toLowerCase() + ")" + " egg, not cracked");
         }
         eggDescriptionButton.setCallbackData("IGNORE");
         eggDescriptionRow.add(eggDescriptionButton);
