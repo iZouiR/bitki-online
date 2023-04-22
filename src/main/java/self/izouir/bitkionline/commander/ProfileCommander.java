@@ -10,6 +10,8 @@ import self.izouir.bitkionline.bot.DispatcherBot;
 import self.izouir.bitkionline.entity.player.BotState;
 import self.izouir.bitkionline.entity.player.Player;
 import self.izouir.bitkionline.entity.player.PlayerBot;
+import self.izouir.bitkionline.service.battle.MatchMakingBattleService;
+import self.izouir.bitkionline.service.battle.PrivateBattleService;
 import self.izouir.bitkionline.service.egg.EggService;
 import self.izouir.bitkionline.service.player.PlayerBotService;
 import self.izouir.bitkionline.service.player.PlayerService;
@@ -22,14 +24,20 @@ import static self.izouir.bitkionline.util.BotMessageSender.*;
 
 @Component
 public class ProfileCommander {
+    private final MatchMakingBattleService matchMakingBattleService;
+    private final PrivateBattleService privateBattleService;
     private final EggService eggService;
     private final PlayerService playerService;
     private final PlayerBotService playerBotService;
 
     @Autowired
-    public ProfileCommander(EggService eggService,
+    public ProfileCommander(MatchMakingBattleService matchMakingBattleService,
+                            PrivateBattleService privateBattleService,
+                            EggService eggService,
                             PlayerService playerService,
                             PlayerBotService playerBotService) {
+        this.matchMakingBattleService = matchMakingBattleService;
+        this.privateBattleService = privateBattleService;
         this.eggService = eggService;
         this.playerService = playerService;
         this.playerBotService = playerBotService;
@@ -38,11 +46,30 @@ public class ProfileCommander {
     public void processCallbackQuery(DispatcherBot bot, Long chatId, Integer messageId, String callbackData) {
         switch (callbackData) {
             case "PROFILE_CHANGE_USERNAME" -> {
-                sendEditMessageText(bot, chatId, messageId, "Enter your new username");
                 Player player = playerService.findByChatId(chatId);
                 PlayerBot playerBot = playerBotService.findByPlayerId(player.getId());
                 playerBot.setLastBotState(BotState.CHANGE_USERNAME);
                 playerBotService.save(playerBot);
+                EditMessageText message = EditMessageText.builder()
+                        .chatId(String.valueOf(chatId))
+                        .messageId(messageId)
+                        .text("Enter your new username")
+                        .build();
+                message.setReplyMarkup(generateProfileChangeUsernameReplyMarkup());
+                sendEditMessageText(bot, message);
+            }
+            case "PROFILE_CHANGE_USERNAME_GO_BACK" -> {
+                Player player = playerService.findByChatId(chatId);
+                PlayerBot playerBot = playerBotService.findByPlayerId(player.getId());
+                playerBot.setLastBotState(null);
+                playerBotService.save(playerBot);
+                EditMessageText message = EditMessageText.builder()
+                        .chatId(String.valueOf(chatId))
+                        .messageId(messageId)
+                        .text(generatePlayerProfileInfo(player))
+                        .build();
+                message.setReplyMarkup(generateProfileReplyMarkup());
+                sendEditMessageText(bot, message);
             }
             case "PROFILE_REFRESH_EGGS" -> {
                 EditMessageText message = EditMessageText.builder()
@@ -129,6 +156,8 @@ public class ProfileCommander {
 
     private void dropProfile(Player player) {
         eggService.deleteAllByOwner(player);
+        matchMakingBattleService.deleteAllByPlayer(player);
+        privateBattleService.deleteAllByPlayer(player);
         playerBotService.deleteByPlayerId(player.getId());
         playerService.delete(player);
     }
@@ -165,6 +194,21 @@ public class ProfileCommander {
         keyboard.add(refreshEggsRow);
         keyboard.add(dropProfileRow);
         keyboard.add(closeProfileRow);
+        markup.setKeyboard(keyboard);
+        return markup;
+    }
+
+    private InlineKeyboardMarkup generateProfileChangeUsernameReplyMarkup() {
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+
+        List<InlineKeyboardButton> goBackRow = new ArrayList<>();
+        InlineKeyboardButton yesButton = new InlineKeyboardButton();
+        yesButton.setText("Go back");
+        yesButton.setCallbackData("PROFILE_CHANGE_USERNAME_GO_BACK");
+        goBackRow.add(yesButton);
+
+        keyboard.add(goBackRow);
         markup.setKeyboard(keyboard);
         return markup;
     }
