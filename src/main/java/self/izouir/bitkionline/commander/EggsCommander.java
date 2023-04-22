@@ -117,10 +117,10 @@ public class EggsCommander {
         List<InlineKeyboardButton> eggDescriptionRow = new ArrayList<>();
         InlineKeyboardButton eggDescriptionButton = new InlineKeyboardButton();
         if (egg.getIsCracked()) {
-            eggDescriptionButton.setText(egg.getType().toString().toLowerCase()
+            eggDescriptionButton.setText(egg.getName() + " (" + egg.getType().toString().toLowerCase() + ")"
                                          + " egg, cracked! (" + (inventoryIndex + 1) + "/" + inventorySize + ")");
         } else {
-            eggDescriptionButton.setText(egg.getType().toString().toLowerCase()
+            eggDescriptionButton.setText(egg.getName() + " (" + egg.getType().toString().toLowerCase() + ")"
                                          + " egg, not cracked (" + (inventoryIndex + 1) + "/" + inventorySize + ")");
         }
         eggDescriptionButton.setCallbackData("IGNORE");
@@ -128,10 +128,7 @@ public class EggsCommander {
 
         List<InlineKeyboardButton> eggStatsRow = new ArrayList<>();
         InlineKeyboardButton eggStatsButton = new InlineKeyboardButton();
-        eggStatsButton.setText("En : " + egg.getEndurance() +
-                               " | Po : " + egg.getPower() +
-                               " | Lu : " + egg.getLuck() +
-                               " | In : " + egg.getIntelligence());
+        eggStatsButton.setText(eggService.generateEggStatsInfo(egg));
         eggStatsButton.setCallbackData("IGNORE");
         eggStatsRow.add(eggStatsButton);
 
