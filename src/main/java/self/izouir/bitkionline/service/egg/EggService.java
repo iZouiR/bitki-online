@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static self.izouir.bitkionline.util.BotMessageSender.sendMessage;
@@ -39,6 +40,11 @@ public class EggService {
 
     public List<Egg> findAllByOwner(Player owner) {
         return eggRepository.findAllByOwner(owner);
+    }
+
+    public List<Egg> findAllByOwnerWhereIsNotCracked(Player player) {
+        List<Egg> inventory = eggRepository.findAllByOwner(player);
+        return inventory.stream().filter(egg -> !egg.getIsCracked()).collect(Collectors.toList());
     }
 
     public void save(Egg egg) {
@@ -81,12 +87,14 @@ public class EggService {
 
     private Egg generateWeakEgg() {
         Integer endurance = random.nextInt(6) + 5;
+        Integer power = random.nextInt(3) + 3;
         Integer luck = random.nextInt(3) + 1;
         Integer intelligence = random.nextInt(4);
 
         return Egg.builder()
                 .type(EggType.WEAK)
                 .endurance(endurance)
+                .power(power)
                 .luck(luck)
                 .intelligence(intelligence)
                 .imagePath(generateEggImagePath(EggType.WEAK))
@@ -95,12 +103,14 @@ public class EggService {
 
     private Egg generateStrongEgg() {
         Integer endurance = random.nextInt(9) + 8;
+        Integer power = random.nextInt(5) + 4;
         Integer luck = random.nextInt(4) + 2;
         Integer intelligence = random.nextInt(5) + 1;
 
         return Egg.builder()
                 .type(EggType.STRONG)
                 .endurance(endurance)
+                .power(power)
                 .luck(luck)
                 .intelligence(intelligence)
                 .imagePath(generateEggImagePath(EggType.STRONG))
@@ -109,12 +119,14 @@ public class EggService {
 
     private Egg generateHolyEgg() {
         Integer endurance = random.nextInt(13) + 12;
+        Integer power = random.nextInt(7) + 6;
         Integer luck = random.nextInt(6) + 4;
         Integer intelligence = random.nextInt(7) + 3;
 
         return Egg.builder()
                 .type(EggType.HOLY)
                 .endurance(endurance)
+                .power(power)
                 .luck(luck)
                 .intelligence(intelligence)
                 .imagePath(generateEggImagePath(EggType.HOLY))
