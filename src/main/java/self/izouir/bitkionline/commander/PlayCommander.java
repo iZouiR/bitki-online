@@ -9,12 +9,16 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import self.izouir.bitkionline.bot.DispatcherBot;
 import self.izouir.bitkionline.entity.battle.MatchMakingBattle;
+import self.izouir.bitkionline.entity.battle.PlayerBattle;
 import self.izouir.bitkionline.entity.battle.PrivateBattle;
+import self.izouir.bitkionline.entity.egg.Egg;
 import self.izouir.bitkionline.entity.player.BotState;
 import self.izouir.bitkionline.entity.player.Player;
 import self.izouir.bitkionline.entity.player.PlayerBot;
 import self.izouir.bitkionline.service.battle.MatchMakingBattleService;
+import self.izouir.bitkionline.service.battle.PlayerBattleService;
 import self.izouir.bitkionline.service.battle.PrivateBattleService;
+import self.izouir.bitkionline.service.egg.EggService;
 import self.izouir.bitkionline.service.player.PlayerBotService;
 import self.izouir.bitkionline.service.player.PlayerService;
 
@@ -31,20 +35,26 @@ public class PlayCommander {
     private static final Map<Player, Integer> AWAIT_MATCH_MAKING_PLAYERS = new ConcurrentHashMap<>();
     private static final Map<Player, PrivateBattle> AWAIT_CONNECTION_PRIVATE_BATTLES = new ConcurrentHashMap<>();
     private static final Map<Player, Integer> AWAIT_LINK_PLAYERS = new ConcurrentHashMap<>();
+    private final PlayerBattleService playerBattleService;
     private final MatchMakingBattleService matchMakingBattleService;
     private final PrivateBattleService privateBattleService;
+    private final EggService eggService;
     private final PlayerService playerService;
     private final PlayerBotService playerBotService;
     private final BattleCommander battleCommander;
 
     @Autowired
-    public PlayCommander(MatchMakingBattleService matchMakingBattleService,
+    public PlayCommander(PlayerBattleService playerBattleService,
+                         MatchMakingBattleService matchMakingBattleService,
                          PrivateBattleService privateBattleService,
+                         EggService eggService,
                          PlayerService playerService,
                          PlayerBotService playerBotService,
                          BattleCommander battleCommander) {
+        this.playerBattleService = playerBattleService;
         this.matchMakingBattleService = matchMakingBattleService;
         this.privateBattleService = privateBattleService;
+        this.eggService = eggService;
         this.playerService = playerService;
         this.playerBotService = playerBotService;
         this.battleCommander = battleCommander;
@@ -61,10 +71,7 @@ public class PlayCommander {
                         if (!AWAIT_MATCH_MAKING_PLAYERS_QUEUE.isEmpty()) {
                             Player opponent = AWAIT_MATCH_MAKING_PLAYERS_QUEUE.remove();
                             if (!Objects.equals(player.getId(), opponent.getId())) {
-                                MatchMakingBattle matchMakingBattle = MatchMakingBattle.builder()
-                                        .firstPlayer(player)
-                                        .secondPlayer(opponent)
-                                        .build();
+                                MatchMakingBattle matchMakingBattle = matchMakingBattleService.generateMatchMakingBattle(player, opponent);
                                 matchMakingBattleService.save(matchMakingBattle);
                                 Integer opponentMessageId = AWAIT_MATCH_MAKING_PLAYERS.remove(opponent);
                                 deleteMessage(bot, chatId, messageId);
@@ -251,15 +258,21 @@ public class PlayCommander {
     public void play(DispatcherBot bot, Long chatId) {
         if (playerService.existsByChatId(chatId)) {
             Player player = playerService.findByChatId(chatId);
-            if (!player.getIsPlaying()) {
-                SendMessage message = SendMessage.builder()
-                        .chatId(String.valueOf(chatId))
-                        .text("Choose the way to play")
-                        .build();
-                message.setReplyMarkup(generatePlayReplyMarkup());
-                sendMessage(bot, message);
+            List<Egg> notCrackedInventory = eggService.findAllByOwnerWhereIsNotCracked(player);
+            System.out.println(notCrackedInventory.size());
+            if (!notCrackedInventory.isEmpty()) {
+                if (!player.getIsPlaying()) {
+                    SendMessage message = SendMessage.builder()
+                            .chatId(String.valueOf(chatId))
+                            .text("Choose the way to play")
+                            .build();
+                    message.setReplyMarkup(generatePlayReplyMarkup());
+                    sendMessage(bot, message);
+                } else {
+                    sendMessage(bot, chatId, "You're already playing, try later");
+                }
             } else {
-                sendMessage(bot, chatId, "You're already playing, try later");
+                sendMessage(bot, chatId, "You don't have eggs to play, try refreshing them");
             }
         } else {
             sendMessage(bot, chatId, "You aren't authorized - /start");
@@ -273,9 +286,10 @@ public class PlayCommander {
             if (playerBot.getLastBotState() == BotState.AWAIT_LINK) {
                 if (privateBattleService.existsByLink(link)) {
                     PrivateBattle privateBattle = privateBattleService.findByLink(link);
-                    if (privateBattle.getSecondPlayer() == null) {
-                        privateBattle.setSecondPlayer(player);
-                        privateBattleService.save(privateBattle);
+                    PlayerBattle battle = privateBattle.getPlayerBattle();
+                    if (battle.getSecondPlayer() == null) {
+                        battle.setSecondPlayer(player);
+                        playerBattleService.save(battle);
                         playerBot.setLastBotState(null);
                         playerBotService.save(playerBot);
                         Integer messageId = AWAIT_LINK_PLAYERS.get(player);
