@@ -25,6 +25,9 @@ public class Egg {
     @Column(name = "type")
     private EggType type;
 
+    @Column(name = "name")
+    private String name;
+
     @Column(name = "is_cracked")
     private Boolean isCracked;
 
