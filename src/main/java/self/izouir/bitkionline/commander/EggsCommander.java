@@ -129,6 +129,7 @@ public class EggsCommander {
         List<InlineKeyboardButton> eggStatsRow = new ArrayList<>();
         InlineKeyboardButton eggStatsButton = new InlineKeyboardButton();
         eggStatsButton.setText("En : " + egg.getEndurance() +
+                               " | Po : " + egg.getPower() +
                                " | Lu : " + egg.getLuck() +
                                " | In : " + egg.getIntelligence());
         eggStatsButton.setCallbackData("IGNORE");
