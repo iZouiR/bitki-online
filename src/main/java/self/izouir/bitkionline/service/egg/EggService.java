@@ -65,7 +65,7 @@ public class EggService {
             inventory.add(egg);
 
             sendSticker(bot, player.getChatId(), Path.of(egg.getImagePath()));
-            sendMessage(bot, player.getChatId(), "You obtained " + egg.getType().toString().toLowerCase() + " egg");
+            sendMessage(bot, player.getChatId(), "You obtained " + egg.getType().toString().toLowerCase() + " egg (" + generateEggStatsInfo(egg) + ")");
         }
         return inventory;
     }
@@ -80,6 +80,7 @@ public class EggService {
         } else {
             egg = generateHolyEgg();
         }
+        egg.setName(generateName(egg));
         egg.setIsCracked(false);
         egg.setCreatedAt(Timestamp.from(Instant.now()));
         return egg;
@@ -97,7 +98,7 @@ public class EggService {
                 .power(power)
                 .luck(luck)
                 .intelligence(intelligence)
-                .imagePath(generateEggImagePath(EggType.WEAK))
+                .imagePath(generateImagePath(EggType.WEAK))
                 .build();
     }
 
@@ -105,7 +106,7 @@ public class EggService {
         Integer endurance = random.nextInt(9) + 8;
         Integer power = random.nextInt(5) + 4;
         Integer luck = random.nextInt(4) + 2;
-        Integer intelligence = random.nextInt(5) + 1;
+        Integer intelligence = random.nextInt(5) + 2;
 
         return Egg.builder()
                 .type(EggType.STRONG)
@@ -113,7 +114,7 @@ public class EggService {
                 .power(power)
                 .luck(luck)
                 .intelligence(intelligence)
-                .imagePath(generateEggImagePath(EggType.STRONG))
+                .imagePath(generateImagePath(EggType.STRONG))
                 .build();
     }
 
@@ -129,11 +130,11 @@ public class EggService {
                 .power(power)
                 .luck(luck)
                 .intelligence(intelligence)
-                .imagePath(generateEggImagePath(EggType.HOLY))
+                .imagePath(generateImagePath(EggType.HOLY))
                 .build();
     }
 
-    private String generateEggImagePath(EggType eggType) {
+    private String generateImagePath(EggType eggType) {
         Path typedEggImagePath = Path.of(BASE_EGG_IMAGE_PATH.toString(), "/", eggType.toString().toLowerCase());
         try (Stream<Path> eggImagePathStream = Files.list(typedEggImagePath)) {
             List<String> eggImagePaths = eggImagePathStream
@@ -146,5 +147,46 @@ public class EggService {
             log.error(e.getMessage());
         }
         throw new ImageNotFoundException("Egg images for egg type " + eggType.toString().toLowerCase() + " weren't found");
+    }
+
+    private String generateName(Egg egg) {
+        String name = egg.getImagePath();
+        name = name.replace(".png", "");
+        for (EggType eggType : EggType.values()) {
+            name = name.replace("src\\main\\resources\\image\\egg\\" + eggType.toString().toLowerCase() + "\\", "");
+        }
+        return name;
+    }
+
+    public String generateEggStatsInfo(Egg egg) {
+        StringBuilder eggStatsInfo = new StringBuilder();
+        eggStatsInfo.append(egg.getEndurance());
+        if (egg.getEndurance() > 12) {
+            eggStatsInfo.append("🛡 ");
+        } else {
+            eggStatsInfo.append("❤️‍🩹 ");
+        }
+
+        eggStatsInfo.append(egg.getPower());
+        if (egg.getPower() > 6) {
+            eggStatsInfo.append("💣 ");
+        } else {
+            eggStatsInfo.append("💥 ");
+        }
+
+        eggStatsInfo.append(egg.getLuck());
+        if (egg.getLuck() > 5) {
+            eggStatsInfo.append("🍀 ");
+        } else {
+            eggStatsInfo.append("☘️ ");
+        }
+
+        eggStatsInfo.append(egg.getIntelligence());
+        if (egg.getIntelligence() > 5) {
+            eggStatsInfo.append("🪬");
+        } else {
+            eggStatsInfo.append("🧿");
+        }
+        return eggStatsInfo.toString();
     }
 }
