@@ -29,11 +29,6 @@ public class PrivateBattleService {
         this.playerBattleService = playerBattleService;
     }
 
-    public PrivateBattle findById(Long id) {
-        return privateBattleRepository.findById(id)
-                .orElseThrow(() -> new PrivateBattleNotFoundException("Private battle with id = " + id + " wasn't found"));
-    }
-
     public PrivateBattle findByLink(String link) {
         return privateBattleRepository.findByLink(link)
                 .orElseThrow(() -> new PrivateBattleNotFoundException("Private battle with link = " + link + " wasn't found"));
@@ -63,16 +58,7 @@ public class PrivateBattleService {
         }
     }
 
-    public PrivateBattle generatePrivateBattle(Player player) {
-        PlayerBattle battle = playerBattleService.generatePlayerBattle(player);
-        playerBattleService.save(battle);
-        return PrivateBattle.builder()
-                .playerBattle(battle)
-                .link(generateLink())
-                .build();
-    }
-
-    private String generateLink() {
+    public String generateLink() {
         StringBuilder link = new StringBuilder();
         for (int i = 0; i < 12; i++) {
             link.append(LINK_ALPHABET.toCharArray()[random.nextInt(LINK_ALPHABET.length())]);
@@ -84,38 +70,5 @@ public class PrivateBattleService {
             }
         }
         return link.toString();
-    }
-
-    public boolean awaitConnection(PrivateBattle privateBattle) {
-        Long id = privateBattle.getId();
-        PlayerBattle battle = privateBattle.getPlayerBattle();
-        try {
-            int counter = 0;
-            while (battle.getSecondPlayer() == null) {
-                Thread.sleep(1000);
-                counter++;
-                if (counter >= 120) {
-                    delete(privateBattle);
-                    return false;
-                }
-                privateBattle = findById(id);
-                battle = privateBattle.getPlayerBattle();
-            }
-        } catch (InterruptedException e) {
-            log.error(e.getMessage());
-        }
-        return true;
-    }
-
-    public void awaitConnection() {
-        try {
-            int counter = 0;
-            while (counter < 120) {
-                Thread.sleep(1000);
-                counter++;
-            }
-        } catch (InterruptedException e) {
-            log.error(e.getMessage());
-        }
     }
 }

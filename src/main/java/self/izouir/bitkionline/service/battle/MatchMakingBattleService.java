@@ -42,24 +42,4 @@ public class MatchMakingBattleService {
             delete(matchMakingBattle);
         }
     }
-
-    public MatchMakingBattle generateMatchMakingBattle(Player player, Player opponent) {
-        PlayerBattle battle = playerBattleService.generatePlayerBattle(player, opponent);
-        playerBattleService.save(battle);
-        return MatchMakingBattle.builder()
-                .playerBattle(battle)
-                .build();
-    }
-
-    public void awaitConnection() {
-        try {
-            int counter = 0;
-            while (counter < 120) {
-                Thread.sleep(1000);
-                counter++;
-            }
-        } catch (InterruptedException e) {
-            log.error(e.getMessage());
-        }
-    }
 }
