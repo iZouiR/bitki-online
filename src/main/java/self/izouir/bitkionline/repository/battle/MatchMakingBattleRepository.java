@@ -9,5 +9,5 @@ import java.util.List;
 
 @Repository
 public interface MatchMakingBattleRepository extends JpaRepository<MatchMakingBattle, Long> {
-    List<MatchMakingBattle> findAllByPlayerBattle_FirstPlayerOrPlayerBattle_SecondPlayer(Player first, Player second);
+    List<MatchMakingBattle> findAllByPlayerBattle_FirstPlayerOrPlayerBattle_SecondPlayer(Player firstPlayer, Player secondPlayer);
 }
