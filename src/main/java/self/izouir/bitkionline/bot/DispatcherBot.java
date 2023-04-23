@@ -21,6 +21,7 @@ public class DispatcherBot extends TelegramLongPollingBot {
     private String botToken;
     private final StartCommander startCommander;
     private final PlayCommander playCommander;
+    private final BattleCommander battleCommander;
     private final RankCommander rankCommander;
     private final EggsCommander eggsCommander;
     private final ProfileCommander profileCommander;
@@ -29,12 +30,14 @@ public class DispatcherBot extends TelegramLongPollingBot {
     @Autowired
     public DispatcherBot(StartCommander startCommander,
                          PlayCommander playCommander,
+                         BattleCommander battleCommander,
                          RankCommander rankCommander,
                          EggsCommander eggsCommander,
                          ProfileCommander profileCommander,
                          HelpCommander helpCommander) {
         this.startCommander = startCommander;
         this.playCommander = playCommander;
+        this.battleCommander = battleCommander;
         this.rankCommander = rankCommander;
         this.eggsCommander = eggsCommander;
         this.profileCommander = profileCommander;
@@ -74,6 +77,7 @@ public class DispatcherBot extends TelegramLongPollingBot {
                 String callbackData = update.getCallbackQuery().getData();
 
                 playCommander.processCallbackQuery(this, chatId, messageId, callbackData);
+                battleCommander.processCallbackQuery(this, chatId, messageId, callbackData);
                 rankCommander.processCallbackQuery(this, chatId, messageId, callbackData);
                 eggsCommander.processCallbackQuery(this, chatId, messageId, callbackData);
                 profileCommander.processCallbackQuery(this, chatId, messageId, callbackData);
