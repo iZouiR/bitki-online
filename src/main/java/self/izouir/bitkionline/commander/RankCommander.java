@@ -61,7 +61,7 @@ public class RankCommander {
 
     private String generateTopPlayersRankInfo() {
         StringBuilder topPlayersRankInfo = new StringBuilder();
-        List<Player> topPlayers = playerService.findAllOrderedByRankDesc(3L);
+        List<Player> topPlayers = playerService.findAllOrderedByRankDesc(10L);
         if (!topPlayers.isEmpty()) {
             for (int i = 0; i < topPlayers.size(); i++) {
                 if (i == 0) {
@@ -76,7 +76,7 @@ public class RankCommander {
                 topPlayersRankInfo.append(topPlayers.get(i).getUsername());
                 topPlayersRankInfo.append(" - ");
                 topPlayersRankInfo.append(topPlayers.get(i).getRank());
-                topPlayersRankInfo.append("\n");
+                topPlayersRankInfo.append(" \uD83C\uDF96\n");
             }
         } else {
             topPlayersRankInfo.append("Looks like there are no players at all, come back later");
