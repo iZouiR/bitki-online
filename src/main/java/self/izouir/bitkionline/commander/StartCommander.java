@@ -49,7 +49,7 @@ public class StartCommander {
     private void createNewPlayerAwaitingUsername(Long chatId) {
         Player player = Player.builder()
                 .chatId(chatId)
-                .username("new player")
+                .username("new_player_" + chatId)
                 .rank(0)
                 .isPlaying(false)
                 .build();
