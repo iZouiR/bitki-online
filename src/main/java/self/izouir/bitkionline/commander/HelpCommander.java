@@ -18,14 +18,14 @@ public class HelpCommander {
             At beta you enter the game with 3 random eggs
                             
             All the eggs have their characteristics:
-                - Endurance (❤️‍🩹/🛡) - Describes the max amount of damage the egg could take
-                - Power (💥/💣) - Describes the max amount of damage the egg could deal
-                - Luck (☘️/🍀) - Describes the amount of chance to damage enemy egg
-                - Intelligence (🧿/🪬) - Describes the reduction of damage taken while attacking enemy egg
+                - Endurance (❤️‍🩹/🛡) - Describes the max amount of damage the egg could take, influences Power (💥/💣)
+                - Power (💥/💣) - Describes the amount of damage the egg could deal
+                - Luck (☘️/🍀) - Describes the amount of chance to damage enemy's egg
+                - Intelligence (🧿/🪬) - Describes the reduction of reply damage taken while attacking enemy egg
                       
             Types of battles:
-                Match Making Battle - ranked battle with random opponent based on player's rank
-                Private Battle - non-ranked battle with player's friend
+                Match Making Battle - battle with random opponent
+                Private Battle - battle via link
                 
             Rules of game:
                 1. The battle starts by choosing who would attack first - the coin flip
