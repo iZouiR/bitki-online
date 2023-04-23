@@ -8,6 +8,7 @@ import self.izouir.bitkionline.bot.DispatcherBot;
 import self.izouir.bitkionline.entity.egg.Egg;
 import self.izouir.bitkionline.entity.egg.EggType;
 import self.izouir.bitkionline.entity.player.Player;
+import self.izouir.bitkionline.exception.EggNotFoundException;
 import self.izouir.bitkionline.exception.ImageNotFoundException;
 import self.izouir.bitkionline.repository.egg.EggRepository;
 
@@ -36,6 +37,11 @@ public class EggService {
     public EggService(EggRepository eggRepository) {
         this.eggRepository = eggRepository;
         this.random = new Random();
+    }
+
+    public Egg findById(Long id) {
+        return eggRepository.findById(id).orElseThrow(
+                () -> new EggNotFoundException("Egg with id = " + id + " wasn't found"));
     }
 
     public List<Egg> findAllByOwner(Player owner) {
