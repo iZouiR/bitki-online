@@ -48,7 +48,7 @@ public class ProfileCommander {
             case "PROFILE_CHANGE_USERNAME" -> {
                 Player player = playerService.findByChatId(chatId);
                 PlayerBot playerBot = playerBotService.findByPlayerId(player.getId());
-                playerBot.setLastBotState(BotState.CHANGE_USERNAME);
+                playerBot.setLastBotState(BotState.AWAIT_NEW_USERNAME);
                 playerBotService.save(playerBot);
                 EditMessageText message = EditMessageText.builder()
                         .chatId(String.valueOf(chatId))
@@ -142,7 +142,7 @@ public class ProfileCommander {
         if (playerService.existsByChatId(chatId)) {
             Player player = playerService.findByChatId(chatId);
             PlayerBot playerBot = playerBotService.findByPlayerId(player.getId());
-            if (playerBot.getLastBotState() == BotState.CHANGE_USERNAME) {
+            if (playerBot.getLastBotState() == BotState.AWAIT_NEW_USERNAME) {
                 if (playerService.notExistsByUsernameIgnoreCase(username)) {
                     player.setUsername(username);
                     playerService.save(player);
