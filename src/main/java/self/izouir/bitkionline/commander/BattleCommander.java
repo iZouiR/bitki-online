@@ -12,6 +12,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import self.izouir.bitkionline.bot.DispatcherBot;
 import self.izouir.bitkionline.entity.battle.PlayerBattle;
 import self.izouir.bitkionline.entity.egg.Egg;
+import self.izouir.bitkionline.entity.egg.EggType;
 import self.izouir.bitkionline.entity.player.Player;
 import self.izouir.bitkionline.service.battle.PlayerBattleService;
 import self.izouir.bitkionline.service.egg.EggService;
@@ -56,7 +57,7 @@ public class BattleCommander {
                     battle.setFirstPlayerEgg(egg);
                     playerBattleService.save(battle);
 
-                    sendEditMessageText(bot, chatId, messageId, "You made your choice, waiting for the opponent...");
+                    sendEditMessageText(bot, chatId, messageId, "You made your choice, waiting for the opponent... ⏱");
 
                     while (battle.getSecondPlayerEgg() == null) {
                         Thread.sleep(1000);
@@ -68,7 +69,7 @@ public class BattleCommander {
                     }
 
                     CHATS_TO_MESSAGES.put(chatId, messageId);
-                    sendEditMessageText(bot, chatId, messageId, "Battle rages within...");
+                    sendEditMessageText(bot, chatId, messageId, "Battle rages within... \uD83C\uDF0B");
 
                     Player opponent = battle.getSecondPlayer();
                     Egg opponentEgg = battle.getSecondPlayerEgg();
@@ -83,7 +84,7 @@ public class BattleCommander {
                     battle.setSecondPlayerEgg(egg);
                     playerBattleService.save(battle);
 
-                    sendEditMessageText(bot, chatId, messageId, "You made your choice, waiting for the opponent...");
+                    sendEditMessageText(bot, chatId, messageId, "You made your choice, waiting for the opponent... ⏱");
 
                     while (battle.getFirstPlayerEgg() == null) {
                         Thread.sleep(1000);
@@ -95,7 +96,7 @@ public class BattleCommander {
                     }
 
                     CHATS_TO_MESSAGES.put(chatId, messageId);
-                    sendEditMessageText(bot, chatId, messageId, "Battle rages within...");
+                    sendEditMessageText(bot, chatId, messageId, "Battle rages within... \uD83C\uDF0B");
 
                     Player opponent = battle.getFirstPlayer();
                     Egg opponentEgg = battle.getFirstPlayerEgg();
@@ -114,12 +115,12 @@ public class BattleCommander {
             deleteMessage(bot, chatId, messageId);
             messageId = CHATS_TO_MESSAGES.get(chatId);
             try {
-                sendEditMessageText(bot, chatId, messageId, "Toss a coin...");
-                Thread.sleep(2000);
+                sendEditMessageText(bot, chatId, messageId, "Coin flip... \uD83E\uDE99");
+                Thread.sleep(2500);
 
-                for (int i = 3; i > 0; i--) {
-                    Thread.sleep(1000);
-                    sendEditMessageText(bot, chatId, messageId, String.valueOf(i));
+                for (int i = 3; i >= 0; i--) {
+                    Thread.sleep(800);
+                    sendEditMessageText(bot, chatId, messageId, i + "...");
                 }
 
                 Player player = playerService.findByChatId(chatId);
@@ -146,10 +147,10 @@ public class BattleCommander {
                         .text("Stub")
                         .build();
                 if (Objects.equals(chatId, BATTLES_TO_ATTACKER_CHATS.get(battle.getId()))) {
-                    message.setText("Your turn to attack, choose the option!");
+                    message.setText("Your turn to attack, choose the option! \uD83C\uDFB0");
                     message.setReplyMarkup(generateAttackerReplyMarkup(player));
                 } else {
-                    message.setText("Your turn to defend, pray to god...");
+                    message.setText("Your turn to defend, pray to god... \uD83C\uDF18");
                 }
                 sendEditMessageText(bot, message);
             } catch (InterruptedException e) {
@@ -157,17 +158,130 @@ public class BattleCommander {
             }
         }
         if (callbackData.startsWith("BATTLE_ATTACK_")) {
+            PlayerBattle battle = playerBattleService.findById(CHATS_TO_BATTLES.get(chatId));
+            Player player = playerService.findByChatId(chatId);
+            Player opponent;
+            Egg egg;
+            Egg opponentEgg;
+            if (Objects.equals(player.getId(), battle.getFirstPlayer().getId())) {
+                opponent = battle.getSecondPlayer();
+                egg = battle.getFirstPlayerEgg();
+                opponentEgg = battle.getSecondPlayerEgg();
+            } else {
+                opponent = battle.getFirstPlayer();
+                egg = battle.getSecondPlayerEgg();
+                opponentEgg = battle.getFirstPlayerEgg();
+            }
+
             String attackType = callbackData.substring("BATTLE_ATTACK_".length());
+            Integer damage;
+            Integer replyDamage;
+            int chance;
+
+            sendEditMessageText(bot, chatId, messageId,
+                    player.getUsername() + " trying to " + attackType.toLowerCase() + " attack ⚔️");
+            sendEditMessageText(bot, opponent.getChatId(), CHATS_TO_MESSAGES.get(opponent.getChatId()),
+                    player.getUsername() + " trying to " + attackType.toLowerCase() + " attack ⚔️");
+
+            try {
+                Thread.sleep(3000);
+                for (int i = 3; i >= 0; i--) {
+                    Thread.sleep(800);
+                    sendEditMessageText(bot, chatId, messageId, i + "...");
+                    sendEditMessageText(bot, opponent.getChatId(), CHATS_TO_MESSAGES.get(opponent.getChatId()), i + "...");
+                }
+            } catch (InterruptedException e) {
+                log.error(e.getMessage());
+            }
+
             switch (attackType) {
-                case "HARD" -> {
-
+                case "HEAD" -> {
+                    damage = Math.round(0.8f * egg.getPower() + 0.4f * egg.getEndurance());
+                    replyDamage = Math.round(damage - 1.5f * egg.getIntelligence());
+                    chance = Math.round(0.5f * generateChanceOfAttack(egg, opponentEgg));
                 }
-                case "MEDIUM" -> {
-
+                case "SIDE" -> {
+                    damage = Math.round(0.6f * egg.getPower() + 0.2f * egg.getEndurance());
+                    replyDamage = Math.round(damage - 2.0f * egg.getIntelligence());
+                    chance = Math.round(0.9f * generateChanceOfAttack(egg, opponentEgg));
                 }
-                case "WEAK" -> {
-
+                case "ASS" -> {
+                    damage = Math.round(0.5f * egg.getPower());
+                    replyDamage = Math.round(damage - 3.0f * egg.getIntelligence());
+                    chance = Math.round(1.2f * generateChanceOfAttack(egg, opponentEgg));
                 }
+                default -> {
+                    damage = 0;
+                    replyDamage = 0;
+                    chance = 0;
+                }
+            }
+            if (replyDamage < 0) {
+                replyDamage = 0;
+            }
+            if ((random.nextInt(100) + 1) <= chance) {
+                opponentEgg.setEndurance(opponentEgg.getEndurance() - damage);
+                if (opponentEgg.getEndurance() <= 0) {
+                    opponentEgg.setEndurance(0);
+                    opponentEgg.setIsCracked(true);
+                }
+                eggService.save(opponentEgg);
+                egg.setEndurance(egg.getEndurance() - replyDamage);
+                if (egg.getEndurance() <= 0) {
+                    egg.setEndurance(0);
+                    egg.setIsCracked(true);
+                }
+                eggService.save(egg);
+                sendEditMessageText(bot, chatId, messageId,
+                        opponent.getUsername() + ": \"Lucky devil, " + player.getUsername()
+                        + ", you dealt " + damage + " damage and had " + replyDamage + " as reply \uD83D\uDE08\"\n"
+                        + "You - " + egg.getEndurance() + "❤️\u200D\uD83E\uDE79"
+                        + " | Opponent - " + opponentEgg.getEndurance() + "❤️\u200D\uD83E\uDE79");
+                sendEditMessageText(bot, opponent.getChatId(), CHATS_TO_MESSAGES.get(opponent.getChatId()),
+                        player.getUsername() + ": \"Does it hurt??!\uD83D\uDD2A\uD83E\uDE78\"\n"
+                        + "You - " + opponentEgg.getEndurance() + "❤️\u200D\uD83E\uDE79"
+                        + " | Opponent - " + egg.getEndurance() + "❤️\u200D\uD83E\uDE79"
+                );
+            } else {
+                sendEditMessageText(bot, chatId, messageId,
+                        opponent.getUsername() + ": \"I'M FUCKING INVINCIBLE!!! C'MON, TRY AND HIT ME! \uD83D\uDC79\"\n"
+                        + "You - " + egg.getEndurance() + "❤️\u200D\uD83E\uDE79"
+                        + " | Opponent - " + opponentEgg.getEndurance() + "❤️\u200D\uD83E\uDE79");
+                sendEditMessageText(bot, opponent.getChatId(), CHATS_TO_MESSAGES.get(opponent.getChatId()),
+                        player.getUsername() + ": \"Making the mother of all omelettes here "
+                        + opponent.getUsername() + ". Can't fret over every egg \uD83D\uDC7A\"\n"
+                        + "You - " + opponentEgg.getEndurance() + "❤️\u200D\uD83E\uDE79"
+                        + " | Opponent - " + egg.getEndurance() + "❤️\u200D\uD83E\uDE79");
+            }
+
+            try {
+                Thread.sleep(5500);
+            } catch (InterruptedException e) {
+                log.error(e.getMessage());
+            }
+
+            if (egg.getIsCracked() && opponentEgg.getIsCracked()) {
+                deleteMessage(bot, chatId, messageId);
+                deleteMessage(bot, opponent.getChatId(), CHATS_TO_MESSAGES.get(opponent.getChatId()));
+                stopBattleOnDraw(bot, battle);
+            } else if (opponentEgg.getIsCracked()) {
+                deleteMessage(bot, chatId, messageId);
+                deleteMessage(bot, opponent.getChatId(), CHATS_TO_MESSAGES.get(opponent.getChatId()));
+                stopBattleOnDefeat(bot, chatId);
+            } else if (egg.getIsCracked()) {
+                deleteMessage(bot, chatId, messageId);
+                deleteMessage(bot, opponent.getChatId(), CHATS_TO_MESSAGES.get(opponent.getChatId()));
+                stopBattleOnDefeat(bot, opponent.getChatId());
+            } else {
+                BATTLES_TO_ATTACKER_CHATS.put(battle.getId(), opponent.getChatId());
+                sendEditMessageText(bot, chatId, messageId, "Your turn to defend, pray to god... \uD83C\uDF18");
+                EditMessageText opponentMessage = EditMessageText.builder()
+                        .chatId(String.valueOf(opponent.getChatId()))
+                        .messageId(CHATS_TO_MESSAGES.get(opponent.getChatId()))
+                        .text("Your turn to attack, choose the option! \uD83C\uDFB0")
+                        .build();
+                opponentMessage.setReplyMarkup(generateAttackerReplyMarkup(opponent));
+                sendEditMessageText(bot, opponentMessage);
             }
         }
     }
@@ -218,100 +332,157 @@ public class BattleCommander {
     }
 
     private void stopBattleOnDisconnection(DispatcherBot bot, Long chatId) {
-        Player player = playerService.findByChatId(chatId);
+        Player looser = playerService.findByChatId(chatId);
+        Player opponent;
         PlayerBattle battle = playerBattleService.findById(CHATS_TO_BATTLES.get(chatId));
-        if (Objects.equals(player.getId(), battle.getFirstPlayer().getId())) {
+        if (Objects.equals(looser.getId(), battle.getFirstPlayer().getId())) {
             battle.setIsFirstPlayerWinner(false);
-
-            Player opponent = battle.getSecondPlayer();
-            player.setIsPlaying(false);
-            opponent.setIsPlaying(false);
-
-            playerService.save(player);
-            playerService.save(opponent);
-
-            CHATS_TO_BATTLES.remove(chatId);
-            CHATS_TO_BATTLES.remove(opponent.getChatId());
-            CHATS_TO_MESSAGES.remove(chatId);
-            CHATS_TO_MESSAGES.remove(opponent.getChatId());
-            BATTLES_TO_ATTACKER_CHATS.remove(battle.getId());
-
-            sendMessage(bot, chatId, "You were disconnected");
-            sendMessage(bot, battle.getSecondPlayer().getChatId(), "Your opponent was disconnected");
-        }
-        if (Objects.equals(player.getId(), battle.getSecondPlayer().getId())) {
+            opponent = battle.getSecondPlayer();
+        } else {
             battle.setIsFirstPlayerWinner(true);
-
-            Player opponent = battle.getFirstPlayer();
-            player.setIsPlaying(false);
-            opponent.setIsPlaying(false);
-
-            playerService.save(player);
-            playerService.save(opponent);
-
-            CHATS_TO_BATTLES.remove(chatId);
-            CHATS_TO_BATTLES.remove(opponent.getChatId());
-            CHATS_TO_MESSAGES.remove(chatId);
-            CHATS_TO_MESSAGES.remove(opponent.getChatId());
-
-            sendMessage(bot, chatId, "You were disconnected");
-            sendMessage(bot, battle.getFirstPlayer().getChatId(), "Your opponent was disconnected");
+            opponent = battle.getFirstPlayer();
         }
+        looser.setIsPlaying(false);
+        opponent.setIsPlaying(false);
+
+        playerService.save(looser);
+        playerService.save(opponent);
         playerBattleService.save(battle);
+        battle = playerBattleService.findById(battle.getId());
+
+        CHATS_TO_BATTLES.remove(chatId);
+        CHATS_TO_BATTLES.remove(opponent.getChatId());
+        CHATS_TO_MESSAGES.remove(chatId);
+        CHATS_TO_MESSAGES.remove(opponent.getChatId());
+        BATTLES_TO_ATTACKER_CHATS.remove(battle.getId());
+
+        sendMessage(bot, chatId, "You were disconnected \uD83C\uDF10");
+        sendMessage(bot, battle.getSecondPlayer().getChatId(), "Your opponent was disconnected \uD83C\uDF10");
 
         calculateRanks(bot, battle);
+    }
+
+    private void stopBattleOnDefeat(DispatcherBot bot, Long chatId) {
+        Player winner = playerService.findByChatId(chatId);
+        Player opponent;
+        PlayerBattle battle = playerBattleService.findById(CHATS_TO_BATTLES.get(chatId));
+        if (Objects.equals(winner.getId(), battle.getFirstPlayer().getId())) {
+            battle.setIsFirstPlayerWinner(true);
+            opponent = battle.getSecondPlayer();
+        } else {
+            battle.setIsFirstPlayerWinner(false);
+            opponent = battle.getFirstPlayer();
+        }
+        winner.setIsPlaying(false);
+        opponent.setIsPlaying(false);
+
+        playerService.save(winner);
+        playerService.save(opponent);
+        playerBattleService.save(battle);
+        battle = playerBattleService.findById(battle.getId());
+
+        CHATS_TO_BATTLES.remove(chatId);
+        CHATS_TO_BATTLES.remove(opponent.getChatId());
+        CHATS_TO_MESSAGES.remove(chatId);
+        CHATS_TO_MESSAGES.remove(opponent.getChatId());
+        BATTLES_TO_ATTACKER_CHATS.remove(battle.getId());
+
+        sendMessage(bot, chatId,
+                "The game ends with your triumph, " + opponent.getUsername() + " was defeated \uD83C\uDF7E");
+        sendMessage(bot, opponent.getChatId(),
+                "Out here only the strong survive, you were defeated ⚰️");
+        calculateRanks(bot, battle);
+    }
+
+    private void stopBattleOnDraw(DispatcherBot bot, PlayerBattle battle) {
+        Player firstPlayer = battle.getFirstPlayer();
+        Player secondPlayer = battle.getSecondPlayer();
+
+        firstPlayer.setIsPlaying(false);
+        secondPlayer.setIsPlaying(false);
+
+        playerService.save(firstPlayer);
+        playerService.save(secondPlayer);
+        playerBattleService.save(battle);
+
+        CHATS_TO_BATTLES.remove(firstPlayer.getChatId());
+        CHATS_TO_BATTLES.remove(secondPlayer.getChatId());
+        CHATS_TO_MESSAGES.remove(firstPlayer.getChatId());
+        CHATS_TO_MESSAGES.remove(secondPlayer.getChatId());
+        BATTLES_TO_ATTACKER_CHATS.remove(battle.getId());
+
+        sendMessage(bot, firstPlayer.getChatId(),
+                """
+                        When our guard is down
+                        I think we'll both agree
+                        That violence breeds violence
+                        But in the end it has to be this way...
+                        You played draw 🕊""");
+        sendMessage(bot, secondPlayer.getChatId(),
+                """
+                        When our guard is down
+                        I think we'll both agree
+                        That violence breeds violence
+                        But in the end it has to be this way...
+                        You played draw 🕊""");
     }
 
     private void calculateRanks(DispatcherBot bot, PlayerBattle battle) {
         Player firstPlayer = battle.getFirstPlayer();
         Player secondPlayer = battle.getSecondPlayer();
 
-        Integer firstPlayerRank = firstPlayer.getRank();
-        Integer secondPlayerRank = secondPlayer.getRank();
+        int firstPlayerRank = firstPlayer.getRank() + 1;
+        int secondPlayerRank = secondPlayer.getRank() + 1;
 
         int difference = Math.abs(firstPlayerRank - secondPlayerRank);
-        Integer minimum = Math.toIntExact(Math.round(0.2 * difference)) + 5;
-        Integer maximum = Math.toIntExact(Math.round(0.4 * difference)) + 5;
 
         if (battle.getIsFirstPlayerWinner()) {
             if (firstPlayerRank > secondPlayerRank) {
-                firstPlayer.setRank(firstPlayerRank + minimum);
-                sendMessage(bot, firstPlayer.getChatId(), "You earned " + minimum + " points");
+                firstPlayer.setRank(firstPlayerRank + Math.round(difference * 5.0f / firstPlayerRank) + 5);
+                sendMessage(bot, firstPlayer.getChatId(),
+                        "You earned " + (Math.round(difference * 5.0f / firstPlayerRank) + 5) + " points \uD83C\uDF96");
 
-                secondPlayer.setRank(secondPlayerRank - maximum);
+                secondPlayer.setRank(secondPlayerRank - Math.round(difference * 3.0f / firstPlayerRank));
                 if (secondPlayer.getRank() < 0) {
                     secondPlayer.setRank(0);
                 }
-                sendMessage(bot, secondPlayer.getChatId(), "You lost " + maximum + " points");
+                sendMessage(bot, secondPlayer.getChatId(),
+                        "You lost " + Math.round(difference * 3.0f / firstPlayerRank) + " points \uD83C\uDFAD");
             } else {
-                firstPlayer.setRank(firstPlayerRank + maximum);
-                sendMessage(bot, firstPlayer.getChatId(), "You earned " + maximum + " points");
+                firstPlayer.setRank(firstPlayerRank + Math.round(difference * 10.0f / secondPlayerRank) + 5);
+                sendMessage(bot, firstPlayer.getChatId(),
+                        "You earned " + (Math.round(difference * 10.0f / secondPlayerRank) + 5) + " points \uD83C\uDF96");
 
-                secondPlayer.setRank(secondPlayerRank - minimum);
+                secondPlayer.setRank(secondPlayerRank - Math.round(difference * 6.0f / secondPlayerRank));
                 if (secondPlayer.getRank() < 0) {
                     secondPlayer.setRank(0);
                 }
-                sendMessage(bot, secondPlayer.getChatId(), "You lost " + minimum + " points");
+                sendMessage(bot, secondPlayer.getChatId(),
+                        "You lost " + Math.round(difference * 6.0f / secondPlayerRank) + " points \uD83C\uDFAD");
             }
         } else {
             if (secondPlayerRank > firstPlayerRank) {
-                secondPlayer.setRank(secondPlayerRank + minimum);
-                sendMessage(bot, secondPlayer.getChatId(), "You earned " + minimum + " points");
+                secondPlayer.setRank(secondPlayerRank + Math.round(difference * 5.0f / firstPlayerRank) + 5);
+                sendMessage(bot, secondPlayer.getChatId(),
+                        "You earned " + (Math.round(difference * 5.0f / firstPlayerRank) + 5) + " points \uD83C\uDF96");
 
-                firstPlayer.setRank(firstPlayerRank - maximum);
+                firstPlayer.setRank(firstPlayerRank - Math.round(difference * 3.0f / firstPlayerRank));
                 if (firstPlayer.getRank() < 0) {
                     firstPlayer.setRank(0);
                 }
-                sendMessage(bot, firstPlayer.getChatId(), "You lost " + maximum + " points");
+                sendMessage(bot, firstPlayer.getChatId(),
+                        "You lost " + Math.round(difference * 3.0f / firstPlayerRank) + " points \uD83C\uDFAD");
             } else {
-                secondPlayer.setRank(secondPlayerRank + maximum);
-                sendMessage(bot, secondPlayer.getChatId(), "You earned " + maximum + " points");
+                secondPlayer.setRank(secondPlayerRank + Math.round(difference * 10.0f / secondPlayerRank) + 5);
+                sendMessage(bot, secondPlayer.getChatId(),
+                        "You earned " + (Math.round(difference * 10.0f / secondPlayerRank) + 5) + " points \uD83C\uDF96");
 
-                firstPlayer.setRank(firstPlayerRank - minimum);
+                firstPlayer.setRank(firstPlayerRank - Math.round(difference * 6.0f / secondPlayerRank));
                 if (firstPlayer.getRank() < 0) {
                     firstPlayer.setRank(0);
                 }
-                sendMessage(bot, firstPlayer.getChatId(), "You lost " + minimum + " points");
+                sendMessage(bot, firstPlayer.getChatId(),
+                        "You lost " + Math.round(difference * 6.0f / secondPlayerRank) + " points \uD83C\uDFAD");
             }
         }
         playerService.save(firstPlayer);
@@ -328,7 +499,19 @@ public class BattleCommander {
         for (Egg egg : notCrackedInventory) {
             List<InlineKeyboardButton> eggRow = new ArrayList<>();
             InlineKeyboardButton eggButton = new InlineKeyboardButton();
-            eggButton.setText(egg.getName() + " (" + eggService.generateEggStatsInfo(egg) + ")");
+            StringBuilder stringInfo = new StringBuilder();
+            if (egg.getType() == EggType.HOLY) {
+                stringInfo.append("\uD83C\uDF1F");
+            } else if (egg.getType() == EggType.STRONG) {
+                stringInfo.append("⭐️");
+            } else {
+                stringInfo.append("✨");
+            }
+            stringInfo.append(egg.getName());
+            stringInfo.append(" (");
+            stringInfo.append(eggService.generateEggStatsInfo(egg));
+            stringInfo.append(")");
+            eggButton.setText(stringInfo.toString());
             eggButton.setCallbackData("BATTLE_EGG_" + egg.getId());
             eggRow.add(eggButton);
             keyboard.add(eggRow);
@@ -344,7 +527,7 @@ public class BattleCommander {
 
         List<InlineKeyboardButton> opponentRow = new ArrayList<>();
         InlineKeyboardButton opponentButton = new InlineKeyboardButton();
-        opponentButton.setText("You fight with " + opponentEgg.getName() + " egg of " + opponent.getUsername());
+        opponentButton.setText("You fight with " + opponentEgg.getName() + " egg of " + opponent.getUsername() + " ☠️");
         opponentButton.setCallbackData("IGNORE");
         opponentRow.add(opponentButton);
 
@@ -377,23 +560,23 @@ public class BattleCommander {
 
         List<InlineKeyboardButton> hardAttackRow = new ArrayList<>();
         InlineKeyboardButton hardAttackButton = new InlineKeyboardButton();
-        hardAttackButton.setText("Hard: " + Math.round(0.8 * egg.getPower())
-                                 + " damage (" + Math.round(0.6 * generateChanceOfAttack(egg, opponentEgg)) + "%)");
-        hardAttackButton.setCallbackData("BATTLE_ATTACK_HARD");
+        hardAttackButton.setText("Head (\uD83D\uDC80): " + Math.round(0.8f * egg.getPower() + 0.4f * egg.getEndurance())
+                                 + " damage (" + Math.round(0.5f * generateChanceOfAttack(egg, opponentEgg)) + "%)");
+        hardAttackButton.setCallbackData("BATTLE_ATTACK_HEAD");
         hardAttackRow.add(hardAttackButton);
 
         List<InlineKeyboardButton> mediumAttackRow = new ArrayList<>();
         InlineKeyboardButton mediumAttackButton = new InlineKeyboardButton();
-        mediumAttackButton.setText("Medium: " + Math.round(0.6 * egg.getPower())
-                                   + " damage (" + Math.round(0.8 * generateChanceOfAttack(egg, opponentEgg)) + "%)");
-        mediumAttackButton.setCallbackData("BATTLE_ATTACK_MEDIUM");
+        mediumAttackButton.setText("Side (\uD83D\uDC7B): " + Math.round(0.6f * egg.getPower() + 0.2f * egg.getEndurance())
+                                   + " damage (" + Math.round(0.9f * generateChanceOfAttack(egg, opponentEgg)) + "%)");
+        mediumAttackButton.setCallbackData("BATTLE_ATTACK_SIDE");
         mediumAttackRow.add(mediumAttackButton);
 
         List<InlineKeyboardButton> weakAttackRow = new ArrayList<>();
         InlineKeyboardButton weakAttackButton = new InlineKeyboardButton();
-        weakAttackButton.setText("Weak: " + Math.round(0.4 * egg.getPower())
-                                 + " damage (" + generateChanceOfAttack(egg, opponentEgg) + "%)");
-        weakAttackButton.setCallbackData("BATTLE_ATTACK_WEAK");
+        weakAttackButton.setText("Ass (\uD83D\uDCA9): " + Math.round(0.5f * egg.getPower())
+                                 + " damage (" + Math.round(1.2f * generateChanceOfAttack(egg, opponentEgg)) + "%)");
+        weakAttackButton.setCallbackData("BATTLE_ATTACK_ASS");
         weakAttackRow.add(weakAttackButton);
 
         keyboard.add(hardAttackRow);
