@@ -58,8 +58,8 @@ public class EggService {
     }
 
     @Transactional
-    public void deleteAllByOwner(Player owner) {
-        eggRepository.deleteAllByOwner(owner);
+    public void unbindAllByOwner(Player owner) {
+        eggRepository.unbindAllByOwner(owner);
     }
 
     public List<Egg> generateStartInventory(DispatcherBot bot, Player player) {
@@ -93,8 +93,8 @@ public class EggService {
     }
 
     private Egg generateWeakEgg() {
-        Integer endurance = random.nextInt(6) + 5;
-        Integer power = random.nextInt(3) + 3;
+        Integer endurance = random.nextInt(7) + 6;
+        Integer power = random.nextInt(4) + 3;
         Integer luck = random.nextInt(3) + 1;
         Integer intelligence = random.nextInt(4);
 
@@ -109,10 +109,10 @@ public class EggService {
     }
 
     private Egg generateStrongEgg() {
-        Integer endurance = random.nextInt(9) + 8;
+        Integer endurance = random.nextInt(10) + 8;
         Integer power = random.nextInt(5) + 4;
         Integer luck = random.nextInt(4) + 2;
-        Integer intelligence = random.nextInt(5) + 2;
+        Integer intelligence = random.nextInt(5) + 1;
 
         return Egg.builder()
                 .type(EggType.STRONG)
@@ -125,10 +125,10 @@ public class EggService {
     }
 
     private Egg generateHolyEgg() {
-        Integer endurance = random.nextInt(13) + 12;
-        Integer power = random.nextInt(7) + 6;
-        Integer luck = random.nextInt(6) + 4;
-        Integer intelligence = random.nextInt(7) + 3;
+        Integer endurance = random.nextInt(13) + 10;
+        Integer power = random.nextInt(6) + 5;
+        Integer luck = random.nextInt(5) + 3;
+        Integer intelligence = random.nextInt(6) + 2;
 
         return Egg.builder()
                 .type(EggType.HOLY)
@@ -167,14 +167,14 @@ public class EggService {
     public String generateEggStatsInfo(Egg egg) {
         StringBuilder eggStatsInfo = new StringBuilder();
         eggStatsInfo.append(egg.getEndurance());
-        if (egg.getEndurance() > 12) {
+        if (egg.getEndurance() > 15) {
             eggStatsInfo.append("🛡 ");
         } else {
             eggStatsInfo.append("❤️‍🩹 ");
         }
 
         eggStatsInfo.append(egg.getPower());
-        if (egg.getPower() > 6) {
+        if (egg.getPower() > 7) {
             eggStatsInfo.append("💣 ");
         } else {
             eggStatsInfo.append("💥 ");
