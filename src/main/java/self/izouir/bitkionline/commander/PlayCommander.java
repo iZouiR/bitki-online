@@ -25,16 +25,18 @@ import self.izouir.bitkionline.service.player.PlayerService;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static self.izouir.bitkionline.util.BotMessageSender.*;
 
 @Slf4j
 @Component
 public class PlayCommander {
-    private static final Queue<Player> AWAIT_MATCH_MAKING_PLAYERS_QUEUE = new ConcurrentLinkedQueue<>();
-    private static final Map<Player, Integer> AWAIT_MATCH_MAKING_PLAYERS = new ConcurrentHashMap<>();
-    private static final Map<Player, PrivateBattle> AWAIT_CONNECTION_PRIVATE_BATTLES = new ConcurrentHashMap<>();
-    private static final Map<Player, Integer> AWAIT_LINK_PLAYERS = new ConcurrentHashMap<>();
+    private static final ExecutorService EXECUTOR = Executors.newWorkStealingPool();
+    private static final Queue<Long> MATCH_MAKING_CHATS_QUEUE = new ConcurrentLinkedQueue<>();
+    private static final Map<Long, Integer> MATCH_MAKING_CHATS_TO_MESSAGES = new ConcurrentHashMap<>();
+    private static final Map<Long, Integer> PRIVATE_BATTLE_CHATS_TO_MESSAGES = new ConcurrentHashMap<>();
     private final PlayerBattleService playerBattleService;
     private final MatchMakingBattleService matchMakingBattleService;
     private final PrivateBattleService privateBattleService;
@@ -67,30 +69,34 @@ public class PlayCommander {
                 if (!player.getIsPlaying()) {
                     player.setIsPlaying(true);
                     playerService.save(player);
-                    try {
-                        if (!AWAIT_MATCH_MAKING_PLAYERS_QUEUE.isEmpty()) {
-                            Player opponent = AWAIT_MATCH_MAKING_PLAYERS_QUEUE.remove();
-                            if (!Objects.equals(player.getId(), opponent.getId())) {
-                                MatchMakingBattle matchMakingBattle = matchMakingBattleService.generateMatchMakingBattle(player, opponent);
-                                matchMakingBattleService.save(matchMakingBattle);
-                                Integer opponentMessageId = AWAIT_MATCH_MAKING_PLAYERS.remove(opponent);
-                                deleteMessage(bot, chatId, messageId);
-                                deleteMessage(bot, opponent.getChatId(), opponentMessageId);
-                                battleCommander.startMatchMakingBattle(bot, chatId, matchMakingBattle);
-                                battleCommander.startMatchMakingBattle(bot, opponent.getChatId(), matchMakingBattle);
-                                return;
-                            }
-                        }
-                    } catch (NoSuchElementException e) {
-                        log.error(e.getMessage());
+
+                    if (!MATCH_MAKING_CHATS_QUEUE.isEmpty() && !MATCH_MAKING_CHATS_QUEUE.contains(chatId)) {
+                        Player opponent = playerService.findByChatId(MATCH_MAKING_CHATS_QUEUE.poll());
+                        Integer opponentMessageId = MATCH_MAKING_CHATS_TO_MESSAGES.remove(opponent.getChatId());
+
+                        PlayerBattle battle = PlayerBattle.builder()
+                                .firstPlayer(player)
+                                .secondPlayer(opponent)
+                                .build();
+                        playerBattleService.save(battle);
+
+                        MatchMakingBattle matchMakingBattle = MatchMakingBattle.builder()
+                                .playerBattle(battle)
+                                .build();
+                        matchMakingBattleService.save(matchMakingBattle);
+
+                        deleteMessage(bot, chatId, messageId);
+                        deleteMessage(bot, opponent.getChatId(), opponentMessageId);
+
+                        EXECUTOR.execute(() -> battleCommander.startBattle(bot, chatId, battle));
+                        EXECUTOR.execute(() -> battleCommander.startBattle(bot, opponent.getChatId(), battle));
+                        return;
                     }
-                    if (AWAIT_MATCH_MAKING_PLAYERS_QUEUE.contains(player)) {
-                        Integer cancelMessageId = AWAIT_MATCH_MAKING_PLAYERS.remove(player);
-                        deleteMessage(bot, chatId, cancelMessageId);
-                    } else {
-                        AWAIT_MATCH_MAKING_PLAYERS_QUEUE.offer(player);
+
+                    if (!MATCH_MAKING_CHATS_QUEUE.contains(chatId)) {
+                        MATCH_MAKING_CHATS_QUEUE.offer(chatId);
+                        MATCH_MAKING_CHATS_TO_MESSAGES.put(chatId, messageId);
                     }
-                    AWAIT_MATCH_MAKING_PLAYERS.put(player, messageId);
                     EditMessageText message = EditMessageText.builder()
                             .chatId(String.valueOf(chatId))
                             .messageId(messageId)
@@ -98,18 +104,27 @@ public class PlayCommander {
                             .build();
                     message.setReplyMarkup(generatePlayMatchMakingReplyMarkup());
                     sendEditMessageText(bot, message);
-                    matchMakingBattleService.awaitConnection();
-                    if (AWAIT_MATCH_MAKING_PLAYERS_QUEUE.contains(player) || AWAIT_MATCH_MAKING_PLAYERS.containsKey(player)) {
-                        EditMessageText cancelMessageId = EditMessageText.builder()
-                                .chatId(String.valueOf(chatId))
-                                .messageId(messageId)
-                                .text("Opponent to play with wasn't found")
-                                .build();
-                        cancelMessageId.setReplyMarkup(generatePlayOpponentNotFoundReplyMarkup());
-                        sendEditMessageText(bot, cancelMessageId);
+
+                    try {
+                        int counter = 0;
+                        while (MATCH_MAKING_CHATS_QUEUE.contains(chatId) && MATCH_MAKING_CHATS_TO_MESSAGES.containsKey(chatId)) {
+                            Thread.sleep(1000);
+                            counter++;
+                            if (counter >= 120) {
+                                EditMessageText cancelMessage = EditMessageText.builder()
+                                        .chatId(String.valueOf(chatId))
+                                        .messageId(messageId)
+                                        .text("Opponent to play with wasn't found")
+                                        .build();
+                                cancelMessage.setReplyMarkup(generatePlayOpponentNotFoundReplyMarkup());
+                                sendEditMessageText(bot, cancelMessage);
+                                MATCH_MAKING_CHATS_QUEUE.remove(chatId);
+                                MATCH_MAKING_CHATS_TO_MESSAGES.remove(chatId);
+                            }
+                        }
+                    } catch (InterruptedException e) {
+                        log.error(e.getMessage());
                     }
-                    AWAIT_MATCH_MAKING_PLAYERS_QUEUE.remove(player);
-                    AWAIT_MATCH_MAKING_PLAYERS.remove(player);
                 } else {
                     sendEditMessageText(bot, chatId, messageId, "You're already playing, try again later");
                 }
@@ -118,8 +133,10 @@ public class PlayCommander {
                 Player player = playerService.findByChatId(chatId);
                 player.setIsPlaying(false);
                 playerService.save(player);
-                AWAIT_MATCH_MAKING_PLAYERS_QUEUE.remove(player);
-                AWAIT_MATCH_MAKING_PLAYERS.remove(player);
+
+                MATCH_MAKING_CHATS_QUEUE.remove(chatId);
+                MATCH_MAKING_CHATS_TO_MESSAGES.remove(chatId);
+
                 EditMessageText message = EditMessageText.builder()
                         .chatId(String.valueOf(chatId))
                         .messageId(messageId)
@@ -147,30 +164,47 @@ public class PlayCommander {
                 if (!player.getIsPlaying()) {
                     player.setIsPlaying(true);
                     playerService.save(player);
-                    PrivateBattle privateBattle = privateBattleService.generatePrivateBattle(player);
+
+                    PlayerBattle battle = PlayerBattle.builder()
+                            .firstPlayer(player)
+                            .build();
+                    playerBattleService.save(battle);
+
+                    PrivateBattle privateBattle = PrivateBattle.builder()
+                            .playerBattle(battle)
+                            .link(privateBattleService.generateLink())
+                            .build();
                     privateBattleService.save(privateBattle);
-                    AWAIT_CONNECTION_PRIVATE_BATTLES.put(player, privateBattle);
+
+                    PRIVATE_BATTLE_CHATS_TO_MESSAGES.put(chatId, messageId);
                     EditMessageText message = EditMessageText.builder()
                             .chatId(String.valueOf(chatId))
                             .messageId(messageId)
-                            .text("Tell the opponent this link - " + privateBattle.getLink() +
-                                  "\nIt will be alive for 120 seconds")
+                            .text("Tell the opponent this link - " + privateBattle.getLink() + "\n" +
+                                  "It will be alive for 120 seconds")
                             .build();
                     message.setReplyMarkup(generatePlayPrivateBattleCreateGameReplyMarkup());
                     sendEditMessageText(bot, message);
-                    if (!privateBattleService.awaitConnection(privateBattle)) {
-                        AWAIT_CONNECTION_PRIVATE_BATTLES.remove(player);
-                        EditMessageText cancelMessageId = EditMessageText.builder()
-                                .chatId(String.valueOf(chatId))
-                                .messageId(messageId)
-                                .text("Opponent to play with wasn't found")
-                                .build();
-                        cancelMessageId.setReplyMarkup(generatePlayOpponentNotFoundReplyMarkup());
-                        sendEditMessageText(bot, cancelMessageId);
-                        return;
+
+                    try {
+                        int counter = 0;
+                        while (PRIVATE_BATTLE_CHATS_TO_MESSAGES.containsKey(chatId)) {
+                            Thread.sleep(1000);
+                            counter++;
+                            if (counter >= 120) {
+                                EditMessageText cancelMessage = EditMessageText.builder()
+                                        .chatId(String.valueOf(chatId))
+                                        .messageId(messageId)
+                                        .text("Opponent to play with wasn't found")
+                                        .build();
+                                cancelMessage.setReplyMarkup(generatePlayOpponentNotFoundReplyMarkup());
+                                sendEditMessageText(bot, cancelMessage);
+                                PRIVATE_BATTLE_CHATS_TO_MESSAGES.remove(chatId);
+                            }
+                        }
+                    } catch (InterruptedException e) {
+                        log.error(e.getMessage());
                     }
-                    deleteMessage(bot, chatId, messageId);
-                    battleCommander.startPrivateBattle(bot, chatId, privateBattle);
                 } else {
                     sendEditMessageText(bot, chatId, messageId, "You're already playing, try again later");
                 }
@@ -179,9 +213,9 @@ public class PlayCommander {
                 Player player = playerService.findByChatId(chatId);
                 player.setIsPlaying(false);
                 playerService.save(player);
-                if (AWAIT_CONNECTION_PRIVATE_BATTLES.containsKey(player)) {
-                    privateBattleService.delete(AWAIT_CONNECTION_PRIVATE_BATTLES.remove(player));
-                }
+
+                PRIVATE_BATTLE_CHATS_TO_MESSAGES.remove(chatId);
+
                 EditMessageText message = EditMessageText.builder()
                         .chatId(String.valueOf(chatId))
                         .messageId(messageId)
@@ -195,10 +229,11 @@ public class PlayCommander {
                 if (!player.getIsPlaying()) {
                     player.setIsPlaying(true);
                     playerService.save(player);
+
                     PlayerBot playerBot = playerBotService.findByPlayerId(player.getId());
-                    playerBot.setLastBotState(BotState.AWAIT_LINK);
+                    playerBot.setLastBotState(BotState.AWAIT_PRIVATE_BATTLE_LINK);
                     playerBotService.save(playerBot);
-                    AWAIT_LINK_PLAYERS.put(player, messageId);
+
                     EditMessageText message = EditMessageText.builder()
                             .chatId(String.valueOf(chatId))
                             .messageId(messageId)
@@ -206,19 +241,6 @@ public class PlayCommander {
                             .build();
                     message.setReplyMarkup(generatePlayPrivateBattleJoinGameReplyMarkup());
                     sendEditMessageText(bot, message);
-                    privateBattleService.awaitConnection();
-                    if (AWAIT_LINK_PLAYERS.containsKey(player)) {
-                        AWAIT_LINK_PLAYERS.remove(player);
-                        player.setIsPlaying(false);
-                        playerService.save(player);
-                        EditMessageText cancelMessageId = EditMessageText.builder()
-                                .chatId(String.valueOf(chatId))
-                                .messageId(messageId)
-                                .text("Opponent to play with wasn't found")
-                                .build();
-                        cancelMessageId.setReplyMarkup(generatePlayOpponentNotFoundReplyMarkup());
-                        sendEditMessageText(bot, cancelMessageId);
-                    }
                 } else {
                     sendEditMessageText(bot, chatId, messageId, "You're already playing, try again later");
                 }
@@ -227,10 +249,11 @@ public class PlayCommander {
                 Player player = playerService.findByChatId(chatId);
                 player.setIsPlaying(false);
                 playerService.save(player);
+
                 PlayerBot playerBot = playerBotService.findByPlayerId(player.getId());
                 playerBot.setLastBotState(null);
                 playerBotService.save(playerBot);
-                AWAIT_LINK_PLAYERS.remove(player);
+
                 EditMessageText message = EditMessageText.builder()
                         .chatId(String.valueOf(chatId))
                         .messageId(messageId)
@@ -243,6 +266,7 @@ public class PlayCommander {
                 Player player = playerService.findByChatId(chatId);
                 player.setIsPlaying(false);
                 playerService.save(player);
+
                 EditMessageText message = EditMessageText.builder()
                         .chatId(String.valueOf(chatId))
                         .messageId(messageId)
@@ -253,16 +277,16 @@ public class PlayCommander {
             }
             case "PLAY_CLOSE" -> deleteMessage(bot, chatId, messageId);
         }
+
     }
 
     public void play(DispatcherBot bot, Long chatId) {
         if (playerService.existsByChatId(chatId)) {
             Player player = playerService.findByChatId(chatId);
             if (player.getRegisteredAt() != null) {
-                List<Egg> notCrackedInventory = eggService.findAllByOwnerWhereIsNotCracked(player);
-                System.out.println(notCrackedInventory.size());
-                if (!notCrackedInventory.isEmpty()) {
-                    if (!player.getIsPlaying()) {
+                if (!player.getIsPlaying()) {
+                    List<Egg> notCrackedInventory = eggService.findAllByOwnerWhereIsNotCracked(player);
+                    if (!notCrackedInventory.isEmpty()) {
                         SendMessage message = SendMessage.builder()
                                 .chatId(String.valueOf(chatId))
                                 .text("Choose the way to play")
@@ -270,10 +294,10 @@ public class PlayCommander {
                         message.setReplyMarkup(generatePlayReplyMarkup());
                         sendMessage(bot, message);
                     } else {
-                        sendMessage(bot, chatId, "You're already playing, try later");
+                        sendMessage(bot, chatId, "You don't have eggs to play, try refreshing them");
                     }
                 } else {
-                    sendMessage(bot, chatId, "You don't have eggs to play, try refreshing them");
+                    sendMessage(bot, chatId, "You're already playing, try later");
                 }
             } else {
                 sendMessage(bot, chatId, "Finish registration before continuing");
@@ -287,19 +311,24 @@ public class PlayCommander {
         if (playerService.existsByChatId(chatId)) {
             Player player = playerService.findByChatId(chatId);
             PlayerBot playerBot = playerBotService.findByPlayerId(player.getId());
-            if (playerBot.getLastBotState() == BotState.AWAIT_LINK) {
+            if (playerBot.getLastBotState() == BotState.AWAIT_PRIVATE_BATTLE_LINK) {
                 if (privateBattleService.existsByLink(link)) {
                     PrivateBattle privateBattle = privateBattleService.findByLink(link);
                     PlayerBattle battle = privateBattle.getPlayerBattle();
                     if (battle.getSecondPlayer() == null) {
                         battle.setSecondPlayer(player);
                         playerBattleService.save(battle);
+
                         playerBot.setLastBotState(null);
                         playerBotService.save(playerBot);
-                        Integer messageId = AWAIT_LINK_PLAYERS.get(player);
-                        deleteMessage(bot, chatId, messageId);
-                        AWAIT_LINK_PLAYERS.remove(player);
-                        battleCommander.startPrivateBattle(bot, chatId, privateBattle);
+
+                        Player opponent = battle.getFirstPlayer();
+                        Integer opponentMessageId = PRIVATE_BATTLE_CHATS_TO_MESSAGES.remove(opponent.getChatId());
+
+                        deleteMessage(bot, chatId, opponentMessageId);
+
+                        EXECUTOR.execute(() -> battleCommander.startBattle(bot, chatId, battle));
+                        EXECUTOR.execute(() -> battleCommander.startBattle(bot, opponent.getChatId(), battle));
                     } else {
                         sendMessage(bot, chatId, "Private battle with link " + link + " is unavailable");
                     }
