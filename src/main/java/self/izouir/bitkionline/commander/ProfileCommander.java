@@ -10,8 +10,6 @@ import self.izouir.bitkionline.bot.DispatcherBot;
 import self.izouir.bitkionline.entity.player.BotState;
 import self.izouir.bitkionline.entity.player.Player;
 import self.izouir.bitkionline.entity.player.PlayerBot;
-import self.izouir.bitkionline.service.battle.MatchMakingBattleService;
-import self.izouir.bitkionline.service.battle.PrivateBattleService;
 import self.izouir.bitkionline.service.egg.EggService;
 import self.izouir.bitkionline.service.player.PlayerBotService;
 import self.izouir.bitkionline.service.player.PlayerService;
@@ -24,20 +22,14 @@ import static self.izouir.bitkionline.util.BotMessageSender.*;
 
 @Component
 public class ProfileCommander {
-    private final MatchMakingBattleService matchMakingBattleService;
-    private final PrivateBattleService privateBattleService;
     private final EggService eggService;
     private final PlayerService playerService;
     private final PlayerBotService playerBotService;
 
     @Autowired
-    public ProfileCommander(MatchMakingBattleService matchMakingBattleService,
-                            PrivateBattleService privateBattleService,
-                            EggService eggService,
+    public ProfileCommander(EggService eggService,
                             PlayerService playerService,
                             PlayerBotService playerBotService) {
-        this.matchMakingBattleService = matchMakingBattleService;
-        this.privateBattleService = privateBattleService;
         this.eggService = eggService;
         this.playerService = playerService;
         this.playerBotService = playerBotService;
@@ -82,7 +74,7 @@ public class ProfileCommander {
             }
             case "PROFILE_REFRESH_EGGS_YES" -> {
                 Player player = playerService.findByChatId(chatId);
-                eggService.deleteAllByOwner(player);
+                eggService.unbindAllByOwner(player);
                 sendEditMessageText(bot, chatId, messageId, "All your eggs were deleted and now will be refreshed");
                 eggService.generateStartInventory(bot, player);
             }
@@ -159,9 +151,7 @@ public class ProfileCommander {
     }
 
     private void dropProfile(Player player) {
-        eggService.deleteAllByOwner(player);
-        matchMakingBattleService.deleteAllByPlayer(player);
-        privateBattleService.deleteAllByPlayer(player);
+        eggService.unbindAllByOwner(player);
         playerBotService.deleteByPlayerId(player.getId());
         playerService.delete(player);
     }
