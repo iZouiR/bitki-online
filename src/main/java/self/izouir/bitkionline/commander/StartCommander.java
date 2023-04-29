@@ -14,12 +14,15 @@ import static self.izouir.bitkionline.util.BotMessageSender.sendMessage;
 
 @Component
 public class StartCommander {
+    private final HelpCommander helpCommander;
     private final PlayerService playerService;
     private final PlayerBotService playerBotService;
 
     @Autowired
-    public StartCommander(PlayerService playerService,
+    public StartCommander(HelpCommander helpCommander,
+                          PlayerService playerService,
                           PlayerBotService playerBotService) {
+        this.helpCommander = helpCommander;
         this.playerService = playerService;
         this.playerBotService = playerBotService;
     }
@@ -50,6 +53,7 @@ public class StartCommander {
                 if (playerService.notExistsByUsernameIgnoreCase(username)) {
                     playerService.registerPlayer(bot, player, username);
                     sendMessage(bot, chatId, String.format(PLAYER_REGISTERED_MESSAGE, username));
+                    helpCommander.help(bot, chatId);
                 } else {
                     sendMessage(bot, chatId, String.format(PLAYER_ALREADY_EXISTS_MESSAGE, username));
                 }
