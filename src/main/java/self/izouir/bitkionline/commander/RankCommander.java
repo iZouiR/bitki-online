@@ -12,8 +12,8 @@ import self.izouir.bitkionline.service.player.PlayerService;
 import java.util.ArrayList;
 import java.util.List;
 
-import static self.izouir.bitkionline.constants.ReplyMarkupConstants.CLOSE_TEXT;
-import static self.izouir.bitkionline.constants.ReplyMarkupConstants.REFRESH_TEXT;
+import static self.izouir.bitkionline.constants.ReplyMarkupConstants.CLOSE;
+import static self.izouir.bitkionline.constants.ReplyMarkupConstants.REFRESH;
 import static self.izouir.bitkionline.util.BotMessageSender.*;
 
 @Component
@@ -55,13 +55,13 @@ public class RankCommander {
 
         List<InlineKeyboardButton> refreshRow = new ArrayList<>();
         InlineKeyboardButton refreshButton = new InlineKeyboardButton();
-        refreshButton.setText(REFRESH_TEXT);
+        refreshButton.setText(REFRESH);
         refreshButton.setCallbackData("RANK_REFRESH");
         refreshRow.add(refreshButton);
 
         List<InlineKeyboardButton> closeRow = new ArrayList<>();
         InlineKeyboardButton closeButton = new InlineKeyboardButton();
-        closeButton.setText(CLOSE_TEXT);
+        closeButton.setText(CLOSE);
         closeButton.setCallbackData("RANK_CLOSE");
         closeRow.add(closeButton);
 
