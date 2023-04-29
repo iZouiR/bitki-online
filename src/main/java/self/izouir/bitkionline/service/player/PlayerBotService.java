@@ -3,18 +3,26 @@ package self.izouir.bitkionline.service.player;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import self.izouir.bitkionline.entity.egg.Egg;
+import self.izouir.bitkionline.entity.player.Player;
 import self.izouir.bitkionline.entity.player.PlayerBot;
+import self.izouir.bitkionline.entity.player.PlayerBotState;
 import self.izouir.bitkionline.exception.PlayerBotNotFoundException;
 import self.izouir.bitkionline.repository.player.PlayerBotRepository;
+import self.izouir.bitkionline.service.egg.EggService;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
 public class PlayerBotService {
+    private final EggService eggService;
     private final PlayerBotRepository playerBotRepository;
 
     @Autowired
-    public PlayerBotService(PlayerBotRepository playerBotRepository) {
+    public PlayerBotService(EggService eggService,
+                            PlayerBotRepository playerBotRepository) {
+        this.eggService = eggService;
         this.playerBotRepository = playerBotRepository;
     }
 
@@ -30,5 +38,22 @@ public class PlayerBotService {
     @Transactional
     public void deleteByPlayerId(Long playerId) {
         playerBotRepository.deleteByPlayerId(playerId);
+    }
+
+    public void createNotRegisteredPlayerBot(Player player) {
+        PlayerBot playerBot = PlayerBot.builder()
+                .playerId(player.getId())
+                .lastState(PlayerBotState.AWAIT_USERNAME)
+                .build();
+        save(playerBot);
+    }
+
+    public void registerPlayerBot(Player player) {
+        List<Egg> playerInventory = eggService.findAllByOwner(player);
+        PlayerBot playerBot = findByPlayerId(player.getId());
+        playerBot.setLastState(PlayerBotState.NO_STATE);
+        playerBot.setLastInventoryIndex(0);
+        playerBot.setLastInventorySize(playerInventory.size());
+        save(playerBot);
     }
 }
