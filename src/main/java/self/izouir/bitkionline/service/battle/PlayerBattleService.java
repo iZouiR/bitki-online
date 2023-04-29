@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import self.izouir.bitkionline.entity.battle.PlayerBattle;
+import self.izouir.bitkionline.entity.player.Player;
 import self.izouir.bitkionline.exception.PlayerBattleNotFoundException;
 import self.izouir.bitkionline.repository.battle.PlayerBattleRepository;
 
@@ -26,7 +27,34 @@ public class PlayerBattleService {
     }
 
     @Transactional
+    public void deleteById(Long id) {
+        playerBattleRepository.deleteById(id);
+    }
+
+    @Transactional
     public void deleteAllByPlayerId(Long playerId) {
         playerBattleRepository.deleteAllByFirstPlayer_IdOrSecondPlayer_Id(playerId, playerId);
+    }
+
+    public PlayerBattle create(Player player, Player opponent) {
+        PlayerBattle battle = PlayerBattle.builder()
+                .firstPlayer(player)
+                .secondPlayer(opponent)
+                .build();
+        save(battle);
+        return battle;
+    }
+
+    public PlayerBattle createByFirstPlayer(Player firstPlayer) {
+        PlayerBattle battle = PlayerBattle.builder()
+                .firstPlayer(firstPlayer)
+                .build();
+        save(battle);
+        return battle;
+    }
+
+    public void setSecondPlayer(PlayerBattle playerBattle, Player player) {
+        playerBattle.setSecondPlayer(player);
+        save(playerBattle);
     }
 }
