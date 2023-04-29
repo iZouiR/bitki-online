@@ -18,6 +18,9 @@ public class BotMessageSenderConstants {
     public static final String PROFILE_DROP_SUCCESS_MESSAGE = "Your profile was dropped successfully";
 
     public static final String OBTAINING_EGG_MESSAGE = "You obtained %s egg (%s)";
+    public static final String CRACKED_EGG_MESSAGE = "%s egg, cracked!";
+    public static final String NOT_CRACKED_EGG_MESSAGE = "%s egg, not cracked";
+    public static final String EMPTY_INVENTORY_MESSAGE = "You don't have any eggs";
 
     public static final String HELP_MESSAGE = """
             At beta you enter the game with 3 random eggs
