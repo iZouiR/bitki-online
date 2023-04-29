@@ -58,8 +58,8 @@ public class EggService {
     }
 
     @Transactional
-    public void unbindAllByOwner(Player owner) {
-        eggRepository.unbindAllByOwner(owner);
+    public void deleteAllByOwner(Player owner) {
+        eggRepository.deleteAllByOwner(owner);
     }
 
     public void generateStartInventory(DispatcherBot bot, Player player) {
