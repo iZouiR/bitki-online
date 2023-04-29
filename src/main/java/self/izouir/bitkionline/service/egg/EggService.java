@@ -17,19 +17,19 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static self.izouir.bitkionline.constants.BotMessageSenderConstants.OBTAINING_EGG_MESSAGE;
+import static self.izouir.bitkionline.constants.EggServiceConstants.*;
 import static self.izouir.bitkionline.util.BotMessageSender.sendMessage;
 import static self.izouir.bitkionline.util.BotMessageSender.sendSticker;
 
 @Slf4j
 @Service
 public class EggService {
-    private static final Path BASE_EGG_IMAGE_PATH = Path.of("src/main/resources/image/egg");
     private final EggRepository eggRepository;
     private final Random random;
 
@@ -62,86 +62,67 @@ public class EggService {
         eggRepository.unbindAllByOwner(owner);
     }
 
-    public List<Egg> generateStartInventory(DispatcherBot bot, Player player) {
-        List<Egg> inventory = new ArrayList<>();
-        for (int i = 0; i < 3; i++) {
+    public void generateStartInventory(DispatcherBot bot, Player player) {
+        for (int i = 0; i < START_INVENTORY_SIZE; i++) {
             Egg egg = generateEgg();
             egg.setOwner(player);
             save(egg);
-            inventory.add(egg);
-
             sendSticker(bot, player.getChatId(), Path.of(egg.getImagePath()));
-            sendMessage(bot, player.getChatId(), "You obtained " + egg.getType().toString().toLowerCase() + " egg (" + generateEggStatsInfo(egg) + ")");
+            sendMessage(bot, player.getChatId(), String.format(OBTAINING_EGG_MESSAGE, egg.getName(), generateStatsInfo(egg)));
         }
-        return inventory;
     }
 
     private Egg generateEgg() {
         Egg egg;
-        int chance = random.nextInt(100);
-        if (chance < 80) {
+        int chance = random.nextInt(EGG_GENERATION_CHANCE);
+        if (chance < WEAK_EGG_GENERATION_CHANCE) {
             egg = generateWeakEgg();
-        } else if (chance < 95) {
+        } else if (chance < WEAK_EGG_GENERATION_CHANCE + STRONG_EGG_GENERATION_CHANCE) {
             egg = generateStrongEgg();
         } else {
             egg = generateHolyEgg();
         }
         egg.setName(generateName(egg));
-        egg.setIsCracked(false);
+        egg.setIsCracked(NEW_EGG_IS_CRACKED);
         egg.setCreatedAt(Timestamp.from(Instant.now()));
         return egg;
     }
 
     private Egg generateWeakEgg() {
-        Integer endurance = random.nextInt(7) + 6;
-        Integer power = random.nextInt(4) + 3;
-        Integer luck = random.nextInt(3) + 1;
-        Integer intelligence = random.nextInt(4);
-
         return Egg.builder()
                 .type(EggType.WEAK)
-                .endurance(endurance)
-                .power(power)
-                .luck(luck)
-                .intelligence(intelligence)
+                .endurance(random.nextInt(WEAK_EGG_MINIMUM_ENDURANCE, WEAK_EGG_MAXIMUM_ENDURANCE + 1))
+                .power(random.nextInt(WEAK_EGG_MINIMUM_POWER, WEAK_EGG_MAXIMUM_POWER + 1))
+                .luck(random.nextInt(WEAK_EGG_MINIMUM_LUCK, WEAK_EGG_MAXIMUM_LUCK + 1))
+                .intelligence(random.nextInt(WEAK_EGG_MINIMUM_INTELLIGENCE, WEAK_EGG_MAXIMUM_INTELLIGENCE + 1))
                 .imagePath(generateImagePath(EggType.WEAK))
                 .build();
     }
 
     private Egg generateStrongEgg() {
-        Integer endurance = random.nextInt(10) + 8;
-        Integer power = random.nextInt(5) + 4;
-        Integer luck = random.nextInt(4) + 2;
-        Integer intelligence = random.nextInt(5) + 1;
-
         return Egg.builder()
                 .type(EggType.STRONG)
-                .endurance(endurance)
-                .power(power)
-                .luck(luck)
-                .intelligence(intelligence)
+                .endurance(random.nextInt(STRONG_EGG_MINIMUM_ENDURANCE, STRONG_EGG_MAXIMUM_ENDURANCE + 1))
+                .power(random.nextInt(STRONG_EGG_MINIMUM_POWER, STRONG_EGG_MAXIMUM_POWER + 1))
+                .luck(random.nextInt(STRONG_EGG_MINIMUM_LUCK, STRONG_EGG_MAXIMUM_LUCK + 1))
+                .intelligence(random.nextInt(STRONG_EGG_MINIMUM_INTELLIGENCE, STRONG_EGG_MAXIMUM_INTELLIGENCE + 1))
                 .imagePath(generateImagePath(EggType.STRONG))
                 .build();
     }
 
     private Egg generateHolyEgg() {
-        Integer endurance = random.nextInt(13) + 10;
-        Integer power = random.nextInt(6) + 5;
-        Integer luck = random.nextInt(5) + 3;
-        Integer intelligence = random.nextInt(6) + 2;
-
         return Egg.builder()
                 .type(EggType.HOLY)
-                .endurance(endurance)
-                .power(power)
-                .luck(luck)
-                .intelligence(intelligence)
+                .endurance(random.nextInt(HOLY_EGG_MINIMUM_ENDURANCE, HOLY_EGG_MAXIMUM_ENDURANCE + 1))
+                .power(random.nextInt(HOLY_EGG_MINIMUM_POWER, HOLY_EGG_MAXIMUM_POWER + 1))
+                .luck(random.nextInt(HOLY_EGG_MINIMUM_LUCK, HOLY_EGG_MAXIMUM_LUCK + 1))
+                .intelligence(random.nextInt(HOLY_EGG_MINIMUM_INTELLIGENCE, HOLY_EGG_MAXIMUM_INTELLIGENCE + 1))
                 .imagePath(generateImagePath(EggType.HOLY))
                 .build();
     }
 
     private String generateImagePath(EggType eggType) {
-        Path typedEggImagePath = Path.of(BASE_EGG_IMAGE_PATH.toString(), "/", eggType.toString().toLowerCase());
+        Path typedEggImagePath = Path.of(BASE_EGG_IMAGE_PATH, eggType.toString().toLowerCase());
         try (Stream<Path> eggImagePathStream = Files.list(typedEggImagePath)) {
             List<String> eggImagePaths = eggImagePathStream
                     .map(Path::toString)
@@ -157,42 +138,39 @@ public class EggService {
 
     private String generateName(Egg egg) {
         String name = egg.getImagePath();
-        name = name.replace(".png", "");
         for (EggType eggType : EggType.values()) {
-            name = name.replace("src\\main\\resources\\image\\egg\\" + eggType.toString().toLowerCase() + "\\", "");
+            name = name.replace(BASE_EGG_IMAGE_PATH + eggType.toString().toLowerCase() + "\\", "");
         }
+        name = name.replace(".png", "");
         return name;
     }
 
-    public String generateEggStatsInfo(Egg egg) {
-        StringBuilder eggStatsInfo = new StringBuilder();
-        eggStatsInfo.append(egg.getEndurance());
-        if (egg.getEndurance() > 15) {
-            eggStatsInfo.append("🛡 ");
+    public String generateStatsInfo(Egg egg) {
+        StringBuilder statsInfo = new StringBuilder();
+        statsInfo.append(egg.getEndurance());
+        if (egg.getEndurance() >= GREAT_ENDURANCE) {
+            statsInfo.append("🛡 ");
         } else {
-            eggStatsInfo.append("❤️‍🩹 ");
+            statsInfo.append("❤️‍🩹 ");
         }
-
-        eggStatsInfo.append(egg.getPower());
-        if (egg.getPower() > 7) {
-            eggStatsInfo.append("💣 ");
+        statsInfo.append(egg.getPower());
+        if (egg.getPower() >= GREAT_POWER) {
+            statsInfo.append("💣 ");
         } else {
-            eggStatsInfo.append("💥 ");
+            statsInfo.append("💥 ");
         }
-
-        eggStatsInfo.append(egg.getLuck());
-        if (egg.getLuck() > 5) {
-            eggStatsInfo.append("🍀 ");
+        statsInfo.append(egg.getLuck());
+        if (egg.getLuck() >= GREAT_LUCK) {
+            statsInfo.append("🍀 ");
         } else {
-            eggStatsInfo.append("☘️ ");
+            statsInfo.append("☘️ ");
         }
-
-        eggStatsInfo.append(egg.getIntelligence());
-        if (egg.getIntelligence() > 5) {
-            eggStatsInfo.append("🪬");
+        statsInfo.append(egg.getIntelligence());
+        if (egg.getIntelligence() >= GREAT_INTELLIGENCE) {
+            statsInfo.append("🪬");
         } else {
-            eggStatsInfo.append("🧿");
+            statsInfo.append("🧿");
         }
-        return eggStatsInfo.toString();
+        return statsInfo.toString();
     }
 }
