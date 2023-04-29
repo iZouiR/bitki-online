@@ -40,7 +40,7 @@ public class PlayerService {
         return playerRepository.findAllOrderedByRankDesc();
     }
 
-    public List<Player> findAllOrderedByRankDesc(Long limitCount) {
+    public List<Player> findAllOrderedByRankDesc(Integer limitCount) {
         return playerRepository.findAllOrderedByRankDesc(limitCount);
     }
 
@@ -80,5 +80,44 @@ public class PlayerService {
         save(player);
         eggService.generateStartInventory(bot, player);
         playerBotService.registerPlayerBot(player);
+    }
+
+    public String generateRankInfo(Long chatId) {
+        StringBuilder rankInfo = new StringBuilder();
+        rankInfo.append(generateLeadersRankInfo());
+        if (existsByChatId(chatId)) {
+            rankInfo.append(RANK_INFO_SEPARATOR);
+            rankInfo.append(generatePlayerRankInfo(findByChatId(chatId)));
+        }
+        return rankInfo.toString();
+    }
+
+    private String generateLeadersRankInfo() {
+        StringBuilder leadersRankInfo = new StringBuilder();
+        List<Player> leaders = findAllOrderedByRankDesc(LEADERS_COUNT);
+        if (!leaders.isEmpty()) {
+            for (int i = 0; i < leaders.size(); i++) {
+                if (i == 0) {
+                    leadersRankInfo.append("\uD83E\uDD47");
+                }
+                if (i == 1) {
+                    leadersRankInfo.append("\uD83E\uDD48");
+                }
+                if (i == 2) {
+                    leadersRankInfo.append("\uD83E\uDD49");
+                }
+                Player leader = leaders.get(i);
+                leadersRankInfo.append(String.format(LEADER_RANK_INFO, leader.getUsername(), leader.getRank()));
+            }
+        } else {
+            leadersRankInfo.append(EMPTY_RANK_INFO);
+        }
+        return leadersRankInfo.toString();
+    }
+
+    private String generatePlayerRankInfo(Player player) {
+        List<Player> allPlayers = findAllOrderedByRankDesc();
+        Long place = allPlayers.indexOf(player) + 1L;
+        return String.format(PLAYER_RANK_INFO, place, player.getRank());
     }
 }
