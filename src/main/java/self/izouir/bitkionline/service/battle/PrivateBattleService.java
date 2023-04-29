@@ -12,8 +12,8 @@ import self.izouir.bitkionline.repository.battle.PrivateBattleRepository;
 
 import java.util.Random;
 
-import static self.izouir.bitkionline.constants.PrivateBattleServiceConstants.LINK_ALPHABET;
-import static self.izouir.bitkionline.constants.PrivateBattleServiceConstants.LINK_LENGTH;
+import static self.izouir.bitkionline.util.constants.service.PrivateBattleServiceConstants.LINK_ALPHABET;
+import static self.izouir.bitkionline.util.constants.service.PrivateBattleServiceConstants.LINK_LENGTH;
 
 @Slf4j
 @Service

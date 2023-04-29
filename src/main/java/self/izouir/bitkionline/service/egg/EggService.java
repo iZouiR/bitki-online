@@ -22,10 +22,10 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static self.izouir.bitkionline.constants.BotMessageSenderConstants.OBTAINING_EGG_MESSAGE;
-import static self.izouir.bitkionline.constants.EggServiceConstants.*;
+import static self.izouir.bitkionline.util.constants.MessageConstants.OBTAINING_EGG_MESSAGE;
 import static self.izouir.bitkionline.util.BotMessageSender.sendMessage;
 import static self.izouir.bitkionline.util.BotMessageSender.sendSticker;
+import static self.izouir.bitkionline.util.constants.service.EggServiceConstants.*;
 
 @Slf4j
 @Service

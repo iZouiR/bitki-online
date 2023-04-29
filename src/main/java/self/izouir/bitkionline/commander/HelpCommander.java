@@ -9,8 +9,8 @@ import self.izouir.bitkionline.bot.DispatcherBot;
 import java.util.ArrayList;
 import java.util.List;
 
-import static self.izouir.bitkionline.constants.BotMessageSenderConstants.HELP_MESSAGE;
-import static self.izouir.bitkionline.constants.ReplyMarkupConstants.CLOSE;
+import static self.izouir.bitkionline.util.constants.ReplyMarkupConstants.CLOSE_BUTTON_TEXT;
+import static self.izouir.bitkionline.util.constants.commander.HelpCommanderMessageConstants.HELP_MESSAGE;
 import static self.izouir.bitkionline.util.BotMessageSender.deleteMessage;
 import static self.izouir.bitkionline.util.BotMessageSender.sendMessage;
 
@@ -37,7 +37,7 @@ public class HelpCommander {
 
         List<InlineKeyboardButton> closeRow = new ArrayList<>();
         InlineKeyboardButton closeButton = new InlineKeyboardButton();
-        closeButton.setText(CLOSE);
+        closeButton.setText(CLOSE_BUTTON_TEXT);
         closeButton.setCallbackData("HELP_CLOSE");
         closeRow.add(closeButton);
 

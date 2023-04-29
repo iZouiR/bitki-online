@@ -1,4 +1,4 @@
-package self.izouir.bitkionline.constants;
+package self.izouir.bitkionline.util.constants.service;
 
 import lombok.experimental.UtilityClass;
 

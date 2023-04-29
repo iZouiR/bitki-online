@@ -19,8 +19,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import static self.izouir.bitkionline.constants.BotMessageSenderConstants.*;
-import static self.izouir.bitkionline.constants.ReplyMarkupConstants.CLOSE;
+import static self.izouir.bitkionline.util.constants.MessageConstants.*;
+import static self.izouir.bitkionline.util.constants.ReplyMarkupConstants.CLOSE_BUTTON_TEXT;
 import static self.izouir.bitkionline.util.BotMessageSender.*;
 
 @Component
@@ -60,10 +60,10 @@ public class EggsCommander {
             if (player.getRegisteredAt() != null) {
                 sendInventory(bot, chatId);
             } else {
-                sendMessage(bot, chatId, PLAYER_NOT_REGISTERED_MESSAGE);
+                sendMessage(bot, chatId, PLAYER_DID_NOT_FINISH_REGISTRATION_MESSAGE);
             }
         } else {
-            sendMessage(bot, chatId, PLAYER_NOT_EXISTS_MESSAGE);
+            sendMessage(bot, chatId, PLAYER_NOT_REGISTERED_MESSAGE);
         }
     }
 
@@ -121,7 +121,7 @@ public class EggsCommander {
 
         List<InlineKeyboardButton> closeRow = new ArrayList<>();
         InlineKeyboardButton eggsCloseButton = new InlineKeyboardButton();
-        eggsCloseButton.setText(CLOSE);
+        eggsCloseButton.setText(CLOSE_BUTTON_TEXT);
         eggsCloseButton.setCallbackData("EGGS_CLOSE");
         closeRow.add(eggsCloseButton);
 

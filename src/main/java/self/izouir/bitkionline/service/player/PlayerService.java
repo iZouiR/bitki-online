@@ -19,7 +19,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
-import static self.izouir.bitkionline.constants.PlayerServiceConstants.*;
+import static self.izouir.bitkionline.util.constants.service.PlayerServiceConstants.*;
 
 @Service
 public class PlayerService {

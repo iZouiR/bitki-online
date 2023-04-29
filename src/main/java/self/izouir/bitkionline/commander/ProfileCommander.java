@@ -16,9 +16,10 @@ import self.izouir.bitkionline.service.player.PlayerService;
 import java.util.ArrayList;
 import java.util.List;
 
-import static self.izouir.bitkionline.constants.BotMessageSenderConstants.*;
-import static self.izouir.bitkionline.constants.ReplyMarkupConstants.*;
+import static self.izouir.bitkionline.util.constants.MessageConstants.*;
+import static self.izouir.bitkionline.util.constants.ReplyMarkupConstants.*;
 import static self.izouir.bitkionline.util.BotMessageSender.*;
+import static self.izouir.bitkionline.util.constants.commander.ProfileCommanderMessageConstants.*;
 
 @Component
 public class ProfileCommander {
@@ -87,10 +88,10 @@ public class ProfileCommander {
                 message.setReplyMarkup(generateReplyMarkup());
                 sendMessage(bot, message);
             } else {
-                sendMessage(bot, chatId, PLAYER_NOT_REGISTERED_MESSAGE);
+                sendMessage(bot, chatId, PLAYER_DID_NOT_FINISH_REGISTRATION_MESSAGE);
             }
         } else {
-            sendMessage(bot, chatId, PLAYER_NOT_EXISTS_MESSAGE);
+            sendMessage(bot, chatId, PLAYER_NOT_REGISTERED_MESSAGE);
         }
     }
 
@@ -123,11 +124,15 @@ public class ProfileCommander {
             Player player = playerService.findByChatId(chatId);
             PlayerBot playerBot = playerBotService.findByPlayerId(player.getId());
             if (playerBot.getLastState() == PlayerBotState.AWAIT_NEW_USERNAME) {
-                if (playerService.notExistsByUsernameIgnoreCase(username)) {
-                    playerService.changeUsername(player, username);
-                    sendMessage(bot, chatId, String.format(USERNAME_CHANGE_SUCCESS_MESSAGE, username));
+                if (playerService.isAccurateUsername(username)) {
+                    if (playerService.notExistsByUsernameIgnoreCase(username)) {
+                        playerService.changeUsername(player, username);
+                        sendMessage(bot, chatId, String.format(USERNAME_CHANGE_SUCCESS_MESSAGE, username));
+                    } else {
+                        sendMessage(bot, chatId, String.format(USERNAME_ALREADY_EXISTS_MESSAGE, username));
+                    }
                 } else {
-                    sendMessage(bot, chatId, String.format(PLAYER_ALREADY_EXISTS_MESSAGE, username));
+                    sendMessage(bot, chatId, INCORRECT_USERNAME_FORMAT_MESSAGE);
                 }
                 return true;
             }
@@ -141,25 +146,25 @@ public class ProfileCommander {
 
         List<InlineKeyboardButton> changeUsernameRow = new ArrayList<>();
         InlineKeyboardButton changeUsernameButton = new InlineKeyboardButton();
-        changeUsernameButton.setText("Change username");
+        changeUsernameButton.setText(CHANGE_USERNAME_BUTTON_TEXT);
         changeUsernameButton.setCallbackData("PROFILE_USERNAME_CHANGE");
         changeUsernameRow.add(changeUsernameButton);
 
         List<InlineKeyboardButton> refreshEggsRow = new ArrayList<>();
         InlineKeyboardButton refreshEggsButton = new InlineKeyboardButton();
-        refreshEggsButton.setText("Refresh eggs");
+        refreshEggsButton.setText(REFRESH_EGGS_BUTTON_TEXT);
         refreshEggsButton.setCallbackData("PROFILE_EGGS_REFRESH");
         refreshEggsRow.add(refreshEggsButton);
 
         List<InlineKeyboardButton> dropProfileRow = new ArrayList<>();
         InlineKeyboardButton dropProfileButton = new InlineKeyboardButton();
-        dropProfileButton.setText("Drop");
+        dropProfileButton.setText(DROP_PROFILE_BUTTON_TEXT);
         dropProfileButton.setCallbackData("PROFILE_DROP");
         dropProfileRow.add(dropProfileButton);
 
         List<InlineKeyboardButton> closeProfileRow = new ArrayList<>();
         InlineKeyboardButton closeProfileButton = new InlineKeyboardButton();
-        closeProfileButton.setText(CLOSE);
+        closeProfileButton.setText(CLOSE_BUTTON_TEXT);
         closeProfileButton.setCallbackData("PROFILE_CLOSE");
         closeProfileRow.add(closeProfileButton);
 
@@ -175,13 +180,13 @@ public class ProfileCommander {
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
-        List<InlineKeyboardButton> goBackRow = new ArrayList<>();
-        InlineKeyboardButton yesButton = new InlineKeyboardButton();
-        yesButton.setText(CANCEL);
-        yesButton.setCallbackData("PROFILE_USERNAME_CHANGE_CANCEL");
-        goBackRow.add(yesButton);
+        List<InlineKeyboardButton> cancelRow = new ArrayList<>();
+        InlineKeyboardButton cancelButton = new InlineKeyboardButton();
+        cancelButton.setText(CANCEL_BUTTON_TEXT);
+        cancelButton.setCallbackData("PROFILE_USERNAME_CHANGE_CANCEL");
+        cancelRow.add(cancelButton);
 
-        keyboard.add(goBackRow);
+        keyboard.add(cancelRow);
         markup.setKeyboard(keyboard);
         return markup;
     }
@@ -192,11 +197,11 @@ public class ProfileCommander {
 
         List<InlineKeyboardButton> confirmationRow = new ArrayList<>();
         InlineKeyboardButton yesButton = new InlineKeyboardButton();
-        yesButton.setText(YES);
+        yesButton.setText(YES_BUTTON_TEXT);
         yesButton.setCallbackData("PROFILE_EGGS_REFRESH_YES");
         confirmationRow.add(yesButton);
         InlineKeyboardButton noButton = new InlineKeyboardButton();
-        noButton.setText(NO);
+        noButton.setText(NO_BUTTON_TEXT);
         noButton.setCallbackData("PROFILE_EGGS_REFRESH_NO");
         confirmationRow.add(noButton);
 
@@ -211,11 +216,11 @@ public class ProfileCommander {
 
         List<InlineKeyboardButton> confirmationRow = new ArrayList<>();
         InlineKeyboardButton yesButton = new InlineKeyboardButton();
-        yesButton.setText(YES);
+        yesButton.setText(YES_BUTTON_TEXT);
         yesButton.setCallbackData("PROFILE_DROP_YES");
         confirmationRow.add(yesButton);
         InlineKeyboardButton noButton = new InlineKeyboardButton();
-        noButton.setText(NO);
+        noButton.setText(NO_BUTTON_TEXT);
         noButton.setCallbackData("PROFILE_DROP_NO");
         confirmationRow.add(noButton);
 
