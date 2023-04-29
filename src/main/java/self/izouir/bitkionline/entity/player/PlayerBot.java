@@ -23,8 +23,8 @@ public class PlayerBot {
     private Long playerId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "last_bot_state")
-    private BotState lastBotState;
+    @Column(name = "last_state")
+    private PlayerBotState lastState;
 
     @PositiveOrZero
     @Column(name = "last_inventory_index")
