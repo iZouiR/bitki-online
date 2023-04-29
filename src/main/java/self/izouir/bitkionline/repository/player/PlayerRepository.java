@@ -22,5 +22,5 @@ public interface PlayerRepository extends JpaRepository<Player, Long> {
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(value = "SELECT * FROM players ORDER BY rank DESC LIMIT :limitCount", nativeQuery = true)
-    List<Player> findAllOrderedByRankDesc(@Param("limitCount") Long limitCount);
+    List<Player> findAllOrderedByRankDesc(@Param("limitCount") Integer limitCount);
 }
