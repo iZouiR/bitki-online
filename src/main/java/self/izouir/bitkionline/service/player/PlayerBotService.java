@@ -62,4 +62,28 @@ public class PlayerBotService {
         playerBot.setLastInventorySize(playerInventory.size());
         save(playerBot);
     }
+
+    public void incrementLastInventoryIndex(Player player) {
+        List<Egg> playerInventory = eggService.findAllByOwner(player);
+        PlayerBot playerBot = findByPlayerId(player.getId());
+        Integer inventoryIndex = playerBot.getLastInventoryIndex();
+        inventoryIndex++;
+        if (inventoryIndex > playerInventory.size() - 1) {
+            inventoryIndex = 0;
+        }
+        playerBot.setLastInventoryIndex(inventoryIndex);
+        save(playerBot);
+    }
+
+    public void decrementLastInventoryIndex(Player player) {
+        List<Egg> playerInventory = eggService.findAllByOwner(player);
+        PlayerBot playerBot = findByPlayerId(player.getId());
+        Integer inventoryIndex = playerBot.getLastInventoryIndex();
+        inventoryIndex--;
+        if (inventoryIndex < 0) {
+            inventoryIndex = playerInventory.size() - 1;
+        }
+        playerBot.setLastInventoryIndex(inventoryIndex);
+        save(playerBot);
+    }
 }
