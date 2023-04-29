@@ -75,6 +75,12 @@ public class PlayerService {
         playerRepository.delete(player);
     }
 
+    public void setIsPlaying(Long chatId, boolean isPlaying) {
+        Player player = findByChatId(chatId);
+        player.setIsPlaying(isPlaying);
+        save(player);
+    }
+
     @Transactional
     public void createNotRegisteredPlayer(Long chatId) {
         Player player = Player.builder()
@@ -94,6 +100,18 @@ public class PlayerService {
         save(player);
         eggService.generateStartInventory(bot, player);
         playerBotService.registerPlayerBot(player);
+    }
+
+    public boolean isAccurateUsername(String username) {
+        if (username.length() >= MINIMUM_USERNAME_LENGTH && username.length() <= MAXIMUM_USERNAME_LENGTH) {
+            for (char c : username.toCharArray()) {
+                if (USERNAME_ALPHABET.indexOf(c) == -1) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     public String generateRankInfo(Long chatId) {
