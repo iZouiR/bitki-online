@@ -13,4 +13,9 @@ public class PlayerServiceConstants {
     public static final String PLAYER_RANK_INFO = "You are top-%d player with %d points";
     public static final String EMPTY_RANK_INFO = "There are no players at all, come back later";
     public static final String RANK_INFO_SEPARATOR = "--------------------------------------------------------------\n";
+
+    public static final String PLAYER_PROFILE_INFO = """
+            Username: %s
+            Rank: %d points
+            Registered: %s""";
 }
