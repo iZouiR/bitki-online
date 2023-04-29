@@ -9,4 +9,6 @@ import java.util.Optional;
 @Repository
 public interface PrivateBattleRepository extends JpaRepository<PrivateBattle, Long> {
     Optional<PrivateBattle> findByLink(String link);
+
+    void deleteAllByPlayerBattle_FirstPlayer_IdOrPlayerBattle_SecondPlayer_Id(Long firstPlayerId, Long secondPlayerId);
 }
