@@ -5,12 +5,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import self.izouir.bitkionline.bot.DispatcherBot;
 import self.izouir.bitkionline.entity.player.Player;
+import self.izouir.bitkionline.entity.player.PlayerBotState;
 import self.izouir.bitkionline.exception.PlayerNotFoundException;
 import self.izouir.bitkionline.repository.player.PlayerRepository;
+import self.izouir.bitkionline.service.battle.MatchMakingBattleService;
+import self.izouir.bitkionline.service.battle.PlayerBattleService;
+import self.izouir.bitkionline.service.battle.PrivateBattleService;
 import self.izouir.bitkionline.service.egg.EggService;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,14 +23,23 @@ import static self.izouir.bitkionline.constants.PlayerServiceConstants.*;
 
 @Service
 public class PlayerService {
+    private final MatchMakingBattleService matchMakingBattleService;
+    private final PlayerBattleService playerBattleService;
+    private final PrivateBattleService privateBattleService;
     private final EggService eggService;
     private final PlayerBotService playerBotService;
     private final PlayerRepository playerRepository;
 
     @Autowired
-    public PlayerService(EggService eggService,
+    public PlayerService(MatchMakingBattleService matchMakingBattleService,
+                         PlayerBattleService playerBattleService,
+                         PrivateBattleService privateBattleService,
+                         EggService eggService,
                          PlayerBotService playerBotService,
                          PlayerRepository playerRepository) {
+        this.matchMakingBattleService = matchMakingBattleService;
+        this.playerBattleService = playerBattleService;
+        this.privateBattleService = privateBattleService;
         this.eggService = eggService;
         this.playerBotService = playerBotService;
         this.playerRepository = playerRepository;
@@ -119,5 +133,36 @@ public class PlayerService {
         List<Player> allPlayers = findAllOrderedByRankDesc();
         Long place = allPlayers.indexOf(player) + 1L;
         return String.format(PLAYER_RANK_INFO, place, player.getRank());
+    }
+
+    public String generatePlayerProfileInfo(Player player) {
+        return String.format(PLAYER_PROFILE_INFO, player.getUsername(), player.getRank(),
+                player.getRegisteredAt().toLocalDateTime().format(DateTimeFormatter.ofPattern("dd.MM.yyyy [HH:mm]")));
+    }
+
+    @Transactional
+    public void changeUsername(Player player, String username) {
+        player.setUsername(username);
+        save(player);
+        playerBotService.setLastState(player, PlayerBotState.NO_STATE);
+    }
+
+    @Transactional
+    public void refreshEggs(DispatcherBot bot, Long chatId) {
+        Player player = findByChatId(chatId);
+        eggService.deleteAllByOwner(player);
+        eggService.generateStartInventory(bot, player);
+    }
+
+    @Transactional
+    public void dropPlayerProfile(Long chatId) {
+        Player player = findByChatId(chatId);
+        Long playerId = player.getId();
+        matchMakingBattleService.deleteAllByPlayerId(playerId);
+        privateBattleService.deleteAllByPlayerId(playerId);
+        playerBattleService.deleteAllByPlayerId(playerId);
+        eggService.deleteAllByOwner(player);
+        playerBotService.deleteByPlayerId(player.getId());
+        delete(player);
     }
 }
