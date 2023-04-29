@@ -1,5 +1,6 @@
 package self.izouir.bitkionline.service.battle;
 
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,5 +19,10 @@ public class MatchMakingBattleService {
 
     public void save(MatchMakingBattle matchMakingBattle) {
         matchMakingBattleRepository.save(matchMakingBattle);
+    }
+
+    @Transactional
+    public void deleteAllByPlayerId(Long playerId) {
+        matchMakingBattleRepository.deleteAllByPlayerBattle_FirstPlayer_IdOrPlayerBattle_SecondPlayer_Id(playerId, playerId);
     }
 }
