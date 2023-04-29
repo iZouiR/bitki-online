@@ -6,4 +6,5 @@ import self.izouir.bitkionline.entity.battle.PlayerBattle;
 
 @Repository
 public interface PlayerBattleRepository extends JpaRepository<PlayerBattle, Long> {
+    void deleteAllByFirstPlayer_IdOrSecondPlayer_Id(Long firstPlayerId, Long secondPlayerId);
 }
