@@ -1,5 +1,6 @@
 package self.izouir.bitkionline.service.battle;
 
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,10 +10,12 @@ import self.izouir.bitkionline.repository.battle.PrivateBattleRepository;
 
 import java.util.Random;
 
+import static self.izouir.bitkionline.constants.PrivateBattleServiceConstants.LINK_ALPHABET;
+import static self.izouir.bitkionline.constants.PrivateBattleServiceConstants.LINK_LENGTH;
+
 @Slf4j
 @Service
 public class PrivateBattleService {
-    private static final String LINK_ALPHABET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#_";
     private final PrivateBattleRepository privateBattleRepository;
     private final Random random;
 
@@ -35,14 +38,19 @@ public class PrivateBattleService {
         privateBattleRepository.save(privateBattle);
     }
 
+    @Transactional
+    public void deleteAllByPlayerId(Long playerId) {
+        privateBattleRepository.deleteAllByPlayerBattle_FirstPlayer_IdOrPlayerBattle_SecondPlayer_Id(playerId, playerId);
+    }
+
     public String generateLink() {
         StringBuilder link = new StringBuilder();
-        for (int i = 0; i < 12; i++) {
+        for (int i = 0; i < LINK_LENGTH; i++) {
             link.append(LINK_ALPHABET.toCharArray()[random.nextInt(LINK_ALPHABET.length())]);
         }
         while (existsByLink(link.toString())) {
             link = new StringBuilder();
-            for (int i = 0; i < 12; i++) {
+            for (int i = 0; i < LINK_LENGTH; i++) {
                 link.append(LINK_ALPHABET.toCharArray()[random.nextInt(LINK_ALPHABET.length())]);
             }
         }
