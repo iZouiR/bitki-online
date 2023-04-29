@@ -40,6 +40,12 @@ public class PlayerBotService {
         playerBotRepository.deleteByPlayerId(playerId);
     }
 
+    public void setLastState(Player player, PlayerBotState state) {
+        PlayerBot playerBot = findByPlayerId(player.getId());
+        playerBot.setLastState(state);
+        save(playerBot);
+    }
+
     public void createNotRegisteredPlayerBot(Player player) {
         PlayerBot playerBot = PlayerBot.builder()
                 .playerId(player.getId())
