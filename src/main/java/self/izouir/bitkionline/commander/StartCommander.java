@@ -11,7 +11,7 @@ import self.izouir.bitkionline.service.player.PlayerService;
 
 import static self.izouir.bitkionline.util.constants.MessageConstants.*;
 import static self.izouir.bitkionline.util.BotMessageSender.sendMessage;
-import static self.izouir.bitkionline.util.constants.commander.StartCommanderMessageConstants.*;
+import static self.izouir.bitkionline.util.constants.commander.StartCommanderConstants.*;
 
 @Component
 public class StartCommander {

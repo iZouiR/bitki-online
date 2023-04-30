@@ -6,7 +6,7 @@ import static self.izouir.bitkionline.util.constants.service.PlayerServiceConsta
 import static self.izouir.bitkionline.util.constants.service.PlayerServiceConstants.MINIMUM_USERNAME_LENGTH;
 
 @UtilityClass
-public class ProfileCommanderMessageConstants {
+public class ProfileCommanderConstants {
     public static final String AWAIT_NEW_USERNAME_MESSAGE = "Enter your new username, it must contains english/russian letters + digits + '_' and be between "
                                                             + MINIMUM_USERNAME_LENGTH + " and " + MAXIMUM_USERNAME_LENGTH + " characters in length";
     public static final String USERNAME_CHANGE_SUCCESS_MESSAGE = "Success, you were renamed to %s";
