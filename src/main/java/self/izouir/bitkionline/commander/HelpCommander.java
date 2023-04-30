@@ -9,10 +9,10 @@ import self.izouir.bitkionline.bot.DispatcherBot;
 import java.util.ArrayList;
 import java.util.List;
 
-import static self.izouir.bitkionline.util.constants.ReplyMarkupConstants.CLOSE_BUTTON_TEXT;
-import static self.izouir.bitkionline.util.constants.commander.HelpCommanderConstants.HELP_MESSAGE;
 import static self.izouir.bitkionline.util.BotMessageSender.deleteMessage;
 import static self.izouir.bitkionline.util.BotMessageSender.sendMessage;
+import static self.izouir.bitkionline.util.constants.ReplyMarkupConstants.CLOSE_BUTTON_TEXT;
+import static self.izouir.bitkionline.util.constants.commander.HelpCommanderConstants.HELP_MESSAGE;
 
 @Component
 public class HelpCommander {

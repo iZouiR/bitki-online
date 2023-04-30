@@ -12,9 +12,9 @@ import self.izouir.bitkionline.service.player.PlayerService;
 import java.util.ArrayList;
 import java.util.List;
 
+import static self.izouir.bitkionline.util.BotMessageSender.*;
 import static self.izouir.bitkionline.util.constants.ReplyMarkupConstants.CLOSE_BUTTON_TEXT;
 import static self.izouir.bitkionline.util.constants.ReplyMarkupConstants.REFRESH_BUTTON_TEXT;
-import static self.izouir.bitkionline.util.BotMessageSender.*;
 
 @Component
 public class RankCommander {

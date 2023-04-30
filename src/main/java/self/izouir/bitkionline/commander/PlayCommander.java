@@ -32,10 +32,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static self.izouir.bitkionline.util.BotMessageSender.*;
 import static self.izouir.bitkionline.util.constants.MessageConstants.*;
 import static self.izouir.bitkionline.util.constants.ReplyMarkupConstants.CANCEL_BUTTON_TEXT;
 import static self.izouir.bitkionline.util.constants.ReplyMarkupConstants.CLOSE_BUTTON_TEXT;
-import static self.izouir.bitkionline.util.BotMessageSender.*;
 import static self.izouir.bitkionline.util.constants.commander.PlayCommanderConstants.*;
 
 @Slf4j

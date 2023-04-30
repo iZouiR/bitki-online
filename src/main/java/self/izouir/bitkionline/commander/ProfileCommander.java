@@ -16,9 +16,9 @@ import self.izouir.bitkionline.service.player.PlayerService;
 import java.util.ArrayList;
 import java.util.List;
 
+import static self.izouir.bitkionline.util.BotMessageSender.*;
 import static self.izouir.bitkionline.util.constants.MessageConstants.*;
 import static self.izouir.bitkionline.util.constants.ReplyMarkupConstants.*;
-import static self.izouir.bitkionline.util.BotMessageSender.*;
 import static self.izouir.bitkionline.util.constants.commander.ProfileCommanderConstants.*;
 
 @Component
