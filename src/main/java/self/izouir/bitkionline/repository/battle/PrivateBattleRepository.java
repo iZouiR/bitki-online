@@ -3,6 +3,7 @@ package self.izouir.bitkionline.repository.battle;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import self.izouir.bitkionline.entity.battle.PrivateBattle;
+import self.izouir.bitkionline.entity.player.Player;
 
 import java.util.Optional;
 
@@ -10,5 +11,5 @@ import java.util.Optional;
 public interface PrivateBattleRepository extends JpaRepository<PrivateBattle, Long> {
     Optional<PrivateBattle> findByLink(String link);
 
-    void deleteAllByPlayerBattle_FirstPlayer_IdOrPlayerBattle_SecondPlayer_Id(Long firstPlayerId, Long secondPlayerId);
+    void deleteAllByPlayerBattle_FirstPlayerOrPlayerBattle_SecondPlayer(Player firstPlayer, Player secondPlayer);
 }
