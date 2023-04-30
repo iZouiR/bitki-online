@@ -56,8 +56,8 @@ public class PrivateBattleService {
     }
 
     @Transactional
-    public void deleteAllByPlayerId(Long playerId) {
-        privateBattleRepository.deleteAllByPlayerBattle_FirstPlayer_IdOrPlayerBattle_SecondPlayer_Id(playerId, playerId);
+    public void deleteAllByPlayer(Player player) {
+        privateBattleRepository.deleteAllByPlayerBattle_FirstPlayerOrPlayerBattle_SecondPlayer(player, player);
     }
 
     @Transactional

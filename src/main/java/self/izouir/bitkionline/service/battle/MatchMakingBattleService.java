@@ -27,8 +27,8 @@ public class MatchMakingBattleService {
     }
 
     @Transactional
-    public void deleteAllByPlayerId(Long playerId) {
-        matchMakingBattleRepository.deleteAllByPlayerBattle_FirstPlayer_IdOrPlayerBattle_SecondPlayer_Id(playerId, playerId);
+    public void deleteAllByPlayer(Player player) {
+        matchMakingBattleRepository.deleteAllByPlayerBattle_FirstPlayerOrPlayerBattle_SecondPlayer(player, player);
     }
 
     @Transactional

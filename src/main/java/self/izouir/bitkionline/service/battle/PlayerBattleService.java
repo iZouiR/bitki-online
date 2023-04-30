@@ -32,8 +32,8 @@ public class PlayerBattleService {
     }
 
     @Transactional
-    public void deleteAllByPlayerId(Long playerId) {
-        playerBattleRepository.deleteAllByFirstPlayer_IdOrSecondPlayer_Id(playerId, playerId);
+    public void deleteAllByPlayer(Player player) {
+        playerBattleRepository.deleteAllByFirstPlayerOrSecondPlayer(player, player);
     }
 
     public PlayerBattle create(Player player, Player opponent) {
