@@ -7,13 +7,14 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import self.izouir.bitkionline.bot.DispatcherBot;
-import self.izouir.bitkionline.entity.player.Player;
 import self.izouir.bitkionline.service.player.PlayerService;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static self.izouir.bitkionline.util.BotMessageSender.*;
+import static self.izouir.bitkionline.util.constants.ReplyMarkupConstants.CLOSE_BUTTON_TEXT;
+import static self.izouir.bitkionline.util.constants.ReplyMarkupConstants.REFRESH_BUTTON_TEXT;
 
 @Component
 public class RankCommander {
@@ -30,7 +31,7 @@ public class RankCommander {
                 EditMessageText message = EditMessageText.builder()
                         .chatId(String.valueOf(chatId))
                         .messageId(messageId)
-                        .text(generateRankInfo(chatId))
+                        .text(playerService.generateRankInfo(chatId))
                         .build();
                 message.setReplyMarkup(generateReplyMarkup());
                 sendEditMessageText(bot, message);
@@ -42,67 +43,10 @@ public class RankCommander {
     public void rank(DispatcherBot bot, Long chatId) {
         SendMessage message = SendMessage.builder()
                 .chatId(String.valueOf(chatId))
-                .text(generateRankInfo(chatId))
+                .text(playerService.generateRankInfo(chatId))
                 .build();
         message.setReplyMarkup(generateReplyMarkup());
         sendMessage(bot, message);
-    }
-
-    private String generateRankInfo(Long chatId) {
-        StringBuilder rankInfo = new StringBuilder();
-        rankInfo.append(generateTopPlayersRankInfo());
-        if (playerService.existsByChatId(chatId)) {
-            Player player = playerService.findByChatId(chatId);
-            rankInfo.append("--------------------------------------------------------------\n");
-            rankInfo.append(generatePlayerRankInfo(player));
-        }
-        return rankInfo.toString();
-    }
-
-    private String generateTopPlayersRankInfo() {
-        StringBuilder topPlayersRankInfo = new StringBuilder();
-        List<Player> topPlayers = playerService.findAllOrderedByRankDesc(10L);
-        if (!topPlayers.isEmpty()) {
-            for (int i = 0; i < topPlayers.size(); i++) {
-                if (i == 0) {
-                    topPlayersRankInfo.append("\uD83E\uDD47");
-                }
-                if (i == 1) {
-                    topPlayersRankInfo.append("\uD83E\uDD48");
-                }
-                if (i == 2) {
-                    topPlayersRankInfo.append("\uD83E\uDD49");
-                }
-                topPlayersRankInfo.append(topPlayers.get(i).getUsername());
-                topPlayersRankInfo.append(" - ");
-                topPlayersRankInfo.append(topPlayers.get(i).getRank());
-                topPlayersRankInfo.append(" \uD83C\uDF96\n");
-            }
-        } else {
-            topPlayersRankInfo.append("Looks like there are no players at all, come back later");
-        }
-        return topPlayersRankInfo.toString();
-    }
-
-    private String generatePlayerRankInfo(Player player) {
-        StringBuilder playerRankInfo = new StringBuilder();
-        List<Player> allPlayers = playerService.findAllOrderedByRankDesc();
-        Long place = allPlayers.indexOf(player) + 1L;
-        playerRankInfo.append("You are top-");
-        playerRankInfo.append(place);
-        if (place == 1) {
-            playerRankInfo.append(" (\uD83E\uDD47)");
-        }
-        if (place == 2) {
-            playerRankInfo.append(" (\uD83E\uDD48)");
-        }
-        if (place == 3) {
-            playerRankInfo.append(" (\uD83E\uDD49)");
-        }
-        playerRankInfo.append(" player with ");
-        playerRankInfo.append(player.getRank());
-        playerRankInfo.append(" points");
-        return playerRankInfo.toString();
     }
 
     private InlineKeyboardMarkup generateReplyMarkup() {
@@ -111,13 +55,13 @@ public class RankCommander {
 
         List<InlineKeyboardButton> refreshRow = new ArrayList<>();
         InlineKeyboardButton refreshButton = new InlineKeyboardButton();
-        refreshButton.setText("Refresh");
+        refreshButton.setText(REFRESH_BUTTON_TEXT);
         refreshButton.setCallbackData("RANK_REFRESH");
         refreshRow.add(refreshButton);
 
         List<InlineKeyboardButton> closeRow = new ArrayList<>();
         InlineKeyboardButton closeButton = new InlineKeyboardButton();
-        closeButton.setText("Close");
+        closeButton.setText(CLOSE_BUTTON_TEXT);
         closeButton.setCallbackData("RANK_CLOSE");
         closeRow.add(closeButton);
 

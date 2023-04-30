@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static self.izouir.bitkionline.util.BotMessageSender.*;
+import static self.izouir.bitkionline.util.constants.MessageConstants.*;
+import static self.izouir.bitkionline.util.constants.ReplyMarkupConstants.CLOSE_BUTTON_TEXT;
 
 @Component
 public class EggsCommander {
@@ -40,12 +42,12 @@ public class EggsCommander {
         switch (callbackData) {
             case "EGGS_SWITCH_FORWARD" -> {
                 deleteMessage(bot, chatId, messageId);
-                incrementInventoryIndex(chatId);
+                playerBotService.incrementLastInventoryIndex(playerService.findByChatId(chatId));
                 sendInventory(bot, chatId);
             }
             case "EGGS_SWITCH_BACKWARD" -> {
                 deleteMessage(bot, chatId, messageId);
-                decrementInventoryIndex(chatId);
+                playerBotService.decrementLastInventoryIndex(playerService.findByChatId(chatId));
                 sendInventory(bot, chatId);
             }
             case "EGGS_CLOSE" -> deleteMessage(bot, chatId, messageId);
@@ -58,60 +60,32 @@ public class EggsCommander {
             if (player.getRegisteredAt() != null) {
                 sendInventory(bot, chatId);
             } else {
-                sendMessage(bot, chatId, "Finish registration before continuing");
+                sendMessage(bot, chatId, PLAYER_DID_NOT_FINISH_REGISTRATION_MESSAGE);
             }
         } else {
-            sendMessage(bot, chatId, "You aren't authorized - /start");
+            sendMessage(bot, chatId, PLAYER_NOT_REGISTERED_MESSAGE);
         }
-    }
-
-    private void incrementInventoryIndex(Long chatId) {
-        Player player = playerService.findByChatId(chatId);
-        PlayerBot playerBot = playerBotService.findByPlayerId(player.getId());
-        List<Egg> inventory = eggService.findAllByOwner(player);
-
-        Integer inventoryIndex = playerBot.getLastInventoryIndex();
-        inventoryIndex++;
-        if (inventoryIndex > inventory.size() - 1) {
-            inventoryIndex = 0;
-        }
-        playerBot.setLastInventoryIndex(inventoryIndex);
-        playerBotService.save(playerBot);
-    }
-
-    private void decrementInventoryIndex(Long chatId) {
-        Player player = playerService.findByChatId(chatId);
-        PlayerBot playerBot = playerBotService.findByPlayerId(player.getId());
-        List<Egg> inventory = eggService.findAllByOwner(player);
-
-        Integer inventoryIndex = playerBot.getLastInventoryIndex();
-        inventoryIndex--;
-        if (inventoryIndex < 0) {
-            inventoryIndex = inventory.size() - 1;
-        }
-        playerBot.setLastInventoryIndex(inventoryIndex);
-        playerBotService.save(playerBot);
     }
 
     private void sendInventory(DispatcherBot bot, Long chatId) {
         Player player = playerService.findByChatId(chatId);
         PlayerBot playerBot = playerBotService.findByPlayerId(player.getId());
-        List<Egg> inventory = eggService.findAllByOwner(player);
-        if (inventory.size() != playerBot.getLastInventorySize()) {
+        List<Egg> playerInventory = eggService.findAllByOwner(player);
+        if (playerInventory.size() != playerBot.getLastInventorySize()) {
             playerBot.setLastInventoryIndex(0);
-            playerBot.setLastInventorySize(inventory.size());
+            playerBot.setLastInventorySize(playerInventory.size());
             playerBotService.save(playerBot);
         }
-        if (!inventory.isEmpty()) {
+        if (!playerInventory.isEmpty()) {
             Integer inventoryIndex = playerBot.getLastInventoryIndex();
             SendSticker sticker = SendSticker.builder()
                     .chatId(String.valueOf(chatId))
-                    .sticker(new InputFile(Path.of(inventory.get(inventoryIndex).getImagePath()).toFile()))
+                    .sticker(new InputFile(Path.of(playerInventory.get(inventoryIndex).getImagePath()).toFile()))
                     .build();
-            sticker.setReplyMarkup(generateReplyMarkup(inventory.get(inventoryIndex)));
+            sticker.setReplyMarkup(generateReplyMarkup(playerInventory.get(inventoryIndex)));
             sendSticker(bot, sticker);
         } else {
-            sendMessage(bot, chatId, "You don't have any eggs");
+            sendMessage(bot, chatId, EMPTY_INVENTORY_MESSAGE);
         }
     }
 
@@ -122,18 +96,16 @@ public class EggsCommander {
         List<InlineKeyboardButton> eggDescriptionRow = new ArrayList<>();
         InlineKeyboardButton eggDescriptionButton = new InlineKeyboardButton();
         if (egg.getIsCracked()) {
-            eggDescriptionButton.setText(egg.getName()
-                                         + " (" + egg.getType().toString().toLowerCase() + ")" + " egg, cracked!");
+            eggDescriptionButton.setText(String.format(CRACKED_EGG_MESSAGE, egg.getName()));
         } else {
-            eggDescriptionButton.setText(egg.getName()
-                                         + " (" + egg.getType().toString().toLowerCase() + ")" + " egg, not cracked");
+            eggDescriptionButton.setText(String.format(NOT_CRACKED_EGG_MESSAGE, egg.getName()));
         }
         eggDescriptionButton.setCallbackData("IGNORE");
         eggDescriptionRow.add(eggDescriptionButton);
 
         List<InlineKeyboardButton> eggStatsRow = new ArrayList<>();
         InlineKeyboardButton eggStatsButton = new InlineKeyboardButton();
-        eggStatsButton.setText(eggService.generateEggStatsInfo(egg));
+        eggStatsButton.setText(eggService.generateStatsInfo(egg));
         eggStatsButton.setCallbackData("IGNORE");
         eggStatsRow.add(eggStatsButton);
 
@@ -149,7 +121,7 @@ public class EggsCommander {
 
         List<InlineKeyboardButton> closeRow = new ArrayList<>();
         InlineKeyboardButton eggsCloseButton = new InlineKeyboardButton();
-        eggsCloseButton.setText("Close");
+        eggsCloseButton.setText(CLOSE_BUTTON_TEXT);
         eggsCloseButton.setCallbackData("EGGS_CLOSE");
         closeRow.add(eggsCloseButton);
 

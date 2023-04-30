@@ -4,6 +4,8 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import self.izouir.bitkionline.entity.battle.PlayerBattle;
+import self.izouir.bitkionline.entity.egg.Egg;
+import self.izouir.bitkionline.entity.player.Player;
 import self.izouir.bitkionline.exception.PlayerBattleNotFoundException;
 import self.izouir.bitkionline.repository.battle.PlayerBattleRepository;
 
@@ -26,7 +28,49 @@ public class PlayerBattleService {
     }
 
     @Transactional
-    public void delete(PlayerBattle playerBattle) {
-        playerBattleRepository.delete(playerBattle);
+    public void deleteById(Long id) {
+        playerBattleRepository.deleteById(id);
+    }
+
+    @Transactional
+    public void deleteAllByPlayer(Player player) {
+        playerBattleRepository.deleteAllByFirstPlayerOrSecondPlayer(player, player);
+    }
+
+    public PlayerBattle create(Player player, Player opponent) {
+        PlayerBattle battle = PlayerBattle.builder()
+                .firstPlayer(player)
+                .secondPlayer(opponent)
+                .build();
+        save(battle);
+        return battle;
+    }
+
+    public PlayerBattle createByFirstPlayer(Player firstPlayer) {
+        PlayerBattle battle = PlayerBattle.builder()
+                .firstPlayer(firstPlayer)
+                .build();
+        save(battle);
+        return battle;
+    }
+
+    public void setSecondPlayer(PlayerBattle playerBattle, Player player) {
+        playerBattle.setSecondPlayer(player);
+        save(playerBattle);
+    }
+
+    public void setFirstPlayerEgg(PlayerBattle playerBattle, Egg egg) {
+        playerBattle.setFirstPlayerEgg(egg);
+        save(playerBattle);
+    }
+
+    public void setSecondPlayerEgg(PlayerBattle playerBattle, Egg egg) {
+        playerBattle.setSecondPlayerEgg(egg);
+        save(playerBattle);
+    }
+
+    public void setIsFirstPlayerWinner(PlayerBattle playerBattle, Boolean isFirstPlayerWinner) {
+        playerBattle.setIsFirstPlayerWinner(isFirstPlayerWinner);
+        save(playerBattle);
     }
 }

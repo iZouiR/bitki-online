@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import self.izouir.bitkionline.bot.DispatcherBot;
 import self.izouir.bitkionline.entity.egg.Egg;
+import self.izouir.bitkionline.entity.egg.EggAttackType;
 import self.izouir.bitkionline.entity.egg.EggType;
 import self.izouir.bitkionline.entity.player.Player;
 import self.izouir.bitkionline.exception.EggNotFoundException;
@@ -17,7 +18,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -25,11 +25,12 @@ import java.util.stream.Stream;
 
 import static self.izouir.bitkionline.util.BotMessageSender.sendMessage;
 import static self.izouir.bitkionline.util.BotMessageSender.sendSticker;
+import static self.izouir.bitkionline.util.constants.MessageConstants.OBTAINING_EGG_MESSAGE;
+import static self.izouir.bitkionline.util.constants.service.EggServiceConstants.*;
 
 @Slf4j
 @Service
 public class EggService {
-    private static final Path BASE_EGG_IMAGE_PATH = Path.of("src/main/resources/image/egg");
     private final EggRepository eggRepository;
     private final Random random;
 
@@ -58,90 +59,76 @@ public class EggService {
     }
 
     @Transactional
+    public void deleteAllByOwner(Player owner) {
+        eggRepository.deleteAllByOwner(owner);
+    }
+
+    @Transactional
     public void unbindAllByOwner(Player owner) {
         eggRepository.unbindAllByOwner(owner);
     }
 
-    public List<Egg> generateStartInventory(DispatcherBot bot, Player player) {
-        List<Egg> inventory = new ArrayList<>();
-        for (int i = 0; i < 3; i++) {
+    public void generateStartInventory(DispatcherBot bot, Player player) {
+        for (int i = 0; i < START_INVENTORY_SIZE; i++) {
             Egg egg = generateEgg();
             egg.setOwner(player);
             save(egg);
-            inventory.add(egg);
-
             sendSticker(bot, player.getChatId(), Path.of(egg.getImagePath()));
-            sendMessage(bot, player.getChatId(), "You obtained " + egg.getType().toString().toLowerCase() + " egg (" + generateEggStatsInfo(egg) + ")");
+            sendMessage(bot, player.getChatId(), String.format(OBTAINING_EGG_MESSAGE, egg.getName(), generateStatsInfo(egg)));
         }
-        return inventory;
     }
 
     private Egg generateEgg() {
         Egg egg;
         int chance = random.nextInt(100);
-        if (chance < 80) {
+        if (chance < WEAK_EGG_GENERATION_CHANCE) {
             egg = generateWeakEgg();
-        } else if (chance < 95) {
+        } else if (chance < WEAK_EGG_GENERATION_CHANCE + STRONG_EGG_GENERATION_CHANCE) {
             egg = generateStrongEgg();
         } else {
             egg = generateHolyEgg();
         }
         egg.setName(generateName(egg));
-        egg.setIsCracked(false);
+        egg.setIsCracked(NEW_EGG_IS_CRACKED);
         egg.setCreatedAt(Timestamp.from(Instant.now()));
         return egg;
     }
 
     private Egg generateWeakEgg() {
-        Integer endurance = random.nextInt(7) + 6;
-        Integer power = random.nextInt(4) + 3;
-        Integer luck = random.nextInt(3) + 1;
-        Integer intelligence = random.nextInt(4);
-
         return Egg.builder()
                 .type(EggType.WEAK)
-                .endurance(endurance)
-                .power(power)
-                .luck(luck)
-                .intelligence(intelligence)
+                .endurance(random.nextInt(WEAK_EGG_MINIMUM_ENDURANCE, WEAK_EGG_MAXIMUM_ENDURANCE + 1))
+                .power(random.nextInt(WEAK_EGG_MINIMUM_POWER, WEAK_EGG_MAXIMUM_POWER + 1))
+                .luck(random.nextInt(WEAK_EGG_MINIMUM_LUCK, WEAK_EGG_MAXIMUM_LUCK + 1))
+                .intelligence(random.nextInt(WEAK_EGG_MINIMUM_INTELLIGENCE, WEAK_EGG_MAXIMUM_INTELLIGENCE + 1))
                 .imagePath(generateImagePath(EggType.WEAK))
                 .build();
     }
 
     private Egg generateStrongEgg() {
-        Integer endurance = random.nextInt(10) + 8;
-        Integer power = random.nextInt(5) + 4;
-        Integer luck = random.nextInt(4) + 2;
-        Integer intelligence = random.nextInt(5) + 1;
-
         return Egg.builder()
                 .type(EggType.STRONG)
-                .endurance(endurance)
-                .power(power)
-                .luck(luck)
-                .intelligence(intelligence)
+                .endurance(random.nextInt(STRONG_EGG_MINIMUM_ENDURANCE, STRONG_EGG_MAXIMUM_ENDURANCE + 1))
+                .power(random.nextInt(STRONG_EGG_MINIMUM_POWER, STRONG_EGG_MAXIMUM_POWER + 1))
+                .luck(random.nextInt(STRONG_EGG_MINIMUM_LUCK, STRONG_EGG_MAXIMUM_LUCK + 1))
+                .intelligence(random.nextInt(STRONG_EGG_MINIMUM_INTELLIGENCE, STRONG_EGG_MAXIMUM_INTELLIGENCE + 1))
                 .imagePath(generateImagePath(EggType.STRONG))
                 .build();
     }
 
     private Egg generateHolyEgg() {
-        Integer endurance = random.nextInt(13) + 10;
-        Integer power = random.nextInt(6) + 5;
-        Integer luck = random.nextInt(5) + 3;
-        Integer intelligence = random.nextInt(6) + 2;
-
         return Egg.builder()
                 .type(EggType.HOLY)
-                .endurance(endurance)
-                .power(power)
-                .luck(luck)
-                .intelligence(intelligence)
+                .endurance(random.nextInt(HOLY_EGG_MINIMUM_ENDURANCE, HOLY_EGG_MAXIMUM_ENDURANCE + 1))
+                .power(random.nextInt(HOLY_EGG_MINIMUM_POWER, HOLY_EGG_MAXIMUM_POWER + 1))
+                .luck(random.nextInt(HOLY_EGG_MINIMUM_LUCK, HOLY_EGG_MAXIMUM_LUCK + 1))
+                .intelligence(random.nextInt(HOLY_EGG_MINIMUM_INTELLIGENCE, HOLY_EGG_MAXIMUM_INTELLIGENCE + 1))
                 .imagePath(generateImagePath(EggType.HOLY))
                 .build();
     }
 
     private String generateImagePath(EggType eggType) {
-        Path typedEggImagePath = Path.of(BASE_EGG_IMAGE_PATH.toString(), "/", eggType.toString().toLowerCase());
+        Path typedEggImagePath = Path.of(BASE_EGG_IMAGE_PATH, eggType.toString().toLowerCase());
         try (Stream<Path> eggImagePathStream = Files.list(typedEggImagePath)) {
             List<String> eggImagePaths = eggImagePathStream
                     .map(Path::toString)
@@ -157,42 +144,96 @@ public class EggService {
 
     private String generateName(Egg egg) {
         String name = egg.getImagePath();
-        name = name.replace(".png", "");
         for (EggType eggType : EggType.values()) {
-            name = name.replace("src\\main\\resources\\image\\egg\\" + eggType.toString().toLowerCase() + "\\", "");
+            name = name.replace(BASE_EGG_IMAGE_PATH + eggType.toString().toLowerCase() + "\\", "");
         }
+        name = name.replace(".png", "");
         return name;
     }
 
-    public String generateEggStatsInfo(Egg egg) {
-        StringBuilder eggStatsInfo = new StringBuilder();
-        eggStatsInfo.append(egg.getEndurance());
-        if (egg.getEndurance() > 15) {
-            eggStatsInfo.append("🛡 ");
+    public String generateStatsInfo(Egg egg) {
+        StringBuilder statsInfo = new StringBuilder();
+        statsInfo.append(egg.getEndurance());
+        if (egg.getEndurance() >= GREAT_ENDURANCE) {
+            statsInfo.append("🛡 ");
         } else {
-            eggStatsInfo.append("❤️‍🩹 ");
+            statsInfo.append("❤️‍🩹 ");
         }
+        statsInfo.append(egg.getPower());
+        if (egg.getPower() >= GREAT_POWER) {
+            statsInfo.append("💣 ");
+        } else {
+            statsInfo.append("💥 ");
+        }
+        statsInfo.append(egg.getLuck());
+        if (egg.getLuck() >= GREAT_LUCK) {
+            statsInfo.append("🍀 ");
+        } else {
+            statsInfo.append("☘️ ");
+        }
+        statsInfo.append(egg.getIntelligence());
+        if (egg.getIntelligence() >= GREAT_INTELLIGENCE) {
+            statsInfo.append("🪬");
+        } else {
+            statsInfo.append("🧿");
+        }
+        return statsInfo.toString();
+    }
 
-        eggStatsInfo.append(egg.getPower());
-        if (egg.getPower() > 7) {
-            eggStatsInfo.append("💣 ");
-        } else {
-            eggStatsInfo.append("💥 ");
+    public Integer generateDamage(Egg egg, EggAttackType attackType) {
+        double damage = egg.getPower();
+        switch (attackType) {
+            case HEAD -> {
+                damage += HEAD_ATTACK_ENDURANCE_POWER_COEFFICIENT * egg.getEndurance();
+                damage *= HEAD_ATTACK_POWER_COEFFICIENT;
+            }
+            case SIDE -> {
+                damage += SIDE_ATTACK_ENDURANCE_POWER_COEFFICIENT * egg.getEndurance();
+                damage *= SIDE_ATTACK_POWER_COEFFICIENT;
+            }
+            case ASS -> {
+                damage += ASS_ATTACK_ENDURANCE_POWER_COEFFICIENT * egg.getEndurance();
+                damage *= ASS_ATTACK_POWER_COEFFICIENT;
+            }
         }
+        return Math.toIntExact(Math.round(damage));
+    }
 
-        eggStatsInfo.append(egg.getLuck());
-        if (egg.getLuck() > 5) {
-            eggStatsInfo.append("🍀 ");
-        } else {
-            eggStatsInfo.append("☘️ ");
+    public Integer generateReplyDamage(Egg egg, EggAttackType attackType) {
+        double replyDamage = egg.getPower() + MINIMUM_REPLY_DAMAGE;
+        switch (attackType) {
+            case HEAD ->
+                    replyDamage -= HEAD_ATTACK_REPLY_DAMAGE_PAY_OFF_INTELLIGENCE_COEFFICIENT * egg.getIntelligence();
+            case SIDE ->
+                    replyDamage -= SIDE_ATTACK_REPLY_DAMAGE_PAY_OFF_INTELLIGENCE_COEFFICIENT * egg.getIntelligence();
+            case ASS -> replyDamage -= ASS_ATTACK_REPLY_DAMAGE_PAY_OFF_INTELLIGENCE_COEFFICIENT * egg.getIntelligence();
         }
+        if (replyDamage < MINIMUM_REPLY_DAMAGE) {
+            replyDamage = MINIMUM_REPLY_DAMAGE;
+        }
+        return Math.toIntExact(Math.round(replyDamage));
+    }
 
-        eggStatsInfo.append(egg.getIntelligence());
-        if (egg.getIntelligence() > 5) {
-            eggStatsInfo.append("🪬");
-        } else {
-            eggStatsInfo.append("🧿");
+    public Integer generateChanceOfAttack(Egg attackerEgg, Egg defenderEgg, EggAttackType attackType) {
+        double chance = 100.0 * attackerEgg.getLuck() / (attackerEgg.getLuck() + defenderEgg.getLuck());
+        switch (attackType) {
+            case HEAD -> chance *= HEAD_ATTACK_CHANCE_COEFFICIENT;
+            case SIDE -> chance *= SIDE_ATTACK_CHANCE_COEFFICIENT;
+            case ASS -> chance *= ASS_ATTACK_CHANCE_COEFFICIENT;
         }
-        return eggStatsInfo.toString();
+        chance += MINIMUM_ATTACK_CHANCE;
+        if (chance > 100) {
+            chance = 100;
+        }
+        return Math.toIntExact(Math.round(chance));
+    }
+
+    public void applyDamage(Egg egg, Integer damage) {
+        egg.setEndurance(egg.getEndurance() - damage);
+        if (egg.getEndurance() <= 0) {
+            egg.setEndurance(0);
+            egg.setIsCracked(true);
+        }
+        save(egg);
     }
 }

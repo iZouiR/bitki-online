@@ -5,9 +5,7 @@ import org.springframework.stereotype.Repository;
 import self.izouir.bitkionline.entity.battle.MatchMakingBattle;
 import self.izouir.bitkionline.entity.player.Player;
 
-import java.util.List;
-
 @Repository
 public interface MatchMakingBattleRepository extends JpaRepository<MatchMakingBattle, Long> {
-    List<MatchMakingBattle> findAllByPlayerBattle_FirstPlayerOrPlayerBattle_SecondPlayer(Player firstPlayer, Player secondPlayer);
+    void deleteAllByPlayerBattle_FirstPlayerOrPlayerBattle_SecondPlayer(Player firstPlayer, Player secondPlayer);
 }

@@ -1,6 +1,7 @@
 package self.izouir.bitkionline.entity.player;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,12 +23,14 @@ public class PlayerBot {
     private Long playerId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "last_bot_state")
-    private BotState lastBotState;
+    @Column(name = "last_state")
+    private PlayerBotState lastState;
 
+    @PositiveOrZero
     @Column(name = "last_inventory_index")
     private Integer lastInventoryIndex;
 
+    @PositiveOrZero
     @Column(name = "last_inventory_size")
     private Integer lastInventorySize;
 }

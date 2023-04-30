@@ -14,6 +14,8 @@ import java.util.List;
 public interface EggRepository extends JpaRepository<Egg, Long> {
     List<Egg> findAllByOwner(Player owner);
 
+    void deleteAllByOwner(Player owner);
+
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Egg SET owner = null WHERE owner = :owner")
     void unbindAllByOwner(@Param("owner") Player owner);

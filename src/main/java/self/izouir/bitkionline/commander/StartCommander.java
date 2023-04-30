@@ -3,31 +3,27 @@ package self.izouir.bitkionline.commander;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import self.izouir.bitkionline.bot.DispatcherBot;
-import self.izouir.bitkionline.entity.egg.Egg;
-import self.izouir.bitkionline.entity.player.BotState;
 import self.izouir.bitkionline.entity.player.Player;
 import self.izouir.bitkionline.entity.player.PlayerBot;
-import self.izouir.bitkionline.service.egg.EggService;
+import self.izouir.bitkionline.entity.player.PlayerBotState;
 import self.izouir.bitkionline.service.player.PlayerBotService;
 import self.izouir.bitkionline.service.player.PlayerService;
 
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.List;
-
 import static self.izouir.bitkionline.util.BotMessageSender.sendMessage;
+import static self.izouir.bitkionline.util.constants.MessageConstants.*;
+import static self.izouir.bitkionline.util.constants.commander.StartCommanderConstants.*;
 
 @Component
 public class StartCommander {
-    private final EggService eggService;
+    private final HelpCommander helpCommander;
     private final PlayerService playerService;
     private final PlayerBotService playerBotService;
 
     @Autowired
-    public StartCommander(EggService eggService,
+    public StartCommander(HelpCommander helpCommander,
                           PlayerService playerService,
                           PlayerBotService playerBotService) {
-        this.eggService = eggService;
+        this.helpCommander = helpCommander;
         this.playerService = playerService;
         this.playerBotService = playerBotService;
     }
@@ -36,51 +32,35 @@ public class StartCommander {
         if (playerService.existsByChatId(chatId)) {
             Player player = playerService.findByChatId(chatId);
             if (player.getRegisteredAt() != null) {
-                sendMessage(bot, chatId, "Greetings, " + player.getUsername() + "!");
+                sendMessage(bot, chatId, String.format(GREETINGS_MESSAGE, player.getUsername()));
             } else {
-                sendMessage(bot, chatId, "Finish registration before continuing");
+                sendMessage(bot, chatId, PLAYER_DID_NOT_FINISH_REGISTRATION_MESSAGE);
             }
         } else {
-            sendMessage(bot, chatId, "Looks like you aren't authorized yet, enter your username");
-            createNewPlayerAwaitingUsername(chatId);
+            sendMessage(bot, chatId, AWAIT_USERNAME_MESSAGE);
+            startRegistration(chatId);
         }
     }
 
-    private void createNewPlayerAwaitingUsername(Long chatId) {
-        Player player = Player.builder()
-                .chatId(chatId)
-                .username("new_player_" + chatId)
-                .rank(0)
-                .isPlaying(false)
-                .build();
-        playerService.save(player);
-
-        PlayerBot playerBot = PlayerBot.builder()
-                .playerId(player.getId())
-                .lastBotState(BotState.AWAIT_USERNAME)
-                .build();
-        playerBotService.save(playerBot);
+    private void startRegistration(Long chatId) {
+        playerService.createNotRegisteredPlayer(chatId);
     }
 
-    public boolean finishAuthorization(DispatcherBot bot, Long chatId, String username) {
+    public boolean finishRegistration(DispatcherBot bot, Long chatId, String username) {
         if (playerService.existsByChatId(chatId)) {
             Player player = playerService.findByChatId(chatId);
             PlayerBot playerBot = playerBotService.findByPlayerId(player.getId());
-            if (playerBot.getLastBotState() == BotState.AWAIT_USERNAME) {
-                if (playerService.notExistsByUsernameIgnoreCase(username)) {
-                    player.setUsername(username);
-                    player.setRegisteredAt(Timestamp.from(Instant.now()));
-                    playerService.save(player);
-
-                    sendMessage(bot, chatId, "Congratulations, you're now registered with username " + username + "!");
-
-                    List<Egg> inventory = eggService.generateStartInventory(bot, player);
-                    playerBot.setLastBotState(null);
-                    playerBot.setLastInventoryIndex(0);
-                    playerBot.setLastInventorySize(inventory.size());
-                    playerBotService.save(playerBot);
+            if (playerBot.getLastState() == PlayerBotState.AWAIT_USERNAME) {
+                if (playerService.isAccurateUsername(username)) {
+                    if (playerService.notExistsByUsernameIgnoreCase(username)) {
+                        playerService.registerPlayer(bot, player, username);
+                        sendMessage(bot, chatId, String.format(PLAYER_REGISTERED_MESSAGE, username));
+                        helpCommander.help(bot, chatId);
+                    } else {
+                        sendMessage(bot, chatId, String.format(USERNAME_ALREADY_EXISTS_MESSAGE, username));
+                    }
                 } else {
-                    sendMessage(bot, chatId, "Player with username " + username + " already exists, try another variant");
+                    sendMessage(bot, chatId, INCORRECT_USERNAME_FORMAT_MESSAGE);
                 }
                 return true;
             }

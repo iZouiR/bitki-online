@@ -1,6 +1,7 @@
 package self.izouir.bitkionline.entity.battle;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,6 +23,7 @@ public class PrivateBattle {
     @JoinColumn(name = "player_battle_id")
     private PlayerBattle playerBattle;
 
+    @NotBlank
     @Column(name = "link")
     private String link;
 }
