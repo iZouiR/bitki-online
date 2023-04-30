@@ -9,7 +9,7 @@ public class PlayCommanderConstants {
 
     public static final String CHOOSING_BATTLE_TYPE_MESSAGE = "Choose the type of battle";
     public static final String CHOOSING_PRIVATE_BATTLE_TYPE_MESSAGE = "Choose the strategy";
-    public static final String AWAIT_MATCH_MAKING_BATTLE_OPPONENT_MESSAGE = "Waiting for an opponent...";
+    public static final String AWAIT_MATCH_MAKING_BATTLE_OPPONENT_MESSAGE = "Waiting for an opponent... ⏱";
     public static final String AWAIT_PRIVATE_BATTLE_OPPONENT_PRE_LINK_MESSAGE = "Tell the opponent this link - ";
     public static final String AWAIT_PRIVATE_BATTLE_OPPONENT_MESSAGE =
             AWAIT_PRIVATE_BATTLE_OPPONENT_PRE_LINK_MESSAGE + "%s\nIt will be alive for " + AWAIT_OPPONENT_SECONDS + " seconds";

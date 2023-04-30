@@ -12,7 +12,7 @@ public class MessageConstants {
     public static final String INCORRECT_USERNAME_FORMAT_MESSAGE = "Entered username has incorrect format, it must contains english/russian letters + digits + '_' and be between "
                                                                    + MINIMUM_USERNAME_LENGTH + " and " + MAXIMUM_USERNAME_LENGTH + " characters in length";
     public static final String USERNAME_ALREADY_EXISTS_MESSAGE = "Username %s already exists, try another variant";
-    public static final String OBTAINING_EGG_MESSAGE = "You obtained %s egg (%s)";
+    public static final String OBTAINING_EGG_MESSAGE = "You obtained \"%s\" egg (%s)";
     public static final String CRACKED_EGG_MESSAGE = "%s egg, cracked!";
     public static final String NOT_CRACKED_EGG_MESSAGE = "%s egg, not cracked";
     public static final String EMPTY_INVENTORY_MESSAGE = "You don't have any not cracked eggs";
