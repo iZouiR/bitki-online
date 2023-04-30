@@ -202,8 +202,10 @@ public class EggService {
     public Integer generateReplyDamage(Egg egg, EggAttackType attackType) {
         double replyDamage = egg.getPower() + MINIMUM_REPLY_DAMAGE;
         switch (attackType) {
-            case HEAD -> replyDamage -= HEAD_ATTACK_REPLY_DAMAGE_PAY_OFF_INTELLIGENCE_COEFFICIENT * egg.getIntelligence();
-            case SIDE -> replyDamage -= SIDE_ATTACK_REPLY_DAMAGE_PAY_OFF_INTELLIGENCE_COEFFICIENT * egg.getIntelligence();
+            case HEAD ->
+                    replyDamage -= HEAD_ATTACK_REPLY_DAMAGE_PAY_OFF_INTELLIGENCE_COEFFICIENT * egg.getIntelligence();
+            case SIDE ->
+                    replyDamage -= SIDE_ATTACK_REPLY_DAMAGE_PAY_OFF_INTELLIGENCE_COEFFICIENT * egg.getIntelligence();
             case ASS -> replyDamage -= ASS_ATTACK_REPLY_DAMAGE_PAY_OFF_INTELLIGENCE_COEFFICIENT * egg.getIntelligence();
         }
         if (replyDamage < MINIMUM_REPLY_DAMAGE) {
