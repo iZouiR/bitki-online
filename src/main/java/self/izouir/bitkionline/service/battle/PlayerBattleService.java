@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import self.izouir.bitkionline.entity.battle.PlayerBattle;
+import self.izouir.bitkionline.entity.egg.Egg;
 import self.izouir.bitkionline.entity.player.Player;
 import self.izouir.bitkionline.exception.PlayerBattleNotFoundException;
 import self.izouir.bitkionline.repository.battle.PlayerBattleRepository;
@@ -55,6 +56,21 @@ public class PlayerBattleService {
 
     public void setSecondPlayer(PlayerBattle playerBattle, Player player) {
         playerBattle.setSecondPlayer(player);
+        save(playerBattle);
+    }
+
+    public void setFirstPlayerEgg(PlayerBattle playerBattle, Egg egg) {
+        playerBattle.setFirstPlayerEgg(egg);
+        save(playerBattle);
+    }
+
+    public void setSecondPlayerEgg(PlayerBattle playerBattle, Egg egg) {
+        playerBattle.setSecondPlayerEgg(egg);
+        save(playerBattle);
+    }
+
+    public void setIsFirstPlayerWinner(PlayerBattle playerBattle, Boolean isFirstPlayerWinner) {
+        playerBattle.setIsFirstPlayerWinner(isFirstPlayerWinner);
         save(playerBattle);
     }
 }
