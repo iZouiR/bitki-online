@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import self.izouir.bitkionline.bot.DispatcherBot;
 import self.izouir.bitkionline.entity.egg.Egg;
+import self.izouir.bitkionline.entity.egg.EggAttackType;
 import self.izouir.bitkionline.entity.egg.EggType;
 import self.izouir.bitkionline.entity.player.Player;
 import self.izouir.bitkionline.exception.EggNotFoundException;
@@ -79,7 +80,7 @@ public class EggService {
 
     private Egg generateEgg() {
         Egg egg;
-        int chance = random.nextInt(EGG_GENERATION_CHANCE);
+        int chance = random.nextInt(100);
         if (chance < WEAK_EGG_GENERATION_CHANCE) {
             egg = generateWeakEgg();
         } else if (chance < WEAK_EGG_GENERATION_CHANCE + STRONG_EGG_GENERATION_CHANCE) {
@@ -177,5 +178,60 @@ public class EggService {
             statsInfo.append("🧿");
         }
         return statsInfo.toString();
+    }
+
+    public Integer generateDamage(Egg egg, EggAttackType attackType) {
+        double damage = egg.getPower();
+        switch (attackType) {
+            case HEAD -> {
+                damage += HEAD_ATTACK_ENDURANCE_POWER_COEFFICIENT * egg.getEndurance();
+                damage *= HEAD_ATTACK_POWER_COEFFICIENT;
+            }
+            case SIDE -> {
+                damage += SIDE_ATTACK_ENDURANCE_POWER_COEFFICIENT * egg.getEndurance();
+                damage *= SIDE_ATTACK_POWER_COEFFICIENT;
+            }
+            case ASS -> {
+                damage += ASS_ATTACK_ENDURANCE_POWER_COEFFICIENT * egg.getEndurance();
+                damage *= ASS_ATTACK_POWER_COEFFICIENT;
+            }
+        }
+        return Math.toIntExact(Math.round(damage));
+    }
+
+    public Integer generateReplyDamage(Egg egg, EggAttackType attackType) {
+        double replyDamage = egg.getPower() + MINIMUM_REPLY_DAMAGE;
+        switch (attackType) {
+            case HEAD -> replyDamage -= HEAD_ATTACK_REPLY_DAMAGE_PAY_OFF_INTELLIGENCE_COEFFICIENT * egg.getIntelligence();
+            case SIDE -> replyDamage -= SIDE_ATTACK_REPLY_DAMAGE_PAY_OFF_INTELLIGENCE_COEFFICIENT * egg.getIntelligence();
+            case ASS -> replyDamage -= ASS_ATTACK_REPLY_DAMAGE_PAY_OFF_INTELLIGENCE_COEFFICIENT * egg.getIntelligence();
+        }
+        if (replyDamage < MINIMUM_REPLY_DAMAGE) {
+            replyDamage = MINIMUM_REPLY_DAMAGE;
+        }
+        return Math.toIntExact(Math.round(replyDamage));
+    }
+
+    public Integer generateChanceOfAttack(Egg attackerEgg, Egg defenderEgg, EggAttackType attackType) {
+        double chance = 100.0 * attackerEgg.getLuck() / (attackerEgg.getLuck() + defenderEgg.getLuck());
+        switch (attackType) {
+            case HEAD -> chance *= HEAD_ATTACK_CHANCE_COEFFICIENT;
+            case SIDE -> chance *= SIDE_ATTACK_CHANCE_COEFFICIENT;
+            case ASS -> chance *= ASS_ATTACK_CHANCE_COEFFICIENT;
+        }
+        chance += MINIMUM_ATTACK_CHANCE;
+        if (chance > 100) {
+            chance = 100;
+        }
+        return Math.toIntExact(Math.round(chance));
+    }
+
+    public void applyDamage(Egg egg, Integer damage) {
+        egg.setEndurance(egg.getEndurance() - damage);
+        if (egg.getEndurance() <= 0) {
+            egg.setEndurance(0);
+            egg.setIsCracked(true);
+        }
+        save(egg);
     }
 }
