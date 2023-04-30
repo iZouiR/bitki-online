@@ -59,13 +59,13 @@ public class DispatcherBot extends TelegramLongPollingBot {
                     case "/profile" -> profileCommander.profile(this, chatId);
                     case "/help" -> helpCommander.help(this, chatId);
                     default -> {
-                        if (playCommander.connect(this, chatId, command)) {
+                        if (playCommander.connectToPrivateBattle(this, chatId, command)) {
                             return;
                         }
-                        if (startCommander.finishAuthorization(this, chatId, command)) {
+                        if (startCommander.finishRegistration(this, chatId, command)) {
                             return;
                         }
-                        if (profileCommander.changeUsername(this, chatId, command)) {
+                        if (profileCommander.finishUsernameChange(this, chatId, command)) {
                             return;
                         }
                         sendMessage(this, chatId, "Command not found");
