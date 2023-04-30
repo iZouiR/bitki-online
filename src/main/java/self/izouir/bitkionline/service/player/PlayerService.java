@@ -19,6 +19,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
+import static self.izouir.bitkionline.util.BotMessageSender.sendMessage;
 import static self.izouir.bitkionline.util.constants.service.PlayerServiceConstants.*;
 
 @Service
@@ -168,19 +169,42 @@ public class PlayerService {
     @Transactional
     public void refreshEggs(DispatcherBot bot, Long chatId) {
         Player player = findByChatId(chatId);
-        eggService.deleteAllByOwner(player);
+        eggService.unbindAllByOwner(player);
         eggService.generateStartInventory(bot, player);
     }
 
     @Transactional
     public void dropPlayerProfile(Long chatId) {
         Player player = findByChatId(chatId);
-        Long playerId = player.getId();
-        matchMakingBattleService.deleteAllByPlayerId(playerId);
-        privateBattleService.deleteAllByPlayerId(playerId);
-        playerBattleService.deleteAllByPlayerId(playerId);
+        matchMakingBattleService.deleteAllByPlayer(player);
+        privateBattleService.deleteAllByPlayer(player);
+        playerBattleService.deleteAllByPlayer(player);
         eggService.deleteAllByOwner(player);
         playerBotService.deleteByPlayerId(player.getId());
         delete(player);
+    }
+
+    @Transactional
+    public void calculateEloRanks(DispatcherBot bot, Player winner, Player looser) {
+        int winnerPlayerRank = winner.getRank();
+        int looserPlayerRank = looser.getRank();
+        int firstPlayerRankDifference = Math.toIntExact(Math.round(1 / (1 + Math.pow(10, (looserPlayerRank - winnerPlayerRank) / ELO_COEFFICIENT))));
+        int secondPlayerRankDifference = Math.toIntExact(Math.round(1 / (1 + Math.pow(10, (winnerPlayerRank - looserPlayerRank) / ELO_COEFFICIENT))));
+        winnerPlayerRank = winnerPlayerRank
+                           + (int) ((MAXIMUM_POINT_DIFFERENCE - MINIMUM_POINT_DIFFERENCE) * (WINNER_COEFFICIENT - firstPlayerRankDifference) + MINIMUM_POINT_DIFFERENCE);
+        looserPlayerRank = looserPlayerRank
+                           + (int) ((MAXIMUM_POINT_DIFFERENCE - MINIMUM_POINT_DIFFERENCE) * (LOOSER_COEFFICIENT - secondPlayerRankDifference) - MINIMUM_POINT_DIFFERENCE);
+        if (looserPlayerRank < 0) {
+            looserPlayerRank = 0;
+        }
+        sendMessage(bot, winner.getChatId(), String.format(WINNER_POINTS_MESSAGE,
+                (int) ((MAXIMUM_POINT_DIFFERENCE - MINIMUM_POINT_DIFFERENCE) * (WINNER_COEFFICIENT - firstPlayerRankDifference) + MINIMUM_POINT_DIFFERENCE)));
+        sendMessage(bot, looser.getChatId(), String.format(LOOSER_POINTS_MESSAGE,
+                (int) ((MAXIMUM_POINT_DIFFERENCE - MINIMUM_POINT_DIFFERENCE) * (LOOSER_COEFFICIENT - secondPlayerRankDifference) - MINIMUM_POINT_DIFFERENCE)));
+
+        winner.setRank(winnerPlayerRank);
+        looser.setRank(looserPlayerRank);
+        save(winner);
+        save(looser);
     }
 }
