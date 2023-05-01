@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'self.izouir'
-version = '0.1.1-BETA'
+version = '0.1.2-BETA'
 sourceCompatibility = '17'
 
 configurations {
