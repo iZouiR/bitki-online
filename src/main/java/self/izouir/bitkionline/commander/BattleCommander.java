@@ -451,7 +451,8 @@ public class BattleCommander {
 
         List<InlineKeyboardButton> opponentInfoRow = new ArrayList<>();
         InlineKeyboardButton opponentInfoButton = new InlineKeyboardButton();
-        opponentInfoButton.setText(String.format(OPPONENT_INFO_BUTTON_TEXT, opponent.getUsername(), opponent.getRank()));
+        opponentInfoButton.setText(String.format(OPPONENT_INFO_BUTTON_TEXT, opponent.getUsername(), opponent.getRank(),
+                playerStatisticsService.calculateWinRate(playerStatisticsService.findByPlayerId(opponent.getId()))));
         opponentInfoButton.setCallbackData("IGNORE");
         opponentInfoRow.add(opponentInfoButton);
 
