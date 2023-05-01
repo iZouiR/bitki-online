@@ -26,6 +26,7 @@ public class DispatcherBot extends TelegramLongPollingBot {
     private final EggsCommander eggsCommander;
     private final ProfileCommander profileCommander;
     private final HelpCommander helpCommander;
+    private final SupportCommander supportCommander;
 
     @Autowired
     public DispatcherBot(StartCommander startCommander,
@@ -34,7 +35,8 @@ public class DispatcherBot extends TelegramLongPollingBot {
                          RankCommander rankCommander,
                          EggsCommander eggsCommander,
                          ProfileCommander profileCommander,
-                         HelpCommander helpCommander) {
+                         HelpCommander helpCommander,
+                         SupportCommander supportCommander) {
         this.startCommander = startCommander;
         this.playCommander = playCommander;
         this.battleCommander = battleCommander;
@@ -42,6 +44,7 @@ public class DispatcherBot extends TelegramLongPollingBot {
         this.eggsCommander = eggsCommander;
         this.profileCommander = profileCommander;
         this.helpCommander = helpCommander;
+        this.supportCommander = supportCommander;
     }
 
     @Override
@@ -58,6 +61,7 @@ public class DispatcherBot extends TelegramLongPollingBot {
                     case "/eggs" -> eggsCommander.eggs(this, chatId);
                     case "/profile" -> profileCommander.profile(this, chatId);
                     case "/help" -> helpCommander.help(this, chatId);
+                    case "/support" -> supportCommander.support(this, chatId);
                     default -> {
                         if (playCommander.connectToPrivateBattle(this, chatId, command)) {
                             return;
@@ -66,6 +70,9 @@ public class DispatcherBot extends TelegramLongPollingBot {
                             return;
                         }
                         if (profileCommander.finishUsernameChange(this, chatId, command)) {
+                            return;
+                        }
+                        if (supportCommander.publishSupportMessage(this, chatId, command)) {
                             return;
                         }
                         sendMessage(this, chatId, "Command not found");
@@ -82,6 +89,7 @@ public class DispatcherBot extends TelegramLongPollingBot {
                 eggsCommander.processCallbackQuery(this, chatId, messageId, callbackData);
                 profileCommander.processCallbackQuery(this, chatId, messageId, callbackData);
                 helpCommander.processCallbackQuery(this, chatId, messageId, callbackData);
+                supportCommander.processCallbackQuery(this, chatId, messageId, callbackData);
             }
         });
     }
