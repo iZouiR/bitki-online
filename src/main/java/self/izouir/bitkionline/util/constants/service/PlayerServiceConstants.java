@@ -19,8 +19,7 @@ public class PlayerServiceConstants {
             Username: %s
             Rank: %d \uD83C\uDF96 , WR: (%s%%) 🎲
             Registered: %s""";
-    public static final Double ELO_COEFFICIENT = 100d;
-    public static final Integer MINIMUM_POINT_DIFFERENCE = 4;
+    public static final Double ELO_COEFFICIENT = 400d;
     public static final Integer MAXIMUM_POINT_DIFFERENCE = 16;
     public static final Double WINNER_COEFFICIENT = 1d;
     public static final Double LOOSER_COEFFICIENT = 0d;
