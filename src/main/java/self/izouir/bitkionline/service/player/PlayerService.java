@@ -29,6 +29,7 @@ public class PlayerService {
     private final PrivateBattleService privateBattleService;
     private final EggService eggService;
     private final PlayerBotService playerBotService;
+    private final PlayerStatisticsService playerStatisticsService;
     private final PlayerRepository playerRepository;
 
     @Autowired
@@ -37,12 +38,14 @@ public class PlayerService {
                          PrivateBattleService privateBattleService,
                          EggService eggService,
                          PlayerBotService playerBotService,
+                         PlayerStatisticsService playerStatisticsService,
                          PlayerRepository playerRepository) {
         this.matchMakingBattleService = matchMakingBattleService;
         this.playerBattleService = playerBattleService;
         this.privateBattleService = privateBattleService;
         this.eggService = eggService;
         this.playerBotService = playerBotService;
+        this.playerStatisticsService = playerStatisticsService;
         this.playerRepository = playerRepository;
     }
 
@@ -92,6 +95,7 @@ public class PlayerService {
                 .build();
         save(player);
         playerBotService.createNotRegisteredPlayerBot(player);
+        playerStatisticsService.createPlayerStatistics(player);
     }
 
     @Transactional
@@ -190,21 +194,20 @@ public class PlayerService {
         int looserPlayerRank = looser.getRank();
         int firstPlayerRankDifference = Math.toIntExact(Math.round(1 / (1 + Math.pow(10, (looserPlayerRank - winnerPlayerRank) / ELO_COEFFICIENT))));
         int secondPlayerRankDifference = Math.toIntExact(Math.round(1 / (1 + Math.pow(10, (winnerPlayerRank - looserPlayerRank) / ELO_COEFFICIENT))));
-        winnerPlayerRank = winnerPlayerRank
-                           + (int) ((MAXIMUM_POINT_DIFFERENCE - MINIMUM_POINT_DIFFERENCE) * (WINNER_COEFFICIENT - firstPlayerRankDifference) + MINIMUM_POINT_DIFFERENCE);
-        looserPlayerRank = looserPlayerRank
-                           + (int) ((MAXIMUM_POINT_DIFFERENCE - MINIMUM_POINT_DIFFERENCE) * (LOOSER_COEFFICIENT - secondPlayerRankDifference) - MINIMUM_POINT_DIFFERENCE);
+        firstPlayerRankDifference = (int) ((MAXIMUM_POINT_DIFFERENCE - MINIMUM_POINT_DIFFERENCE) * (WINNER_COEFFICIENT - firstPlayerRankDifference) + MINIMUM_POINT_DIFFERENCE);
+        secondPlayerRankDifference = (int) ((MAXIMUM_POINT_DIFFERENCE - MINIMUM_POINT_DIFFERENCE) * (LOOSER_COEFFICIENT - secondPlayerRankDifference) - MINIMUM_POINT_DIFFERENCE);
+        winnerPlayerRank = winnerPlayerRank + firstPlayerRankDifference;
+        looserPlayerRank = looserPlayerRank + secondPlayerRankDifference;
         if (looserPlayerRank < 0) {
             looserPlayerRank = 0;
         }
-        sendMessage(bot, winner.getChatId(), String.format(WINNER_POINTS_MESSAGE,
-                (int) ((MAXIMUM_POINT_DIFFERENCE - MINIMUM_POINT_DIFFERENCE) * (WINNER_COEFFICIENT - firstPlayerRankDifference) + MINIMUM_POINT_DIFFERENCE)));
-        sendMessage(bot, looser.getChatId(), String.format(LOOSER_POINTS_MESSAGE,
-                (int) ((MAXIMUM_POINT_DIFFERENCE - MINIMUM_POINT_DIFFERENCE) * (LOOSER_COEFFICIENT - secondPlayerRankDifference) - MINIMUM_POINT_DIFFERENCE)));
-
         winner.setRank(winnerPlayerRank);
         looser.setRank(looserPlayerRank);
         save(winner);
         save(looser);
+        playerStatisticsService.applyRankDifference(winner, firstPlayerRankDifference);
+        playerStatisticsService.applyRankDifference(looser, secondPlayerRankDifference);
+        sendMessage(bot, winner.getChatId(), String.format(WINNER_POINTS_MESSAGE, firstPlayerRankDifference));
+        sendMessage(bot, looser.getChatId(), String.format(LOOSER_POINTS_MESSAGE, secondPlayerRankDifference));
     }
 }
