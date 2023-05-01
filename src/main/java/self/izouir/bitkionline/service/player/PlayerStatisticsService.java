@@ -115,4 +115,20 @@ public class PlayerStatisticsService {
         }
         save(playerStatistics);
     }
+
+    public Integer calculateWinRate(PlayerStatistics playerStatistics) {
+        return Math.toIntExact(Math.round(100.0 * playerStatistics.getTotalBattlesWon() / playerStatistics.getTotalBattlesPlayed()));
+    }
+
+    public Integer calculateHeadAttackSuccessRate(PlayerStatistics playerStatistics) {
+        return Math.toIntExact(Math.round(100.0 * playerStatistics.getHeadAttackSucceed() / playerStatistics.getHeadAttackChosen()));
+    }
+
+    public Integer calculateSideAttackSuccessRate(PlayerStatistics playerStatistics) {
+        return Math.toIntExact(Math.round(100.0 * playerStatistics.getSideAttackSucceed() / playerStatistics.getSideAttackChosen()));
+    }
+
+    public Integer calculateAssAttackSuccessRate(PlayerStatistics playerStatistics) {
+        return Math.toIntExact(Math.round(100.0 * playerStatistics.getAssAttackSucceed() / playerStatistics.getAssAttackChosen()));
+    }
 }
