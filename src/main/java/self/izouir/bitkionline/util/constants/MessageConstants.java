@@ -13,7 +13,7 @@ public class MessageConstants {
                                                                    + MINIMUM_USERNAME_LENGTH + " and " + MAXIMUM_USERNAME_LENGTH + " characters in length";
     public static final String USERNAME_ALREADY_EXISTS_MESSAGE = "Username %s already exists, try another variant";
     public static final String OBTAINING_EGG_MESSAGE = "You obtained \"%s\" egg (%s)";
-    public static final String CRACKED_EGG_MESSAGE = "%s egg, cracked!";
-    public static final String NOT_CRACKED_EGG_MESSAGE = "%s egg, not cracked";
+    public static final String CRACKED_EGG_MESSAGE = "\"%s\" egg, cracked!";
+    public static final String NOT_CRACKED_EGG_MESSAGE = "\"%s\" egg, not cracked";
     public static final String EMPTY_INVENTORY_MESSAGE = "You don't have any not cracked eggs";
 }
