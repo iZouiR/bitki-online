@@ -144,7 +144,8 @@ public class PlayerService {
                     leadersRankInfo.append("\uD83E\uDD49");
                 }
                 Player leader = leaders.get(i);
-                leadersRankInfo.append(String.format(LEADER_RANK_INFO, leader.getUsername(), leader.getRank()));
+                leadersRankInfo.append(String.format(LEADER_RANK_INFO, leader.getUsername(), leader.getRank(),
+                        playerStatisticsService.calculateWinRate(playerStatisticsService.findByPlayerId(leader.getId()))));
             }
         } else {
             leadersRankInfo.append(EMPTY_RANK_INFO);
@@ -155,7 +156,8 @@ public class PlayerService {
     private String generatePlayerRankInfo(Player player) {
         List<Player> allPlayers = findAllOrderedByRankDesc();
         Long place = allPlayers.indexOf(player) + 1L;
-        return String.format(PLAYER_RANK_INFO, place, player.getRank());
+        return String.format(PLAYER_RANK_INFO, place, player.getRank(),
+                playerStatisticsService.calculateWinRate(playerStatisticsService.findByPlayerId(player.getId())));
     }
 
     public String generatePlayerProfileInfo(Player player) {
