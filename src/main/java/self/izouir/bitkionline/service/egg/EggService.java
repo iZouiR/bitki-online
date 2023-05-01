@@ -12,6 +12,7 @@ import self.izouir.bitkionline.entity.player.Player;
 import self.izouir.bitkionline.exception.EggNotFoundException;
 import self.izouir.bitkionline.exception.ImageNotFoundException;
 import self.izouir.bitkionline.repository.egg.EggRepository;
+import self.izouir.bitkionline.service.player.PlayerStatisticsService;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -31,11 +32,14 @@ import static self.izouir.bitkionline.util.constants.service.EggServiceConstants
 @Slf4j
 @Service
 public class EggService {
+    private final PlayerStatisticsService playerStatisticsService;
     private final EggRepository eggRepository;
     private final Random random;
 
     @Autowired
-    public EggService(EggRepository eggRepository) {
+    public EggService(PlayerStatisticsService playerStatisticsService,
+                      EggRepository eggRepository) {
+        this.playerStatisticsService = playerStatisticsService;
         this.eggRepository = eggRepository;
         this.random = new Random();
     }
@@ -73,6 +77,7 @@ public class EggService {
             Egg egg = generateEgg();
             egg.setOwner(player);
             save(egg);
+            playerStatisticsService.incrementEggsObtained(player, egg);
             sendSticker(bot, player.getChatId(), Path.of(egg.getImagePath()));
             sendMessage(bot, player.getChatId(), String.format(OBTAINING_EGG_MESSAGE, egg.getName(), generateStatsInfo(egg)));
         }
