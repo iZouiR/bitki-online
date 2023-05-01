@@ -160,6 +160,7 @@ public class PlayerService {
 
     public String generatePlayerProfileInfo(Player player) {
         return String.format(PLAYER_PROFILE_INFO, player.getUsername(), player.getRank(),
+                playerStatisticsService.calculateWinRate(playerStatisticsService.findByPlayerId(player.getId())),
                 player.getRegisteredAt().toLocalDateTime().format(DateTimeFormatter.ofPattern("dd.MM.yyyy [HH:mm]")));
     }
 
