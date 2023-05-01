@@ -11,8 +11,8 @@ public class PlayerServiceConstants {
     public static final Integer NOT_REGISTERED_PLAYER_RANK = 10;
     public static final Boolean NOT_REGISTERED_PLAYER_IS_PLAYING = false;
     public static final Integer LEADERS_COUNT = 10;
-    public static final String LEADER_RANK_INFO = "%s - %d \uD83C\uDF96\n";
-    public static final String PLAYER_RANK_INFO = "You are top-%d player with %d \uD83C\uDF96";
+    public static final String LEADER_RANK_INFO = "%s - %d \uD83C\uDF96 (%s%%) 🎲\n";
+    public static final String PLAYER_RANK_INFO = "You are top-%d player with %d \uD83C\uDF96 (%s%%) 🎲";
     public static final String EMPTY_RANK_INFO = "There are no players, come back later";
     public static final String RANK_INFO_SEPARATOR = "--------------------------------------------------------------\n";
     public static final String PLAYER_PROFILE_INFO = """
