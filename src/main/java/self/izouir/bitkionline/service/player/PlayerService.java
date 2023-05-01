@@ -195,10 +195,10 @@ public class PlayerService {
     public void calculateEloRanks(DispatcherBot bot, Player winner, Player looser) {
         int winnerPlayerRank = winner.getRank();
         int looserPlayerRank = looser.getRank();
-        int firstPlayerRankDifference = Math.toIntExact(Math.round(1 / (1 + Math.pow(10, (looserPlayerRank - winnerPlayerRank) / ELO_COEFFICIENT))));
-        int secondPlayerRankDifference = Math.toIntExact(Math.round(1 / (1 + Math.pow(10, (winnerPlayerRank - looserPlayerRank) / ELO_COEFFICIENT))));
-        firstPlayerRankDifference = (int) ((MAXIMUM_POINT_DIFFERENCE - MINIMUM_POINT_DIFFERENCE) * (WINNER_COEFFICIENT - firstPlayerRankDifference) + MINIMUM_POINT_DIFFERENCE);
-        secondPlayerRankDifference = (int) ((MAXIMUM_POINT_DIFFERENCE - MINIMUM_POINT_DIFFERENCE) * (LOOSER_COEFFICIENT - secondPlayerRankDifference) - MINIMUM_POINT_DIFFERENCE);
+        double awaitFirstPlayerRankDifference = 1 / (1 + Math.pow(10, (looserPlayerRank - winnerPlayerRank) / ELO_COEFFICIENT));
+        double awaitSecondPlayerRankDifference = 1 / (1 + Math.pow(10, (winnerPlayerRank - looserPlayerRank) / ELO_COEFFICIENT));
+        int firstPlayerRankDifference = Math.toIntExact(Math.round((MAXIMUM_POINT_DIFFERENCE) * (WINNER_COEFFICIENT - awaitFirstPlayerRankDifference)));
+        int secondPlayerRankDifference = Math.toIntExact(Math.round((MAXIMUM_POINT_DIFFERENCE) * (LOOSER_COEFFICIENT - awaitSecondPlayerRankDifference)));
         winnerPlayerRank = winnerPlayerRank + firstPlayerRankDifference;
         looserPlayerRank = looserPlayerRank + secondPlayerRankDifference;
         if (looserPlayerRank < 0) {
