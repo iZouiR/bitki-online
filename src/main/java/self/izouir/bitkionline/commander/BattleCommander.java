@@ -18,6 +18,7 @@ import self.izouir.bitkionline.entity.player.Player;
 import self.izouir.bitkionline.service.battle.PlayerBattleService;
 import self.izouir.bitkionline.service.egg.EggService;
 import self.izouir.bitkionline.service.player.PlayerService;
+import self.izouir.bitkionline.service.player.PlayerStatisticsService;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -34,15 +35,18 @@ public class BattleCommander {
     private static final Map<Long, Long> BATTLES_TO_ATTACKER_CHATS = new ConcurrentHashMap<>();
     private final PlayerBattleService playerBattleService;
     private final EggService eggService;
+    private final PlayerStatisticsService playerStatisticsService;
     private final PlayerService playerService;
     private final Random random;
 
     @Autowired
     public BattleCommander(PlayerBattleService playerBattleService,
                            EggService eggService,
+                           PlayerStatisticsService playerStatisticsService,
                            PlayerService playerService) {
         this.playerBattleService = playerBattleService;
         this.eggService = eggService;
+        this.playerStatisticsService = playerStatisticsService;
         this.playerService = playerService;
         this.random = new Random();
     }
@@ -103,6 +107,7 @@ public class BattleCommander {
             }
 
             EggAttackType attackType = EggAttackType.valueOf(callbackData.substring("BATTLE_ATTACK_".length()));
+            playerStatisticsService.applyAttackChoice(player, attackType);
             Integer opponentMessageId = CHATS_TO_MESSAGES.get(opponent.getChatId());
             sendEditMessageText(bot, chatId, messageId,
                     String.format(ATTACK_MESSAGE, player.getUsername(), attackType.toString().toLowerCase(), opponent.getUsername()));
@@ -129,6 +134,9 @@ public class BattleCommander {
                 eggService.applyDamage(egg, replyDamage);
                 egg = eggService.findById(egg.getId());
                 opponentEgg = eggService.findById(opponentEgg.getId());
+                playerStatisticsService.applyAttackSuccess(player, attackType);
+                playerStatisticsService.applyDealtDamage(player, damage);
+                playerStatisticsService.applyTakenDamage(opponent, damage);
                 sendEditMessageText(bot, chatId, messageId,
                         String.format(ATTACK_SUCCESS_ATTACKER_MESSAGE, opponent.getUsername())
                         + String.format(PLAYER_EGGS_ENDURANCE_MESSAGE, egg.getEndurance(), replyDamage, opponentEgg.getEndurance(), damage));
@@ -340,6 +348,10 @@ public class BattleCommander {
             deleteMessage(bot, secondPlayerChatId, secondPlayerMessageId);
         }
         BATTLES_TO_ATTACKER_CHATS.remove(battle.getId());
+        Player firstPlayer = playerService.findByChatId(firstPlayerChatId);
+        Player secondPlayer = playerService.findByChatId(secondPlayerChatId);
+        playerStatisticsService.incrementTotalBattlesPlayed(firstPlayer);
+        playerStatisticsService.incrementTotalBattlesPlayed(secondPlayer);
     }
 
     private void stopBattleOnDisconnection(DispatcherBot bot, Long disconnectedPlayerChatId, PlayerBattle battle) {
@@ -354,6 +366,7 @@ public class BattleCommander {
             playerBattleService.setIsFirstPlayerWinner(battle, true);
             opponent = battle.getFirstPlayer();
         }
+        playerStatisticsService.incrementTotalBattlesWon(opponent);
         sendMessage(bot, disconnectedPlayerChatId, String.format(PLAYER_DISCONNECTION_MESSAGE, disconnectedPlayer.getUsername()));
         sendMessage(bot, opponent.getChatId(), String.format(PLAYER_DISCONNECTION_MESSAGE, disconnectedPlayer.getUsername()));
         playerService.calculateEloRanks(bot, opponent, disconnectedPlayer);
@@ -371,6 +384,7 @@ public class BattleCommander {
             playerBattleService.setIsFirstPlayerWinner(battle, false);
             looser = battle.getFirstPlayer();
         }
+        playerStatisticsService.incrementTotalBattlesWon(winner);
         sendMessage(bot, winnerChatId, String.format(WINNER_MESSAGE, looser.getUsername()));
         sendMessage(bot, looser.getChatId(), String.format(LOOSER_MESSAGE, winner.getUsername()));
         playerService.calculateEloRanks(bot, winner, looser);
@@ -394,6 +408,7 @@ public class BattleCommander {
             playerBattleService.setIsFirstPlayerWinner(battle, false);
             winner = battle.getFirstPlayer();
         }
+        playerStatisticsService.incrementTotalBattlesWon(winner);
         sendMessage(bot, winner.getChatId(), String.format(OPPONENT_SURRENDER_MESSAGE, looser.getUsername()));
         sendMessage(bot, looserChatId, SURRENDER_MESSAGE);
         playerService.calculateEloRanks(bot, winner, looser);
