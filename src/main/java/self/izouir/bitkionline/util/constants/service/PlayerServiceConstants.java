@@ -17,7 +17,7 @@ public class PlayerServiceConstants {
     public static final String RANK_INFO_SEPARATOR = "--------------------------------------------------------------\n";
     public static final String PLAYER_PROFILE_INFO = """
             Username: %s
-            Rank: %d \uD83C\uDF96
+            Rank: %d \uD83C\uDF96 , WR: (%s%%) 🎲
             Registered: %s""";
     public static final Double ELO_COEFFICIENT = 100d;
     public static final Integer MINIMUM_POINT_DIFFERENCE = 4;
