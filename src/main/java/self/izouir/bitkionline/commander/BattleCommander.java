@@ -1,6 +1,7 @@
 package self.izouir.bitkionline.commander;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -27,9 +28,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import static self.izouir.bitkionline.util.BotMessageSender.*;
 import static self.izouir.bitkionline.util.constants.commander.BattleCommanderConstants.*;
 
-@Slf4j
 @Component
 public class BattleCommander {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BattleCommander.class);
     private static final Map<Long, Integer> CHATS_TO_MESSAGES = new ConcurrentHashMap<>();
     private static final Map<Long, Long> CHATS_TO_BATTLES = new ConcurrentHashMap<>();
     private static final Map<Long, Long> BATTLES_TO_ATTACKER_CHATS = new ConcurrentHashMap<>();
@@ -122,7 +123,7 @@ public class BattleCommander {
                     sendEditMessageText(bot, opponent.getChatId(), opponentMessageId, String.format(COUNT_DOWN_MESSAGE, i));
                 }
             } catch (InterruptedException e) {
-                log.error(e.getMessage());
+                LOGGER.error(e.getMessage());
             }
 
             Integer damage = eggService.generateDamage(egg, attackType);
@@ -155,7 +156,7 @@ public class BattleCommander {
             try {
                 Thread.sleep(5000);
             } catch (InterruptedException e) {
-                log.error(e.getMessage());
+                LOGGER.error(e.getMessage());
             }
 
             if (egg.getIsCracked() && opponentEgg.getIsCracked()) {
@@ -227,7 +228,7 @@ public class BattleCommander {
                 sendEditMessageText(bot, chatId, messageId, String.format(COUNT_DOWN_MESSAGE, i));
             }
         } catch (InterruptedException e) {
-            log.error(e.getMessage());
+            LOGGER.error(e.getMessage());
         }
         EditMessageText message = EditMessageText.builder()
                 .chatId(String.valueOf(chatId))
@@ -283,7 +284,7 @@ public class BattleCommander {
                 }
             }
         } catch (InterruptedException e) {
-            log.error(e.getMessage());
+            LOGGER.error(e.getMessage());
         }
     }
 
@@ -311,7 +312,7 @@ public class BattleCommander {
                 }
             }
         } catch (InterruptedException e) {
-            log.error(e.getMessage());
+            LOGGER.error(e.getMessage());
         }
     }
 
@@ -328,7 +329,7 @@ public class BattleCommander {
                 battle = playerBattleService.findById(battle.getId());
             }
         } catch (InterruptedException e) {
-            log.error(e.getMessage());
+            LOGGER.error(e.getMessage());
         }
     }
 
