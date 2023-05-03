@@ -1,7 +1,8 @@
 package self.izouir.bitkionline.service.egg;
 
 import jakarta.transaction.Transactional;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import self.izouir.bitkionline.bot.DispatcherBot;
@@ -29,9 +30,9 @@ import static self.izouir.bitkionline.util.BotMessageSender.sendSticker;
 import static self.izouir.bitkionline.util.constants.MessageConstants.OBTAINING_EGG_MESSAGE;
 import static self.izouir.bitkionline.util.constants.service.EggServiceConstants.*;
 
-@Slf4j
 @Service
 public class EggService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(EggService.class);
     private final PlayerStatisticsService playerStatisticsService;
     private final EggRepository eggRepository;
     private final Random random;
@@ -142,7 +143,7 @@ public class EggService {
                 return eggImagePaths.get(random.nextInt(eggImagePaths.size()));
             }
         } catch (IOException e) {
-            log.error(e.getMessage());
+            LOGGER.error(e.getMessage());
         }
         throw new ImageNotFoundException("Egg images for egg type " + eggType.toString().toLowerCase() + " weren't found");
     }
