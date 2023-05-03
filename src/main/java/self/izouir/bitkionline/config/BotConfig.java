@@ -1,6 +1,7 @@
 package self.izouir.bitkionline.config;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -10,9 +11,9 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 import self.izouir.bitkionline.bot.DispatcherBot;
 
-@Slf4j
 @Configuration
 public class BotConfig {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BotConfig.class);
     private final DispatcherBot dispatcherBot;
 
     @Autowired
@@ -26,7 +27,7 @@ public class BotConfig {
             TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
             telegramBotsApi.registerBot(dispatcherBot);
         } catch (TelegramApiException e) {
-            log.error(e.getMessage());
+            LOGGER.error(e.getMessage());
         }
     }
 }
