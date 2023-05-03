@@ -1,7 +1,6 @@
 package self.izouir.bitkionline.service.battle;
 
 import jakarta.transaction.Transactional;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import self.izouir.bitkionline.entity.battle.MatchMakingBattle;
@@ -9,7 +8,6 @@ import self.izouir.bitkionline.entity.battle.PlayerBattle;
 import self.izouir.bitkionline.entity.player.Player;
 import self.izouir.bitkionline.repository.battle.MatchMakingBattleRepository;
 
-@Slf4j
 @Service
 public class MatchMakingBattleService {
     private final PlayerBattleService playerBattleService;

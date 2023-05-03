@@ -1,7 +1,6 @@
 package self.izouir.bitkionline.service.battle;
 
 import jakarta.transaction.Transactional;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import self.izouir.bitkionline.entity.battle.PlayerBattle;
@@ -15,7 +14,6 @@ import java.util.Random;
 import static self.izouir.bitkionline.util.constants.service.PrivateBattleServiceConstants.LINK_ALPHABET;
 import static self.izouir.bitkionline.util.constants.service.PrivateBattleServiceConstants.LINK_LENGTH;
 
-@Slf4j
 @Service
 public class PrivateBattleService {
     private final PlayerBattleService playerBattleService;
