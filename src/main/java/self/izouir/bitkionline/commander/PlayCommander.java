@@ -1,6 +1,7 @@
 package self.izouir.bitkionline.commander;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -38,9 +39,9 @@ import static self.izouir.bitkionline.util.constants.ReplyMarkupConstants.CANCEL
 import static self.izouir.bitkionline.util.constants.ReplyMarkupConstants.CLOSE_BUTTON_TEXT;
 import static self.izouir.bitkionline.util.constants.commander.PlayCommanderConstants.*;
 
-@Slf4j
 @Component
 public class PlayCommander {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PlayCommander.class);
     private static final ExecutorService EXECUTOR = Executors.newWorkStealingPool();
     private static final Queue<Long> MATCH_MAKING_CHATS_QUEUE = new ConcurrentLinkedQueue<>();
     private static final Map<Long, Integer> MATCH_MAKING_CHATS_TO_MESSAGES = new ConcurrentHashMap<>();
@@ -218,7 +219,7 @@ public class PlayCommander {
                 }
             }
         } catch (InterruptedException e) {
-            log.error(e.getMessage());
+            LOGGER.error(e.getMessage());
         }
     }
 
@@ -283,7 +284,7 @@ public class PlayCommander {
                 }
             }
         } catch (InterruptedException e) {
-            log.error(e.getMessage());
+            LOGGER.error(e.getMessage());
         }
     }
 
