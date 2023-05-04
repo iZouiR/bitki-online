@@ -1,12 +1,12 @@
-package self.izouir.bitkionline.util.constants;
+package self.izouir.bitkionline.util.constant;
 
 import lombok.experimental.UtilityClass;
 
-import static self.izouir.bitkionline.util.constants.service.PlayerServiceConstants.MAXIMUM_USERNAME_LENGTH;
-import static self.izouir.bitkionline.util.constants.service.PlayerServiceConstants.MINIMUM_USERNAME_LENGTH;
+import static self.izouir.bitkionline.util.constant.service.PlayerServiceConstant.MAXIMUM_USERNAME_LENGTH;
+import static self.izouir.bitkionline.util.constant.service.PlayerServiceConstant.MINIMUM_USERNAME_LENGTH;
 
 @UtilityClass
-public class MessageConstants {
+public class MessageConstant {
     public static final String PLAYER_NOT_REGISTERED_MESSAGE = "You aren't registered - /start";
     public static final String PLAYER_DID_NOT_FINISH_REGISTRATION_MESSAGE = "Before this finish registration";
     public static final String INCORRECT_USERNAME_FORMAT_MESSAGE = "Entered username has incorrect format, it must contains english/russian letters + digits + '_' and be between "

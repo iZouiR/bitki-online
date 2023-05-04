@@ -1,12 +1,12 @@
-package self.izouir.bitkionline.util.constants.commander;
+package self.izouir.bitkionline.util.constant.commander;
 
 import lombok.experimental.UtilityClass;
 
-import static self.izouir.bitkionline.util.constants.service.PlayerServiceConstants.MAXIMUM_USERNAME_LENGTH;
-import static self.izouir.bitkionline.util.constants.service.PlayerServiceConstants.MINIMUM_USERNAME_LENGTH;
+import static self.izouir.bitkionline.util.constant.service.PlayerServiceConstant.MAXIMUM_USERNAME_LENGTH;
+import static self.izouir.bitkionline.util.constant.service.PlayerServiceConstant.MINIMUM_USERNAME_LENGTH;
 
 @UtilityClass
-public class ProfileCommanderConstants {
+public class ProfileCommanderConstant {
     public static final String STATISTICS_MESSAGE = """
             Win rate - (%s%%) 🎲
             Head attack success rate - (%s%%) 🎰

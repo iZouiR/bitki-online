@@ -1,9 +1,9 @@
-package self.izouir.bitkionline.util.constants.commander;
+package self.izouir.bitkionline.util.constant.commander;
 
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
-public class HelpCommanderConstants {
+public class HelpCommanderConstant {
     public static final String HELP_MESSAGE = """
             At beta you enter the game with 3 random eggs
                             

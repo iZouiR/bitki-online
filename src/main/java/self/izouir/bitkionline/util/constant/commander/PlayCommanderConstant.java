@@ -1,9 +1,9 @@
-package self.izouir.bitkionline.util.constants.commander;
+package self.izouir.bitkionline.util.constant.commander;
 
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
-public class PlayCommanderConstants {
+public class PlayCommanderConstant {
     public static final Integer AWAIT_OPPONENT_SECONDS = 120;
     public static final String PRIVATE_BATTLE_LINK_MESSAGE_ENTITY_TYPE = "code";
 

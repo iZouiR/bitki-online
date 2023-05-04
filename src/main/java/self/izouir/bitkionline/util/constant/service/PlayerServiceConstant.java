@@ -1,9 +1,9 @@
-package self.izouir.bitkionline.util.constants.service;
+package self.izouir.bitkionline.util.constant.service;
 
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
-public class PlayerServiceConstants {
+public class PlayerServiceConstant {
     public static final Integer MINIMUM_USERNAME_LENGTH = 4;
     public static final Integer MAXIMUM_USERNAME_LENGTH = 16;
     public static final String USERNAME_ALPHABET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZабвгдеёжзиклмнопрстуфхцчшщЪыьэюяАБВГДЕЁЖЗИКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ_0123456789";

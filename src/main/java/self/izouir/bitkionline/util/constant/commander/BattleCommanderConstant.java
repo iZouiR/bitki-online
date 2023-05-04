@@ -1,9 +1,9 @@
-package self.izouir.bitkionline.util.constants.commander;
+package self.izouir.bitkionline.util.constant.commander;
 
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
-public class BattleCommanderConstants {
+public class BattleCommanderConstant {
     public static final Integer EGG_CHOICE_SECONDS = 30;
     public static final Integer ATTACK_CHOICE_SECONDS = 30;
     public static final Integer COUNT_DOWN_SECONDS = 3;
