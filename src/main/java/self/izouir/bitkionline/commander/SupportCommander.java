@@ -1,6 +1,6 @@
 package self.izouir.bitkionline.commander;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -18,25 +18,17 @@ import java.util.List;
 
 import static self.izouir.bitkionline.util.BotMessageSender.deleteMessage;
 import static self.izouir.bitkionline.util.BotMessageSender.sendMessage;
-import static self.izouir.bitkionline.util.constants.MessageConstants.PLAYER_DID_NOT_FINISH_REGISTRATION_MESSAGE;
-import static self.izouir.bitkionline.util.constants.MessageConstants.PLAYER_NOT_REGISTERED_MESSAGE;
-import static self.izouir.bitkionline.util.constants.ReplyMarkupConstants.CLOSE_BUTTON_TEXT;
-import static self.izouir.bitkionline.util.constants.commander.SupportCommanderConstants.*;
+import static self.izouir.bitkionline.util.constant.MessageConstant.PLAYER_DID_NOT_FINISH_REGISTRATION_MESSAGE;
+import static self.izouir.bitkionline.util.constant.MessageConstant.PLAYER_NOT_REGISTERED_MESSAGE;
+import static self.izouir.bitkionline.util.constant.ReplyMarkupConstant.CLOSE_BUTTON_TEXT;
+import static self.izouir.bitkionline.util.constant.commander.SupportCommanderConstant.*;
 
+@RequiredArgsConstructor
 @Component
 public class SupportCommander {
     private final PlayerService playerService;
     private final PlayerBotService playerBotService;
     private final SupportMessageService supportMessageService;
-
-    @Autowired
-    public SupportCommander(PlayerService playerService,
-                            PlayerBotService playerBotService,
-                            SupportMessageService supportMessageService) {
-        this.playerService = playerService;
-        this.playerBotService = playerBotService;
-        this.supportMessageService = supportMessageService;
-    }
 
     public void processCallbackQuery(DispatcherBot bot, Long chatId, Integer messageId, String callbackData) {
         if (callbackData.equals("SUPPORT_CLOSE")) {
