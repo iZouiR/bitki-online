@@ -1,6 +1,6 @@
 package self.izouir.bitkionline.commander;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -13,17 +13,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static self.izouir.bitkionline.util.BotMessageSender.*;
-import static self.izouir.bitkionline.util.constants.ReplyMarkupConstants.CLOSE_BUTTON_TEXT;
-import static self.izouir.bitkionline.util.constants.ReplyMarkupConstants.REFRESH_BUTTON_TEXT;
+import static self.izouir.bitkionline.util.constant.ReplyMarkupConstant.CLOSE_BUTTON_TEXT;
+import static self.izouir.bitkionline.util.constant.ReplyMarkupConstant.REFRESH_BUTTON_TEXT;
 
+@RequiredArgsConstructor
 @Component
 public class RankCommander {
     private final PlayerService playerService;
-
-    @Autowired
-    public RankCommander(PlayerService playerService) {
-        this.playerService = playerService;
-    }
 
     public void processCallbackQuery(DispatcherBot bot, Long chatId, Integer messageId, String callbackData) {
         switch (callbackData) {
