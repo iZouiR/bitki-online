@@ -1,7 +1,7 @@
 package self.izouir.bitkionline.service.battle;
 
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import self.izouir.bitkionline.entity.battle.PlayerBattle;
 import self.izouir.bitkionline.entity.egg.Egg;
@@ -9,14 +9,10 @@ import self.izouir.bitkionline.entity.player.Player;
 import self.izouir.bitkionline.exception.PlayerBattleNotFoundException;
 import self.izouir.bitkionline.repository.battle.PlayerBattleRepository;
 
+@RequiredArgsConstructor
 @Service
 public class PlayerBattleService {
     private final PlayerBattleRepository playerBattleRepository;
-
-    @Autowired
-    public PlayerBattleService(PlayerBattleRepository playerBattleRepository) {
-        this.playerBattleRepository = playerBattleRepository;
-    }
 
     public PlayerBattle findById(Long id) {
         return playerBattleRepository.findById(id).orElseThrow(
