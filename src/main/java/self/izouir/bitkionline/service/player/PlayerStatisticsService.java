@@ -1,6 +1,6 @@
 package self.izouir.bitkionline.service.player;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import self.izouir.bitkionline.entity.egg.Egg;
 import self.izouir.bitkionline.entity.egg.EggAttackType;
@@ -11,14 +11,10 @@ import self.izouir.bitkionline.repository.player.PlayerStatisticsRepository;
 
 import java.util.Optional;
 
+@RequiredArgsConstructor
 @Service
 public class PlayerStatisticsService {
     private final PlayerStatisticsRepository playerStatisticsRepository;
-
-    @Autowired
-    public PlayerStatisticsService(PlayerStatisticsRepository playerStatisticsRepository) {
-        this.playerStatisticsRepository = playerStatisticsRepository;
-    }
 
     public PlayerStatistics findByPlayerId(Long playerId) {
         Optional<PlayerStatistics> optional = playerStatisticsRepository.findByPlayerId(playerId);
