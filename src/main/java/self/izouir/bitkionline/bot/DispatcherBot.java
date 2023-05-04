@@ -1,6 +1,6 @@
 package self.izouir.bitkionline.bot;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -12,6 +12,7 @@ import java.util.concurrent.Executors;
 
 import static self.izouir.bitkionline.util.BotMessageSender.sendMessage;
 
+@RequiredArgsConstructor
 @Component
 public class DispatcherBot extends TelegramLongPollingBot {
     private static final ExecutorService EXECUTOR = Executors.newWorkStealingPool();
@@ -27,25 +28,6 @@ public class DispatcherBot extends TelegramLongPollingBot {
     private final ProfileCommander profileCommander;
     private final HelpCommander helpCommander;
     private final SupportCommander supportCommander;
-
-    @Autowired
-    public DispatcherBot(StartCommander startCommander,
-                         PlayCommander playCommander,
-                         BattleCommander battleCommander,
-                         RankCommander rankCommander,
-                         EggsCommander eggsCommander,
-                         ProfileCommander profileCommander,
-                         HelpCommander helpCommander,
-                         SupportCommander supportCommander) {
-        this.startCommander = startCommander;
-        this.playCommander = playCommander;
-        this.battleCommander = battleCommander;
-        this.rankCommander = rankCommander;
-        this.eggsCommander = eggsCommander;
-        this.profileCommander = profileCommander;
-        this.helpCommander = helpCommander;
-        this.supportCommander = supportCommander;
-    }
 
     @Override
     public void onUpdateReceived(Update update) {
