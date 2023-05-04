@@ -1,7 +1,7 @@
 package self.izouir.bitkionline.service.battle;
 
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import self.izouir.bitkionline.entity.battle.PlayerBattle;
 import self.izouir.bitkionline.entity.battle.PrivateBattle;
@@ -11,22 +11,15 @@ import self.izouir.bitkionline.repository.battle.PrivateBattleRepository;
 
 import java.util.Random;
 
-import static self.izouir.bitkionline.util.constants.service.PrivateBattleServiceConstants.LINK_ALPHABET;
-import static self.izouir.bitkionline.util.constants.service.PrivateBattleServiceConstants.LINK_LENGTH;
+import static self.izouir.bitkionline.util.constant.service.PrivateBattleServiceConstant.LINK_ALPHABET;
+import static self.izouir.bitkionline.util.constant.service.PrivateBattleServiceConstant.LINK_LENGTH;
 
+@RequiredArgsConstructor
 @Service
 public class PrivateBattleService {
     private final PlayerBattleService playerBattleService;
     private final PrivateBattleRepository privateBattleRepository;
-    private final Random random;
-
-    @Autowired
-    public PrivateBattleService(PlayerBattleService playerBattleService,
-                                PrivateBattleRepository privateBattleRepository) {
-        this.playerBattleService = playerBattleService;
-        this.privateBattleRepository = privateBattleRepository;
-        this.random = new Random();
-    }
+    private final Random random = new Random();
 
     public PrivateBattle findByLink(String link) {
         return privateBattleRepository.findByLink(link)
