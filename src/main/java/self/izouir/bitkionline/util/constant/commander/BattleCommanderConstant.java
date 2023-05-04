@@ -1,9 +1,9 @@
-package self.izouir.bitkionline.util.constants.commander;
+package self.izouir.bitkionline.util.constant.commander;
 
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
-public class BattleCommanderConstants {
+public class BattleCommanderConstant {
     public static final Integer EGG_CHOICE_SECONDS = 30;
     public static final Integer ATTACK_CHOICE_SECONDS = 30;
     public static final Integer COUNT_DOWN_SECONDS = 3;
@@ -20,7 +20,7 @@ public class BattleCommanderConstants {
     public static final String DRAW_MESSAGE = "You played draw, eggs were cracked, ranks remain with their current states \uD83D\uDD4A";
     public static final String OPPONENT_SURRENDER_MESSAGE = "%s surrendered, you're tough enough to win without a fight \uD83E\uDDB7";
     public static final String SURRENDER_MESSAGE = "You're a coward, defeated without battle \uD83E\uDD21";
-    public static final String OPPONENT_INFO_BUTTON_TEXT = "%s (%d \uD83C\uDF96) ☠️";
+    public static final String OPPONENT_INFO_BUTTON_TEXT = "%s (%d \uD83C\uDF96 (%s%%) 🎲) ☠️";
     public static final String JOIN_FIGHT_BUTTON_TEXT = "Ok, let's dance!";
     public static final String SURRENDER_BUTTON_TEXT = "Surrender";
     public static final String HEAD_ATTACK_BUTTON_TEXT = "Head (\uD83D\uDC80): %s 💥 (%s%%)";

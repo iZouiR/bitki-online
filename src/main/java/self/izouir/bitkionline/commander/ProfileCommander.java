@@ -1,6 +1,6 @@
 package self.izouir.bitkionline.commander;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -10,35 +10,33 @@ import self.izouir.bitkionline.bot.DispatcherBot;
 import self.izouir.bitkionline.entity.player.Player;
 import self.izouir.bitkionline.entity.player.PlayerBot;
 import self.izouir.bitkionline.entity.player.PlayerBotState;
+import self.izouir.bitkionline.entity.player.PlayerStatistics;
 import self.izouir.bitkionline.service.player.PlayerBotService;
 import self.izouir.bitkionline.service.player.PlayerService;
+import self.izouir.bitkionline.service.player.PlayerStatisticsService;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static self.izouir.bitkionline.util.BotMessageSender.*;
-import static self.izouir.bitkionline.util.constants.MessageConstants.*;
-import static self.izouir.bitkionline.util.constants.ReplyMarkupConstants.*;
-import static self.izouir.bitkionline.util.constants.commander.ProfileCommanderConstants.*;
+import static self.izouir.bitkionline.util.constant.MessageConstant.*;
+import static self.izouir.bitkionline.util.constant.ReplyMarkupConstant.*;
+import static self.izouir.bitkionline.util.constant.commander.ProfileCommanderConstant.*;
 
+@RequiredArgsConstructor
 @Component
 public class ProfileCommander {
+    private final PlayerStatisticsService playerStatisticsService;
     private final PlayerService playerService;
     private final PlayerBotService playerBotService;
 
-    @Autowired
-    public ProfileCommander(PlayerService playerService,
-                            PlayerBotService playerBotService) {
-        this.playerService = playerService;
-        this.playerBotService = playerBotService;
-    }
-
-    public void processCallbackQuery(DispatcherBot bot, Long chatId, Integer messageId, String callbackData) {
+    public void processCallbackQuery(final DispatcherBot bot, final Long chatId, final Integer messageId, final String callbackData) {
         switch (callbackData) {
+            case "PROFILE_STATISTICS" -> showStatistics(bot, chatId, messageId);
             case "PROFILE_USERNAME_CHANGE" -> startUsernameChange(bot, chatId, messageId);
             case "PROFILE_USERNAME_CHANGE_CANCEL" -> cancelUsernameChange(bot, chatId, messageId);
             case "PROFILE_EGGS_REFRESH" -> {
-                EditMessageText message = EditMessageText.builder()
+                final EditMessageText message = EditMessageText.builder()
                         .chatId(String.valueOf(chatId))
                         .messageId(messageId)
                         .text(EGGS_REFRESH_CONFIRMATION_MESSAGE)
@@ -51,7 +49,7 @@ public class ProfileCommander {
                 sendEditMessageText(bot, chatId, messageId, EGGS_REFRESH_SUCCESS_MESSAGE);
             }
             case "PROFILE_DROP" -> {
-                EditMessageText message = EditMessageText.builder()
+                final EditMessageText message = EditMessageText.builder()
                         .chatId(String.valueOf(chatId))
                         .messageId(messageId)
                         .text(PROFILE_DROP_CONFIRMATION_MESSAGE)
@@ -63,9 +61,9 @@ public class ProfileCommander {
                 playerService.dropPlayerProfile(chatId);
                 sendEditMessageText(bot, chatId, messageId, PROFILE_DROP_SUCCESS_MESSAGE);
             }
-            case "PROFILE_EGGS_REFRESH_NO", "PROFILE_DROP_NO" -> {
-                Player player = playerService.findByChatId(chatId);
-                EditMessageText message = EditMessageText.builder()
+            case "PROFILE_STATISTICS_CANCEL", "PROFILE_EGGS_REFRESH_NO", "PROFILE_DROP_NO" -> {
+                final Player player = playerService.findByChatId(chatId);
+                final EditMessageText message = EditMessageText.builder()
                         .chatId(String.valueOf(chatId))
                         .messageId(messageId)
                         .text(playerService.generatePlayerProfileInfo(player))
@@ -77,11 +75,11 @@ public class ProfileCommander {
         }
     }
 
-    public void profile(DispatcherBot bot, Long chatId) {
+    public void profile(final DispatcherBot bot, final Long chatId) {
         if (playerService.existsByChatId(chatId)) {
-            Player player = playerService.findByChatId(chatId);
+            final Player player = playerService.findByChatId(chatId);
             if (player.getRegisteredAt() != null) {
-                SendMessage message = SendMessage.builder()
+                final SendMessage message = SendMessage.builder()
                         .chatId(String.valueOf(chatId))
                         .text(playerService.generatePlayerProfileInfo(player))
                         .build();
@@ -95,10 +93,33 @@ public class ProfileCommander {
         }
     }
 
-    private void startUsernameChange(DispatcherBot bot, Long chatId, Integer messageId) {
-        Player player = playerService.findByChatId(chatId);
-        playerBotService.setLastState(player, PlayerBotState.AWAIT_NEW_USERNAME);
-        EditMessageText message = EditMessageText.builder()
+    private void showStatistics(final DispatcherBot bot, final Long chatId, final Integer messageId) {
+        final PlayerStatistics playerStatistics = playerStatisticsService.findByPlayerId(playerService.findByChatId(chatId).getId());
+        final EditMessageText message = EditMessageText.builder()
+                .chatId(String.valueOf(chatId))
+                .messageId(messageId)
+                .text(String.format(STATISTICS_MESSAGE,
+                        playerStatisticsService.calculateWinRate(playerStatistics),
+                        playerStatisticsService.calculateHeadAttackSuccessRate(playerStatistics),
+                        playerStatisticsService.calculateSideAttackSuccessRate(playerStatistics),
+                        playerStatisticsService.calculateAssAttackSuccessRate(playerStatistics),
+                        playerStatistics.getTotalDamageDealt(),
+                        playerStatistics.getTotalDamageTaken(),
+                        playerStatistics.getTotalRankPointsEarned(),
+                        playerStatistics.getTotalRankPointsLost(),
+                        playerStatistics.getTotalEggsObtained(),
+                        playerStatistics.getHolyEggsObtained(),
+                        playerStatistics.getStrongEggsObtained(),
+                        playerStatistics.getWeakEggsObtained()))
+                .build();
+        message.setReplyMarkup(generateStatisticsReplyMarkup());
+        sendEditMessageText(bot, message);
+    }
+
+    private void startUsernameChange(final DispatcherBot bot, final Long chatId, final Integer messageId) {
+        final Player player = playerService.findByChatId(chatId);
+        playerBotService.applyLastState(player, PlayerBotState.AWAIT_NEW_USERNAME);
+        final EditMessageText message = EditMessageText.builder()
                 .chatId(String.valueOf(chatId))
                 .messageId(messageId)
                 .text(AWAIT_NEW_USERNAME_MESSAGE)
@@ -107,10 +128,10 @@ public class ProfileCommander {
         sendEditMessageText(bot, message);
     }
 
-    private void cancelUsernameChange(DispatcherBot bot, Long chatId, Integer messageId) {
-        Player player = playerService.findByChatId(chatId);
-        playerBotService.setLastState(player, PlayerBotState.NO_STATE);
-        EditMessageText message = EditMessageText.builder()
+    private void cancelUsernameChange(final DispatcherBot bot, final Long chatId, final Integer messageId) {
+        final Player player = playerService.findByChatId(chatId);
+        playerBotService.applyLastState(player, PlayerBotState.NO_STATE);
+        final EditMessageText message = EditMessageText.builder()
                 .chatId(String.valueOf(chatId))
                 .messageId(messageId)
                 .text(playerService.generatePlayerProfileInfo(player))
@@ -119,10 +140,10 @@ public class ProfileCommander {
         sendEditMessageText(bot, message);
     }
 
-    public boolean finishUsernameChange(DispatcherBot bot, Long chatId, String username) {
+    public boolean finishUsernameChange(final DispatcherBot bot, final Long chatId, final String username) {
         if (playerService.existsByChatId(chatId)) {
-            Player player = playerService.findByChatId(chatId);
-            PlayerBot playerBot = playerBotService.findByPlayerId(player.getId());
+            final Player player = playerService.findByChatId(chatId);
+            final PlayerBot playerBot = playerBotService.findByPlayerId(player.getId());
             if (playerBot.getLastState() == PlayerBotState.AWAIT_NEW_USERNAME) {
                 if (playerService.isAccurateUsername(username)) {
                     if (playerService.notExistsByUsernameIgnoreCase(username)) {
@@ -141,33 +162,40 @@ public class ProfileCommander {
     }
 
     private InlineKeyboardMarkup generateReplyMarkup() {
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        final InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        final List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
-        List<InlineKeyboardButton> changeUsernameRow = new ArrayList<>();
-        InlineKeyboardButton changeUsernameButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> statisticsRow = new ArrayList<>();
+        final InlineKeyboardButton statisticsButton = new InlineKeyboardButton();
+        statisticsButton.setText(STATISTICS_BUTTON_TEXT);
+        statisticsButton.setCallbackData("PROFILE_STATISTICS");
+        statisticsRow.add(statisticsButton);
+
+        final List<InlineKeyboardButton> changeUsernameRow = new ArrayList<>();
+        final InlineKeyboardButton changeUsernameButton = new InlineKeyboardButton();
         changeUsernameButton.setText(CHANGE_USERNAME_BUTTON_TEXT);
         changeUsernameButton.setCallbackData("PROFILE_USERNAME_CHANGE");
         changeUsernameRow.add(changeUsernameButton);
 
-        List<InlineKeyboardButton> refreshEggsRow = new ArrayList<>();
-        InlineKeyboardButton refreshEggsButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> refreshEggsRow = new ArrayList<>();
+        final InlineKeyboardButton refreshEggsButton = new InlineKeyboardButton();
         refreshEggsButton.setText(REFRESH_EGGS_BUTTON_TEXT);
         refreshEggsButton.setCallbackData("PROFILE_EGGS_REFRESH");
         refreshEggsRow.add(refreshEggsButton);
 
-        List<InlineKeyboardButton> dropProfileRow = new ArrayList<>();
-        InlineKeyboardButton dropProfileButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> dropProfileRow = new ArrayList<>();
+        final InlineKeyboardButton dropProfileButton = new InlineKeyboardButton();
         dropProfileButton.setText(DROP_PROFILE_BUTTON_TEXT);
         dropProfileButton.setCallbackData("PROFILE_DROP");
         dropProfileRow.add(dropProfileButton);
 
-        List<InlineKeyboardButton> closeProfileRow = new ArrayList<>();
-        InlineKeyboardButton closeProfileButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> closeProfileRow = new ArrayList<>();
+        final InlineKeyboardButton closeProfileButton = new InlineKeyboardButton();
         closeProfileButton.setText(CLOSE_BUTTON_TEXT);
         closeProfileButton.setCallbackData("PROFILE_CLOSE");
         closeProfileRow.add(closeProfileButton);
 
+        keyboard.add(statisticsRow);
         keyboard.add(changeUsernameRow);
         keyboard.add(refreshEggsRow);
         keyboard.add(dropProfileRow);
@@ -176,12 +204,27 @@ public class ProfileCommander {
         return markup;
     }
 
-    private InlineKeyboardMarkup generateUsernameChangeReplyMarkup() {
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+    private InlineKeyboardMarkup generateStatisticsReplyMarkup() {
+        final InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        final List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
-        List<InlineKeyboardButton> cancelRow = new ArrayList<>();
-        InlineKeyboardButton cancelButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> cancelRow = new ArrayList<>();
+        final InlineKeyboardButton cancelButton = new InlineKeyboardButton();
+        cancelButton.setText(CANCEL_BUTTON_TEXT);
+        cancelButton.setCallbackData("PROFILE_STATISTICS_CANCEL");
+        cancelRow.add(cancelButton);
+
+        keyboard.add(cancelRow);
+        markup.setKeyboard(keyboard);
+        return markup;
+    }
+
+    private InlineKeyboardMarkup generateUsernameChangeReplyMarkup() {
+        final InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        final List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+
+        final List<InlineKeyboardButton> cancelRow = new ArrayList<>();
+        final InlineKeyboardButton cancelButton = new InlineKeyboardButton();
         cancelButton.setText(CANCEL_BUTTON_TEXT);
         cancelButton.setCallbackData("PROFILE_USERNAME_CHANGE_CANCEL");
         cancelRow.add(cancelButton);
@@ -192,15 +235,15 @@ public class ProfileCommander {
     }
 
     private InlineKeyboardMarkup generateEggsRefreshConfirmationReplyMarkup() {
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        final InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        final List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
-        List<InlineKeyboardButton> confirmationRow = new ArrayList<>();
-        InlineKeyboardButton yesButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> confirmationRow = new ArrayList<>();
+        final InlineKeyboardButton yesButton = new InlineKeyboardButton();
         yesButton.setText(YES_BUTTON_TEXT);
         yesButton.setCallbackData("PROFILE_EGGS_REFRESH_YES");
         confirmationRow.add(yesButton);
-        InlineKeyboardButton noButton = new InlineKeyboardButton();
+        final InlineKeyboardButton noButton = new InlineKeyboardButton();
         noButton.setText(NO_BUTTON_TEXT);
         noButton.setCallbackData("PROFILE_EGGS_REFRESH_NO");
         confirmationRow.add(noButton);
@@ -211,15 +254,15 @@ public class ProfileCommander {
     }
 
     private InlineKeyboardMarkup generateDropConfirmationReplyMarkup() {
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        final InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        final List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
-        List<InlineKeyboardButton> confirmationRow = new ArrayList<>();
-        InlineKeyboardButton yesButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> confirmationRow = new ArrayList<>();
+        final InlineKeyboardButton yesButton = new InlineKeyboardButton();
         yesButton.setText(YES_BUTTON_TEXT);
         yesButton.setCallbackData("PROFILE_DROP_YES");
         confirmationRow.add(yesButton);
-        InlineKeyboardButton noButton = new InlineKeyboardButton();
+        final InlineKeyboardButton noButton = new InlineKeyboardButton();
         noButton.setText(NO_BUTTON_TEXT);
         noButton.setCallbackData("PROFILE_DROP_NO");
         confirmationRow.add(noButton);

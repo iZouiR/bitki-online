@@ -1,6 +1,6 @@
 package self.izouir.bitkionline.commander;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import self.izouir.bitkionline.bot.DispatcherBot;
 import self.izouir.bitkionline.entity.player.Player;
@@ -10,27 +10,19 @@ import self.izouir.bitkionline.service.player.PlayerBotService;
 import self.izouir.bitkionline.service.player.PlayerService;
 
 import static self.izouir.bitkionline.util.BotMessageSender.sendMessage;
-import static self.izouir.bitkionline.util.constants.MessageConstants.*;
-import static self.izouir.bitkionline.util.constants.commander.StartCommanderConstants.*;
+import static self.izouir.bitkionline.util.constant.MessageConstant.*;
+import static self.izouir.bitkionline.util.constant.commander.StartCommanderConstant.*;
 
+@RequiredArgsConstructor
 @Component
 public class StartCommander {
     private final HelpCommander helpCommander;
     private final PlayerService playerService;
     private final PlayerBotService playerBotService;
 
-    @Autowired
-    public StartCommander(HelpCommander helpCommander,
-                          PlayerService playerService,
-                          PlayerBotService playerBotService) {
-        this.helpCommander = helpCommander;
-        this.playerService = playerService;
-        this.playerBotService = playerBotService;
-    }
-
-    public void start(DispatcherBot bot, Long chatId) {
+    public void start(final DispatcherBot bot, final Long chatId) {
         if (playerService.existsByChatId(chatId)) {
-            Player player = playerService.findByChatId(chatId);
+            final Player player = playerService.findByChatId(chatId);
             if (player.getRegisteredAt() != null) {
                 sendMessage(bot, chatId, String.format(GREETINGS_MESSAGE, player.getUsername()));
             } else {
@@ -42,14 +34,14 @@ public class StartCommander {
         }
     }
 
-    private void startRegistration(Long chatId) {
+    private void startRegistration(final Long chatId) {
         playerService.createNotRegisteredPlayer(chatId);
     }
 
-    public boolean finishRegistration(DispatcherBot bot, Long chatId, String username) {
+    public boolean finishRegistration(final DispatcherBot bot, final Long chatId, final String username) {
         if (playerService.existsByChatId(chatId)) {
-            Player player = playerService.findByChatId(chatId);
-            PlayerBot playerBot = playerBotService.findByPlayerId(player.getId());
+            final Player player = playerService.findByChatId(chatId);
+            final PlayerBot playerBot = playerBotService.findByPlayerId(player.getId());
             if (playerBot.getLastState() == PlayerBotState.AWAIT_USERNAME) {
                 if (playerService.isAccurateUsername(username)) {
                     if (playerService.notExistsByUsernameIgnoreCase(username)) {

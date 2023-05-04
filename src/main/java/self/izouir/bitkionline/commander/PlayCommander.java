@@ -1,7 +1,8 @@
 package self.izouir.bitkionline.commander;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -33,14 +34,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static self.izouir.bitkionline.util.BotMessageSender.*;
-import static self.izouir.bitkionline.util.constants.MessageConstants.*;
-import static self.izouir.bitkionline.util.constants.ReplyMarkupConstants.CANCEL_BUTTON_TEXT;
-import static self.izouir.bitkionline.util.constants.ReplyMarkupConstants.CLOSE_BUTTON_TEXT;
-import static self.izouir.bitkionline.util.constants.commander.PlayCommanderConstants.*;
+import static self.izouir.bitkionline.util.constant.MessageConstant.*;
+import static self.izouir.bitkionline.util.constant.ReplyMarkupConstant.CANCEL_BUTTON_TEXT;
+import static self.izouir.bitkionline.util.constant.ReplyMarkupConstant.CLOSE_BUTTON_TEXT;
+import static self.izouir.bitkionline.util.constant.commander.PlayCommanderConstant.*;
 
-@Slf4j
+@RequiredArgsConstructor
 @Component
 public class PlayCommander {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PlayCommander.class);
     private static final ExecutorService EXECUTOR = Executors.newWorkStealingPool();
     private static final Queue<Long> MATCH_MAKING_CHATS_QUEUE = new ConcurrentLinkedQueue<>();
     private static final Map<Long, Integer> MATCH_MAKING_CHATS_TO_MESSAGES = new ConcurrentHashMap<>();
@@ -54,29 +56,12 @@ public class PlayCommander {
     private final PlayerBotService playerBotService;
     private final BattleCommander battleCommander;
 
-    @Autowired
-    public PlayCommander(PlayerBattleService playerBattleService,
-                         MatchMakingBattleService matchMakingBattleService,
-                         PrivateBattleService privateBattleService,
-                         EggService eggService,
-                         PlayerService playerService,
-                         PlayerBotService playerBotService,
-                         BattleCommander battleCommander) {
-        this.playerBattleService = playerBattleService;
-        this.matchMakingBattleService = matchMakingBattleService;
-        this.privateBattleService = privateBattleService;
-        this.eggService = eggService;
-        this.playerService = playerService;
-        this.playerBotService = playerBotService;
-        this.battleCommander = battleCommander;
-    }
-
-    public void processCallbackQuery(DispatcherBot bot, Long chatId, Integer messageId, String callbackData) {
+    public void processCallbackQuery(final DispatcherBot bot, final Long chatId, final Integer messageId, final String callbackData) {
         switch (callbackData) {
             case "PLAY_MATCH_MAKING" -> {
-                Player player = playerService.findByChatId(chatId);
+                final Player player = playerService.findByChatId(chatId);
                 if (!player.getIsPlaying()) {
-                    playerService.setIsPlaying(chatId, true);
+                    playerService.applyIsPlaying(chatId, true);
                     if (!MATCH_MAKING_CHATS_QUEUE.isEmpty() && !MATCH_MAKING_CHATS_QUEUE.contains(chatId)) {
                         startMatchMakingBattle(bot, chatId, messageId);
                         return;
@@ -88,12 +73,12 @@ public class PlayCommander {
             }
             case "PLAY_MATCH_MAKING_CANCEL" -> {
                 cancelMatchMakingBattle(bot, chatId, messageId);
-                playerService.setIsPlaying(chatId, false);
+                playerService.applyIsPlaying(chatId, false);
             }
             case "PLAY_PRIVATE_BATTLE" -> {
-                Player player = playerService.findByChatId(chatId);
+                final Player player = playerService.findByChatId(chatId);
                 if (!player.getIsPlaying()) {
-                    EditMessageText message = EditMessageText.builder()
+                    final EditMessageText message = EditMessageText.builder()
                             .chatId(String.valueOf(chatId))
                             .messageId(messageId)
                             .text(CHOOSING_PRIVATE_BATTLE_TYPE_MESSAGE)
@@ -105,10 +90,10 @@ public class PlayCommander {
                 }
             }
             case "PLAY_PRIVATE_BATTLE_CREATE_GAME" -> {
-                Player player = playerService.findByChatId(chatId);
+                final Player player = playerService.findByChatId(chatId);
                 if (!player.getIsPlaying()) {
-                    playerService.setIsPlaying(chatId, true);
-                    PrivateBattle privateBattle = privateBattleService.createByFirstPlayer(player);
+                    playerService.applyIsPlaying(chatId, true);
+                    final PrivateBattle privateBattle = privateBattleService.createByFirstPlayer(player);
                     PRIVATE_BATTLE_CHATS_TO_LINKS.put(chatId, privateBattle.getLink());
                     awaitPrivateBattleOpponent(bot, chatId, messageId, privateBattle.getLink());
                 } else {
@@ -117,14 +102,14 @@ public class PlayCommander {
             }
             case "PLAY_PRIVATE_BATTLE_CREATE_GAME_CANCEL" -> {
                 cancelPrivateBattle(bot, chatId, messageId);
-                playerService.setIsPlaying(chatId, false);
+                playerService.applyIsPlaying(chatId, false);
             }
             case "PLAY_PRIVATE_BATTLE_JOIN_GAME" -> {
-                Player player = playerService.findByChatId(chatId);
+                final Player player = playerService.findByChatId(chatId);
                 if (!player.getIsPlaying()) {
-                    playerService.setIsPlaying(chatId, true);
-                    playerBotService.setLastState(player, PlayerBotState.AWAIT_PRIVATE_BATTLE_LINK);
-                    EditMessageText message = EditMessageText.builder()
+                    playerService.applyIsPlaying(chatId, true);
+                    playerBotService.applyLastState(player, PlayerBotState.AWAIT_PRIVATE_BATTLE_LINK);
+                    final EditMessageText message = EditMessageText.builder()
                             .chatId(String.valueOf(chatId))
                             .messageId(messageId)
                             .text(AWAIT_PRIVATE_BATTLE_LINK_MESSAGE)
@@ -136,9 +121,9 @@ public class PlayCommander {
                 }
             }
             case "PLAY_PRIVATE_BATTLE_JOIN_GAME_CANCEL" -> {
-                Player player = playerService.findByChatId(chatId);
-                playerBotService.setLastState(player, PlayerBotState.NO_STATE);
-                EditMessageText message = EditMessageText.builder()
+                final Player player = playerService.findByChatId(chatId);
+                playerBotService.applyLastState(player, PlayerBotState.NO_STATE);
+                final EditMessageText message = EditMessageText.builder()
                         .chatId(String.valueOf(chatId))
                         .messageId(messageId)
                         .text(CHOOSING_PRIVATE_BATTLE_TYPE_MESSAGE)
@@ -147,8 +132,8 @@ public class PlayCommander {
                 sendEditMessageText(bot, message);
             }
             case "PLAY_PRIVATE_BATTLE_CANCEL", "PLAY_OPPONENT_NOT_FOUND_CANCEL" -> {
-                playerService.setIsPlaying(chatId, false);
-                EditMessageText message = EditMessageText.builder()
+                playerService.applyIsPlaying(chatId, false);
+                final EditMessageText message = EditMessageText.builder()
                         .chatId(String.valueOf(chatId))
                         .messageId(messageId)
                         .text(CHOOSING_BATTLE_TYPE_MESSAGE)
@@ -160,14 +145,14 @@ public class PlayCommander {
         }
     }
 
-    public void play(DispatcherBot bot, Long chatId) {
+    public void play(final DispatcherBot bot, final Long chatId) {
         if (playerService.existsByChatId(chatId)) {
-            Player player = playerService.findByChatId(chatId);
+            final Player player = playerService.findByChatId(chatId);
             if (player.getRegisteredAt() != null) {
                 if (!player.getIsPlaying()) {
-                    List<Egg> notCrackedInventory = eggService.findAllByOwnerWhereIsNotCracked(player);
+                    final List<Egg> notCrackedInventory = eggService.findAllByOwnerWhereIsNotCracked(player);
                     if (!notCrackedInventory.isEmpty()) {
-                        SendMessage message = SendMessage.builder()
+                        final SendMessage message = SendMessage.builder()
                                 .chatId(String.valueOf(chatId))
                                 .text(CHOOSING_BATTLE_TYPE_MESSAGE)
                                 .build();
@@ -187,21 +172,21 @@ public class PlayCommander {
         }
     }
 
-    private void startMatchMakingBattle(DispatcherBot bot, Long chatId, Integer messageId) {
-        Player player = playerService.findByChatId(chatId);
-        Player opponent = playerService.findByChatId(MATCH_MAKING_CHATS_QUEUE.poll());
-        MatchMakingBattle matchMakingBattle = matchMakingBattleService.create(player, opponent);
-        Integer opponentMessageId = MATCH_MAKING_CHATS_TO_MESSAGES.remove(opponent.getChatId());
+    private void startMatchMakingBattle(final DispatcherBot bot, final Long chatId, final Integer messageId) {
+        final Player player = playerService.findByChatId(chatId);
+        final Player opponent = playerService.findByChatId(MATCH_MAKING_CHATS_QUEUE.poll());
+        final MatchMakingBattle matchMakingBattle = matchMakingBattleService.create(player, opponent);
+        final Integer opponentMessageId = MATCH_MAKING_CHATS_TO_MESSAGES.remove(opponent.getChatId());
         deleteMessage(bot, chatId, messageId);
         deleteMessage(bot, opponent.getChatId(), opponentMessageId);
         EXECUTOR.execute(() -> battleCommander.startBattle(bot, chatId, matchMakingBattle.getPlayerBattle()));
         EXECUTOR.execute(() -> battleCommander.startBattle(bot, opponent.getChatId(), matchMakingBattle.getPlayerBattle()));
     }
 
-    private void awaitMatchMakingBattleOpponent(DispatcherBot bot, Long chatId, Integer messageId) {
+    private void awaitMatchMakingBattleOpponent(final DispatcherBot bot, final Long chatId, final Integer messageId) {
         MATCH_MAKING_CHATS_QUEUE.offer(chatId);
         MATCH_MAKING_CHATS_TO_MESSAGES.put(chatId, messageId);
-        EditMessageText message = EditMessageText.builder()
+        final EditMessageText message = EditMessageText.builder()
                 .chatId(String.valueOf(chatId))
                 .messageId(messageId)
                 .text(AWAIT_MATCH_MAKING_BATTLE_OPPONENT_MESSAGE)
@@ -217,15 +202,15 @@ public class PlayCommander {
                     cancelMatchMakingBattleOnTime(bot, chatId, messageId);
                 }
             }
-        } catch (InterruptedException e) {
-            log.error(e.getMessage());
+        } catch (final InterruptedException e) {
+            LOGGER.error(e.getMessage());
         }
     }
 
-    private void cancelMatchMakingBattle(DispatcherBot bot, Long chatId, Integer messageId) {
+    private void cancelMatchMakingBattle(final DispatcherBot bot, final Long chatId, final Integer messageId) {
         MATCH_MAKING_CHATS_QUEUE.remove(chatId);
         MATCH_MAKING_CHATS_TO_MESSAGES.remove(chatId);
-        EditMessageText message = EditMessageText.builder()
+        final EditMessageText message = EditMessageText.builder()
                 .chatId(String.valueOf(chatId))
                 .messageId(messageId)
                 .text(CHOOSING_BATTLE_TYPE_MESSAGE)
@@ -234,10 +219,10 @@ public class PlayCommander {
         sendEditMessageText(bot, message);
     }
 
-    private void cancelMatchMakingBattleOnTime(DispatcherBot bot, Long chatId, Integer messageId) {
+    private void cancelMatchMakingBattleOnTime(final DispatcherBot bot, final Long chatId, final Integer messageId) {
         MATCH_MAKING_CHATS_QUEUE.remove(chatId);
         MATCH_MAKING_CHATS_TO_MESSAGES.remove(chatId);
-        EditMessageText cancelMessage = EditMessageText.builder()
+        final EditMessageText cancelMessage = EditMessageText.builder()
                 .chatId(String.valueOf(chatId))
                 .messageId(messageId)
                 .text(OPPONENT_NOT_FOUND_MESSAGE)
@@ -246,26 +231,26 @@ public class PlayCommander {
         sendEditMessageText(bot, cancelMessage);
     }
 
-    private void startPrivateBattle(DispatcherBot bot, Long chatId, PlayerBattle playerBattle) {
-        Player player = playerService.findByChatId(chatId);
-        playerBattleService.setSecondPlayer(playerBattle, player);
-        playerBotService.setLastState(player, PlayerBotState.NO_STATE);
-        Player opponent = playerBattle.getFirstPlayer();
-        Integer opponentMessageId = PRIVATE_BATTLE_CHATS_TO_MESSAGES.remove(opponent.getChatId());
+    private void startPrivateBattle(final DispatcherBot bot, final Long chatId, final PlayerBattle playerBattle) {
+        final Player player = playerService.findByChatId(chatId);
+        playerBattleService.applySecondPlayer(playerBattle, player);
+        playerBotService.applyLastState(player, PlayerBotState.NO_STATE);
+        final Player opponent = playerBattle.getFirstPlayer();
+        final Integer opponentMessageId = PRIVATE_BATTLE_CHATS_TO_MESSAGES.remove(opponent.getChatId());
         deleteMessage(bot, opponent.getChatId(), opponentMessageId);
         EXECUTOR.execute(() -> battleCommander.startBattle(bot, chatId, playerBattle));
         EXECUTOR.execute(() -> battleCommander.startBattle(bot, opponent.getChatId(), playerBattle));
     }
 
-    private void awaitPrivateBattleOpponent(DispatcherBot bot, Long chatId, Integer messageId, String privateBattleLink) {
+    private void awaitPrivateBattleOpponent(final DispatcherBot bot, final Long chatId, final Integer messageId, final String privateBattleLink) {
         PRIVATE_BATTLE_CHATS_TO_MESSAGES.put(chatId, messageId);
-        MessageEntity linkEntity = MessageEntity.builder()
+        final MessageEntity linkEntity = MessageEntity.builder()
                 .text(String.format(AWAIT_PRIVATE_BATTLE_OPPONENT_MESSAGE, privateBattleLink))
                 .type(PRIVATE_BATTLE_LINK_MESSAGE_ENTITY_TYPE)
                 .offset(AWAIT_PRIVATE_BATTLE_OPPONENT_PRE_LINK_MESSAGE.length())
                 .length(privateBattleLink.length())
                 .build();
-        EditMessageText message = EditMessageText.builder()
+        final EditMessageText message = EditMessageText.builder()
                 .chatId(String.valueOf(chatId))
                 .messageId(messageId)
                 .text(String.format(AWAIT_PRIVATE_BATTLE_OPPONENT_MESSAGE, privateBattleLink))
@@ -282,16 +267,16 @@ public class PlayCommander {
                     cancelPrivateBattleOnTime(bot, chatId, messageId);
                 }
             }
-        } catch (InterruptedException e) {
-            log.error(e.getMessage());
+        } catch (final InterruptedException e) {
+            LOGGER.error(e.getMessage());
         }
     }
 
-    private void cancelPrivateBattle(DispatcherBot bot, Long chatId, Integer messageId) {
+    private void cancelPrivateBattle(final DispatcherBot bot, final Long chatId, final Integer messageId) {
         PRIVATE_BATTLE_CHATS_TO_MESSAGES.remove(chatId);
-        String privateBattleLink = PRIVATE_BATTLE_CHATS_TO_LINKS.remove(chatId);
+        final String privateBattleLink = PRIVATE_BATTLE_CHATS_TO_LINKS.remove(chatId);
         privateBattleService.deleteByLink(privateBattleLink);
-        EditMessageText message = EditMessageText.builder()
+        final EditMessageText message = EditMessageText.builder()
                 .chatId(String.valueOf(chatId))
                 .messageId(messageId)
                 .text(CHOOSING_PRIVATE_BATTLE_TYPE_MESSAGE)
@@ -300,11 +285,11 @@ public class PlayCommander {
         sendEditMessageText(bot, message);
     }
 
-    private void cancelPrivateBattleOnTime(DispatcherBot bot, Long chatId, Integer messageId) {
+    private void cancelPrivateBattleOnTime(final DispatcherBot bot, final Long chatId, final Integer messageId) {
         PRIVATE_BATTLE_CHATS_TO_MESSAGES.remove(chatId);
-        String privateBattleLink = PRIVATE_BATTLE_CHATS_TO_LINKS.remove(chatId);
+        final String privateBattleLink = PRIVATE_BATTLE_CHATS_TO_LINKS.remove(chatId);
         privateBattleService.deleteByLink(privateBattleLink);
-        EditMessageText cancelMessage = EditMessageText.builder()
+        final EditMessageText cancelMessage = EditMessageText.builder()
                 .chatId(String.valueOf(chatId))
                 .messageId(messageId)
                 .text(OPPONENT_NOT_FOUND_MESSAGE)
@@ -313,14 +298,14 @@ public class PlayCommander {
         sendEditMessageText(bot, cancelMessage);
     }
 
-    public boolean connectToPrivateBattle(DispatcherBot bot, Long chatId, String link) {
+    public boolean connectToPrivateBattle(final DispatcherBot bot, final Long chatId, final String link) {
         if (playerService.existsByChatId(chatId)) {
-            Player player = playerService.findByChatId(chatId);
-            PlayerBot playerBot = playerBotService.findByPlayerId(player.getId());
+            final Player player = playerService.findByChatId(chatId);
+            final PlayerBot playerBot = playerBotService.findByPlayerId(player.getId());
             if (playerBot.getLastState() == PlayerBotState.AWAIT_PRIVATE_BATTLE_LINK) {
                 if (privateBattleService.existsByLink(link)) {
-                    PrivateBattle privateBattle = privateBattleService.findByLink(link);
-                    PlayerBattle playerBattle = privateBattle.getPlayerBattle();
+                    final PrivateBattle privateBattle = privateBattleService.findByLink(link);
+                    final PlayerBattle playerBattle = privateBattle.getPlayerBattle();
                     if (playerBattle.getSecondPlayer() == null) {
                         startPrivateBattle(bot, chatId, playerBattle);
                     } else {
@@ -336,23 +321,23 @@ public class PlayCommander {
     }
 
     private InlineKeyboardMarkup generateReplyMarkup() {
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        final InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        final List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
-        List<InlineKeyboardButton> matchMakingRow = new ArrayList<>();
-        InlineKeyboardButton matchMakingButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> matchMakingRow = new ArrayList<>();
+        final InlineKeyboardButton matchMakingButton = new InlineKeyboardButton();
         matchMakingButton.setText(MATCH_MAKING_BUTTON_TEXT);
         matchMakingButton.setCallbackData("PLAY_MATCH_MAKING");
         matchMakingRow.add(matchMakingButton);
 
-        List<InlineKeyboardButton> privateBattleRow = new ArrayList<>();
-        InlineKeyboardButton privateBattleButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> privateBattleRow = new ArrayList<>();
+        final InlineKeyboardButton privateBattleButton = new InlineKeyboardButton();
         privateBattleButton.setText(PRIVATE_BUTTON_TEXT);
         privateBattleButton.setCallbackData("PLAY_PRIVATE_BATTLE");
         privateBattleRow.add(privateBattleButton);
 
-        List<InlineKeyboardButton> closeRow = new ArrayList<>();
-        InlineKeyboardButton closeButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> closeRow = new ArrayList<>();
+        final InlineKeyboardButton closeButton = new InlineKeyboardButton();
         closeButton.setText(CLOSE_BUTTON_TEXT);
         closeButton.setCallbackData("PLAY_CLOSE");
         closeRow.add(closeButton);
@@ -365,11 +350,11 @@ public class PlayCommander {
     }
 
     private InlineKeyboardMarkup generateOpponentNotFoundReplyMarkup() {
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        final InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        final List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
-        List<InlineKeyboardButton> cancelRow = new ArrayList<>();
-        InlineKeyboardButton cancelButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> cancelRow = new ArrayList<>();
+        final InlineKeyboardButton cancelButton = new InlineKeyboardButton();
         cancelButton.setText(CANCEL_BUTTON_TEXT);
         cancelButton.setCallbackData("PLAY_OPPONENT_NOT_FOUND_CANCEL");
         cancelRow.add(cancelButton);
@@ -380,11 +365,11 @@ public class PlayCommander {
     }
 
     private InlineKeyboardMarkup generateMatchMakingReplyMarkup() {
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        final InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        final List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
-        List<InlineKeyboardButton> cancelRow = new ArrayList<>();
-        InlineKeyboardButton cancelButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> cancelRow = new ArrayList<>();
+        final InlineKeyboardButton cancelButton = new InlineKeyboardButton();
         cancelButton.setText(CANCEL_BUTTON_TEXT);
         cancelButton.setCallbackData("PLAY_MATCH_MAKING_CANCEL");
         cancelRow.add(cancelButton);
@@ -395,23 +380,23 @@ public class PlayCommander {
     }
 
     private InlineKeyboardMarkup generatePrivateBattleReplyMarkup() {
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        final InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        final List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
-        List<InlineKeyboardButton> createGameRow = new ArrayList<>();
-        InlineKeyboardButton createGameButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> createGameRow = new ArrayList<>();
+        final InlineKeyboardButton createGameButton = new InlineKeyboardButton();
         createGameButton.setText(CREATE_GAME_BUTTON_TEXT);
         createGameButton.setCallbackData("PLAY_PRIVATE_BATTLE_CREATE_GAME");
         createGameRow.add(createGameButton);
 
-        List<InlineKeyboardButton> joinGameRow = new ArrayList<>();
-        InlineKeyboardButton joinGameButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> joinGameRow = new ArrayList<>();
+        final InlineKeyboardButton joinGameButton = new InlineKeyboardButton();
         joinGameButton.setText(JOIN_GAME_BUTTON_TEXT);
         joinGameButton.setCallbackData("PLAY_PRIVATE_BATTLE_JOIN_GAME");
         joinGameRow.add(joinGameButton);
 
-        List<InlineKeyboardButton> cancelRow = new ArrayList<>();
-        InlineKeyboardButton cancelButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> cancelRow = new ArrayList<>();
+        final InlineKeyboardButton cancelButton = new InlineKeyboardButton();
         cancelButton.setText(CANCEL_BUTTON_TEXT);
         cancelButton.setCallbackData("PLAY_PRIVATE_BATTLE_CANCEL");
         cancelRow.add(cancelButton);
@@ -424,11 +409,11 @@ public class PlayCommander {
     }
 
     private InlineKeyboardMarkup generatePrivateBattleCreateGameReplyMarkup() {
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        final InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        final List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
-        List<InlineKeyboardButton> cancelRow = new ArrayList<>();
-        InlineKeyboardButton cancelButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> cancelRow = new ArrayList<>();
+        final InlineKeyboardButton cancelButton = new InlineKeyboardButton();
         cancelButton.setText(CANCEL_BUTTON_TEXT);
         cancelButton.setCallbackData("PLAY_PRIVATE_BATTLE_CREATE_GAME_CANCEL");
         cancelRow.add(cancelButton);
@@ -439,11 +424,11 @@ public class PlayCommander {
     }
 
     private InlineKeyboardMarkup generatePrivateBattleJoinGameReplyMarkup() {
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        final InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        final List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
-        List<InlineKeyboardButton> cancelRow = new ArrayList<>();
-        InlineKeyboardButton cancelButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> cancelRow = new ArrayList<>();
+        final InlineKeyboardButton cancelButton = new InlineKeyboardButton();
         cancelButton.setText(CANCEL_BUTTON_TEXT);
         cancelButton.setCallbackData("PLAY_PRIVATE_BATTLE_JOIN_GAME_CANCEL");
         cancelRow.add(cancelButton);

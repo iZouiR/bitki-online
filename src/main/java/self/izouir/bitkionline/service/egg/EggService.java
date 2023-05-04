@@ -1,8 +1,9 @@
 package self.izouir.bitkionline.service.egg;
 
 import jakarta.transaction.Transactional;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import self.izouir.bitkionline.bot.DispatcherBot;
 import self.izouir.bitkionline.entity.egg.Egg;
@@ -12,6 +13,7 @@ import self.izouir.bitkionline.entity.player.Player;
 import self.izouir.bitkionline.exception.EggNotFoundException;
 import self.izouir.bitkionline.exception.ImageNotFoundException;
 import self.izouir.bitkionline.repository.egg.EggRepository;
+import self.izouir.bitkionline.service.player.PlayerStatisticsService;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -25,62 +27,59 @@ import java.util.stream.Stream;
 
 import static self.izouir.bitkionline.util.BotMessageSender.sendMessage;
 import static self.izouir.bitkionline.util.BotMessageSender.sendSticker;
-import static self.izouir.bitkionline.util.constants.MessageConstants.OBTAINING_EGG_MESSAGE;
-import static self.izouir.bitkionline.util.constants.service.EggServiceConstants.*;
+import static self.izouir.bitkionline.util.constant.MessageConstant.OBTAINING_EGG_MESSAGE;
+import static self.izouir.bitkionline.util.constant.service.EggServiceConstant.*;
 
-@Slf4j
+@RequiredArgsConstructor
 @Service
 public class EggService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(EggService.class);
+    private final PlayerStatisticsService playerStatisticsService;
     private final EggRepository eggRepository;
-    private final Random random;
+    private final Random random = new Random();
 
-    @Autowired
-    public EggService(EggRepository eggRepository) {
-        this.eggRepository = eggRepository;
-        this.random = new Random();
-    }
-
-    public Egg findById(Long id) {
+    public Egg findById(final Long id) {
         return eggRepository.findById(id).orElseThrow(
                 () -> new EggNotFoundException("Egg with id = " + id + " wasn't found"));
     }
 
-    public List<Egg> findAllByOwner(Player owner) {
+    public List<Egg> findAllByOwner(final Player owner) {
         return eggRepository.findAllByOwner(owner);
     }
 
-    public List<Egg> findAllByOwnerWhereIsNotCracked(Player player) {
-        List<Egg> inventory = eggRepository.findAllByOwner(player);
+    public List<Egg> findAllByOwnerWhereIsNotCracked(final Player player) {
+        final List<Egg> inventory = eggRepository.findAllByOwner(player);
         return inventory.stream().filter(egg -> !egg.getIsCracked()).collect(Collectors.toList());
     }
 
-    public void save(Egg egg) {
+    public void save(final Egg egg) {
         eggRepository.save(egg);
     }
 
     @Transactional
-    public void deleteAllByOwner(Player owner) {
+    public void deleteAllByOwner(final Player owner) {
         eggRepository.deleteAllByOwner(owner);
     }
 
     @Transactional
-    public void unbindAllByOwner(Player owner) {
+    public void unbindAllByOwner(final Player owner) {
         eggRepository.unbindAllByOwner(owner);
     }
 
-    public void generateStartInventory(DispatcherBot bot, Player player) {
+    public void generateStartInventory(final DispatcherBot bot, final Player player) {
         for (int i = 0; i < START_INVENTORY_SIZE; i++) {
-            Egg egg = generateEgg();
+            final Egg egg = generateEgg();
             egg.setOwner(player);
             save(egg);
+            playerStatisticsService.incrementEggsObtained(player, egg);
             sendSticker(bot, player.getChatId(), Path.of(egg.getImagePath()));
             sendMessage(bot, player.getChatId(), String.format(OBTAINING_EGG_MESSAGE, egg.getName(), generateStatsInfo(egg)));
         }
     }
 
     private Egg generateEgg() {
-        Egg egg;
-        int chance = random.nextInt(100);
+        final Egg egg;
+        final int chance = random.nextInt(100);
         if (chance < WEAK_EGG_GENERATION_CHANCE) {
             egg = generateWeakEgg();
         } else if (chance < WEAK_EGG_GENERATION_CHANCE + STRONG_EGG_GENERATION_CHANCE) {
@@ -127,32 +126,32 @@ public class EggService {
                 .build();
     }
 
-    private String generateImagePath(EggType eggType) {
-        Path typedEggImagePath = Path.of(BASE_EGG_IMAGE_PATH, eggType.toString().toLowerCase());
-        try (Stream<Path> eggImagePathStream = Files.list(typedEggImagePath)) {
-            List<String> eggImagePaths = eggImagePathStream
+    private String generateImagePath(final EggType eggType) {
+        final Path typedEggImagePath = Path.of(BASE_EGG_IMAGE_PATH, eggType.toString().toLowerCase());
+        try (final Stream<Path> eggImagePathStream = Files.list(typedEggImagePath)) {
+            final List<String> eggImagePaths = eggImagePathStream
                     .map(Path::toString)
                     .toList();
             if (!eggImagePaths.isEmpty()) {
                 return eggImagePaths.get(random.nextInt(eggImagePaths.size()));
             }
-        } catch (IOException e) {
-            log.error(e.getMessage());
+        } catch (final IOException e) {
+            LOGGER.error(e.getMessage());
         }
         throw new ImageNotFoundException("Egg images for egg type " + eggType.toString().toLowerCase() + " weren't found");
     }
 
-    private String generateName(Egg egg) {
+    private String generateName(final Egg egg) {
         String name = egg.getImagePath();
-        for (EggType eggType : EggType.values()) {
-            name = name.replace(BASE_EGG_IMAGE_PATH + eggType.toString().toLowerCase() + "\\", "");
+        for (final EggType eggType : EggType.values()) {
+            name = name.replace(BASE_EGG_IMAGE_PATH + eggType.toString().toLowerCase() + "/", "");
         }
         name = name.replace(".png", "");
         return name;
     }
 
-    public String generateStatsInfo(Egg egg) {
-        StringBuilder statsInfo = new StringBuilder();
+    public String generateStatsInfo(final Egg egg) {
+        final StringBuilder statsInfo = new StringBuilder();
         statsInfo.append(egg.getEndurance());
         if (egg.getEndurance() >= GREAT_ENDURANCE) {
             statsInfo.append("🛡 ");
@@ -180,7 +179,7 @@ public class EggService {
         return statsInfo.toString();
     }
 
-    public Integer generateDamage(Egg egg, EggAttackType attackType) {
+    public Integer generateDamage(final Egg egg, final EggAttackType attackType) {
         double damage = egg.getPower();
         switch (attackType) {
             case HEAD -> {
@@ -199,7 +198,7 @@ public class EggService {
         return Math.toIntExact(Math.round(damage));
     }
 
-    public Integer generateReplyDamage(Egg egg, EggAttackType attackType) {
+    public Integer generateReplyDamage(final Egg egg, final EggAttackType attackType) {
         double replyDamage = egg.getPower() + MINIMUM_REPLY_DAMAGE;
         switch (attackType) {
             case HEAD ->
@@ -214,7 +213,7 @@ public class EggService {
         return Math.toIntExact(Math.round(replyDamage));
     }
 
-    public Integer generateChanceOfAttack(Egg attackerEgg, Egg defenderEgg, EggAttackType attackType) {
+    public Integer generateChanceOfAttack(final Egg attackerEgg, final Egg defenderEgg, final EggAttackType attackType) {
         double chance = 100.0 * attackerEgg.getLuck() / (attackerEgg.getLuck() + defenderEgg.getLuck());
         switch (attackType) {
             case HEAD -> chance *= HEAD_ATTACK_CHANCE_COEFFICIENT;
@@ -228,7 +227,7 @@ public class EggService {
         return Math.toIntExact(Math.round(chance));
     }
 
-    public void applyDamage(Egg egg, Integer damage) {
+    public void applyDamage(final Egg egg, final Integer damage) {
         egg.setEndurance(egg.getEndurance() - damage);
         if (egg.getEndurance() <= 0) {
             egg.setEndurance(0);

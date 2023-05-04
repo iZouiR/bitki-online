@@ -1,10 +1,10 @@
-package self.izouir.bitkionline.util.constants.service;
+package self.izouir.bitkionline.util.constant.service;
 
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
-public class EggServiceConstants {
-    public static final String BASE_EGG_IMAGE_PATH = "src\\main\\resources\\image\\egg\\";
+public class EggServiceConstant {
+    public static final String BASE_EGG_IMAGE_PATH = "app/assets.image.egg/";
     public static final Integer START_INVENTORY_SIZE = 3;
     public static final Integer WEAK_EGG_GENERATION_CHANCE = 70;
     public static final Integer STRONG_EGG_GENERATION_CHANCE = 25;

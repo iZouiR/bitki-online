@@ -1,8 +1,7 @@
 package self.izouir.bitkionline.service.battle;
 
 import jakarta.transaction.Transactional;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import self.izouir.bitkionline.entity.battle.PlayerBattle;
 import self.izouir.bitkionline.entity.battle.PrivateBattle;
@@ -12,58 +11,50 @@ import self.izouir.bitkionline.repository.battle.PrivateBattleRepository;
 
 import java.util.Random;
 
-import static self.izouir.bitkionline.util.constants.service.PrivateBattleServiceConstants.LINK_ALPHABET;
-import static self.izouir.bitkionline.util.constants.service.PrivateBattleServiceConstants.LINK_LENGTH;
+import static self.izouir.bitkionline.util.constant.service.PrivateBattleServiceConstant.LINK_ALPHABET;
+import static self.izouir.bitkionline.util.constant.service.PrivateBattleServiceConstant.LINK_LENGTH;
 
-@Slf4j
+@RequiredArgsConstructor
 @Service
 public class PrivateBattleService {
     private final PlayerBattleService playerBattleService;
     private final PrivateBattleRepository privateBattleRepository;
-    private final Random random;
+    private final Random random = new Random();
 
-    @Autowired
-    public PrivateBattleService(PlayerBattleService playerBattleService,
-                                PrivateBattleRepository privateBattleRepository) {
-        this.playerBattleService = playerBattleService;
-        this.privateBattleRepository = privateBattleRepository;
-        this.random = new Random();
-    }
-
-    public PrivateBattle findByLink(String link) {
+    public PrivateBattle findByLink(final String link) {
         return privateBattleRepository.findByLink(link)
                 .orElseThrow(() -> new PrivateBattleNotFoundException("Private battle with link = " + link + " wasn't found"));
     }
 
-    public boolean existsByLink(String link) {
+    public boolean existsByLink(final String link) {
         return privateBattleRepository.findByLink(link).isPresent();
     }
 
-    public void save(PrivateBattle privateBattle) {
+    public void save(final PrivateBattle privateBattle) {
         privateBattleRepository.save(privateBattle);
     }
 
     @Transactional
-    public void deleteById(Long id) {
+    public void deleteById(final Long id) {
         privateBattleRepository.deleteById(id);
     }
 
     @Transactional
-    public void deleteByLink(String link) {
-        PrivateBattle privateBattle = findByLink(link);
+    public void deleteByLink(final String link) {
+        final PrivateBattle privateBattle = findByLink(link);
         playerBattleService.deleteById(privateBattle.getPlayerBattle().getId());
         deleteById(privateBattle.getId());
     }
 
     @Transactional
-    public void deleteAllByPlayer(Player player) {
+    public void deleteAllByPlayer(final Player player) {
         privateBattleRepository.deleteAllByPlayerBattle_FirstPlayerOrPlayerBattle_SecondPlayer(player, player);
     }
 
     @Transactional
-    public PrivateBattle createByFirstPlayer(Player firstPlayer) {
-        PlayerBattle playerBattle = playerBattleService.createByFirstPlayer(firstPlayer);
-        PrivateBattle privateBattle = PrivateBattle.builder()
+    public PrivateBattle createByFirstPlayer(final Player firstPlayer) {
+        final PlayerBattle playerBattle = playerBattleService.createByFirstPlayer(firstPlayer);
+        final PrivateBattle privateBattle = PrivateBattle.builder()
                 .playerBattle(playerBattle)
                 .link(generateLink())
                 .build();

@@ -1,7 +1,7 @@
 package self.izouir.bitkionline.exception;
 
 public class EggNotFoundException extends RuntimeException {
-    public EggNotFoundException(String message) {
+    public EggNotFoundException(final String message) {
         super(message);
     }
 }
