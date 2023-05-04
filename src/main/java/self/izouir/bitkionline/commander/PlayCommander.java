@@ -1,8 +1,8 @@
 package self.izouir.bitkionline.commander;
 
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -34,11 +34,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static self.izouir.bitkionline.util.BotMessageSender.*;
-import static self.izouir.bitkionline.util.constants.MessageConstants.*;
-import static self.izouir.bitkionline.util.constants.ReplyMarkupConstants.CANCEL_BUTTON_TEXT;
-import static self.izouir.bitkionline.util.constants.ReplyMarkupConstants.CLOSE_BUTTON_TEXT;
-import static self.izouir.bitkionline.util.constants.commander.PlayCommanderConstants.*;
+import static self.izouir.bitkionline.util.constant.MessageConstant.*;
+import static self.izouir.bitkionline.util.constant.ReplyMarkupConstant.CANCEL_BUTTON_TEXT;
+import static self.izouir.bitkionline.util.constant.ReplyMarkupConstant.CLOSE_BUTTON_TEXT;
+import static self.izouir.bitkionline.util.constant.commander.PlayCommanderConstant.*;
 
+@RequiredArgsConstructor
 @Component
 public class PlayCommander {
     private static final Logger LOGGER = LoggerFactory.getLogger(PlayCommander.class);
@@ -54,23 +55,6 @@ public class PlayCommander {
     private final PlayerService playerService;
     private final PlayerBotService playerBotService;
     private final BattleCommander battleCommander;
-
-    @Autowired
-    public PlayCommander(PlayerBattleService playerBattleService,
-                         MatchMakingBattleService matchMakingBattleService,
-                         PrivateBattleService privateBattleService,
-                         EggService eggService,
-                         PlayerService playerService,
-                         PlayerBotService playerBotService,
-                         BattleCommander battleCommander) {
-        this.playerBattleService = playerBattleService;
-        this.matchMakingBattleService = matchMakingBattleService;
-        this.privateBattleService = privateBattleService;
-        this.eggService = eggService;
-        this.playerService = playerService;
-        this.playerBotService = playerBotService;
-        this.battleCommander = battleCommander;
-    }
 
     public void processCallbackQuery(DispatcherBot bot, Long chatId, Integer messageId, String callbackData) {
         switch (callbackData) {
