@@ -1,9 +1,9 @@
 package self.izouir.bitkionline.service.egg;
 
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import self.izouir.bitkionline.bot.DispatcherBot;
 import self.izouir.bitkionline.entity.egg.Egg;
@@ -27,23 +27,16 @@ import java.util.stream.Stream;
 
 import static self.izouir.bitkionline.util.BotMessageSender.sendMessage;
 import static self.izouir.bitkionline.util.BotMessageSender.sendSticker;
-import static self.izouir.bitkionline.util.constants.MessageConstants.OBTAINING_EGG_MESSAGE;
-import static self.izouir.bitkionline.util.constants.service.EggServiceConstants.*;
+import static self.izouir.bitkionline.util.constant.MessageConstant.OBTAINING_EGG_MESSAGE;
+import static self.izouir.bitkionline.util.constant.service.EggServiceConstant.*;
 
+@RequiredArgsConstructor
 @Service
 public class EggService {
     private static final Logger LOGGER = LoggerFactory.getLogger(EggService.class);
     private final PlayerStatisticsService playerStatisticsService;
     private final EggRepository eggRepository;
-    private final Random random;
-
-    @Autowired
-    public EggService(PlayerStatisticsService playerStatisticsService,
-                      EggRepository eggRepository) {
-        this.playerStatisticsService = playerStatisticsService;
-        this.eggRepository = eggRepository;
-        this.random = new Random();
-    }
+    private final Random random = new Random();
 
     public Egg findById(Long id) {
         return eggRepository.findById(id).orElseThrow(
