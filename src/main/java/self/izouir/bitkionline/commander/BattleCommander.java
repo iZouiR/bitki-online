@@ -1,8 +1,8 @@
 package self.izouir.bitkionline.commander;
 
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
@@ -26,31 +26,20 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static self.izouir.bitkionline.util.BotMessageSender.*;
-import static self.izouir.bitkionline.util.constants.commander.BattleCommanderConstants.*;
+import static self.izouir.bitkionline.util.constant.commander.BattleCommanderConstant.*;
 
+@RequiredArgsConstructor
 @Component
 public class BattleCommander {
     private static final Logger LOGGER = LoggerFactory.getLogger(BattleCommander.class);
     private static final Map<Long, Integer> CHATS_TO_MESSAGES = new ConcurrentHashMap<>();
     private static final Map<Long, Long> CHATS_TO_BATTLES = new ConcurrentHashMap<>();
     private static final Map<Long, Long> BATTLES_TO_ATTACKER_CHATS = new ConcurrentHashMap<>();
+    private final Random random = new Random();
     private final PlayerBattleService playerBattleService;
     private final EggService eggService;
     private final PlayerStatisticsService playerStatisticsService;
     private final PlayerService playerService;
-    private final Random random;
-
-    @Autowired
-    public BattleCommander(PlayerBattleService playerBattleService,
-                           EggService eggService,
-                           PlayerStatisticsService playerStatisticsService,
-                           PlayerService playerService) {
-        this.playerBattleService = playerBattleService;
-        this.eggService = eggService;
-        this.playerStatisticsService = playerStatisticsService;
-        this.playerService = playerService;
-        this.random = new Random();
-    }
 
     public void processCallbackQuery(DispatcherBot bot, Long chatId, Integer messageId, String callbackData) {
         if (callbackData.startsWith("BATTLE_EGG_CHOICE_")) {
