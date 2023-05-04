@@ -30,11 +30,11 @@ public class DispatcherBot extends TelegramLongPollingBot {
     private final SupportCommander supportCommander;
 
     @Override
-    public void onUpdateReceived(Update update) {
+    public void onUpdateReceived(final Update update) {
         EXECUTOR.execute(() -> {
             if (update.hasMessage() && update.getMessage().hasText()) {
-                Long chatId = update.getMessage().getChatId();
-                String command = update.getMessage().getText();
+                final Long chatId = update.getMessage().getChatId();
+                final String command = update.getMessage().getText();
 
                 switch (command) {
                     case "/start" -> startCommander.start(this, chatId);
@@ -61,9 +61,9 @@ public class DispatcherBot extends TelegramLongPollingBot {
                     }
                 }
             } else if (update.hasCallbackQuery()) {
-                Long chatId = update.getCallbackQuery().getMessage().getChatId();
-                Integer messageId = update.getCallbackQuery().getMessage().getMessageId();
-                String callbackData = update.getCallbackQuery().getData();
+                final Long chatId = update.getCallbackQuery().getMessage().getChatId();
+                final Integer messageId = update.getCallbackQuery().getMessage().getMessageId();
+                final String callbackData = update.getCallbackQuery().getData();
 
                 playCommander.processCallbackQuery(this, chatId, messageId, callbackData);
                 battleCommander.processCallbackQuery(this, chatId, messageId, callbackData);

@@ -20,9 +20,9 @@ public class StartCommander {
     private final PlayerService playerService;
     private final PlayerBotService playerBotService;
 
-    public void start(DispatcherBot bot, Long chatId) {
+    public void start(final DispatcherBot bot, final Long chatId) {
         if (playerService.existsByChatId(chatId)) {
-            Player player = playerService.findByChatId(chatId);
+            final Player player = playerService.findByChatId(chatId);
             if (player.getRegisteredAt() != null) {
                 sendMessage(bot, chatId, String.format(GREETINGS_MESSAGE, player.getUsername()));
             } else {
@@ -34,14 +34,14 @@ public class StartCommander {
         }
     }
 
-    private void startRegistration(Long chatId) {
+    private void startRegistration(final Long chatId) {
         playerService.createNotRegisteredPlayer(chatId);
     }
 
-    public boolean finishRegistration(DispatcherBot bot, Long chatId, String username) {
+    public boolean finishRegistration(final DispatcherBot bot, final Long chatId, final String username) {
         if (playerService.existsByChatId(chatId)) {
-            Player player = playerService.findByChatId(chatId);
-            PlayerBot playerBot = playerBotService.findByPlayerId(player.getId());
+            final Player player = playerService.findByChatId(chatId);
+            final PlayerBot playerBot = playerBotService.findByPlayerId(player.getId());
             if (playerBot.getLastState() == PlayerBotState.AWAIT_USERNAME) {
                 if (playerService.isAccurateUsername(username)) {
                     if (playerService.notExistsByUsernameIgnoreCase(username)) {

@@ -14,27 +14,27 @@ import self.izouir.bitkionline.repository.battle.PlayerBattleRepository;
 public class PlayerBattleService {
     private final PlayerBattleRepository playerBattleRepository;
 
-    public PlayerBattle findById(Long id) {
+    public PlayerBattle findById(final Long id) {
         return playerBattleRepository.findById(id).orElseThrow(
                 () -> new PlayerBattleNotFoundException("Player battle with id = " + id + " wasn't found"));
     }
 
-    public void save(PlayerBattle battle) {
+    public void save(final PlayerBattle battle) {
         playerBattleRepository.save(battle);
     }
 
     @Transactional
-    public void deleteById(Long id) {
+    public void deleteById(final Long id) {
         playerBattleRepository.deleteById(id);
     }
 
     @Transactional
-    public void deleteAllByPlayer(Player player) {
+    public void deleteAllByPlayer(final Player player) {
         playerBattleRepository.deleteAllByFirstPlayerOrSecondPlayer(player, player);
     }
 
-    public PlayerBattle create(Player player, Player opponent) {
-        PlayerBattle battle = PlayerBattle.builder()
+    public PlayerBattle create(final Player player, final Player opponent) {
+        final PlayerBattle battle = PlayerBattle.builder()
                 .firstPlayer(player)
                 .secondPlayer(opponent)
                 .build();
@@ -42,30 +42,30 @@ public class PlayerBattleService {
         return battle;
     }
 
-    public PlayerBattle createByFirstPlayer(Player firstPlayer) {
-        PlayerBattle battle = PlayerBattle.builder()
+    public PlayerBattle createByFirstPlayer(final Player firstPlayer) {
+        final PlayerBattle battle = PlayerBattle.builder()
                 .firstPlayer(firstPlayer)
                 .build();
         save(battle);
         return battle;
     }
 
-    public void applySecondPlayer(PlayerBattle playerBattle, Player player) {
+    public void applySecondPlayer(final PlayerBattle playerBattle, final Player player) {
         playerBattle.setSecondPlayer(player);
         save(playerBattle);
     }
 
-    public void applyFirstPlayerEgg(PlayerBattle playerBattle, Egg egg) {
+    public void applyFirstPlayerEgg(final PlayerBattle playerBattle, final Egg egg) {
         playerBattle.setFirstPlayerEgg(egg);
         save(playerBattle);
     }
 
-    public void applySecondPlayerEgg(PlayerBattle playerBattle, Egg egg) {
+    public void applySecondPlayerEgg(final PlayerBattle playerBattle, final Egg egg) {
         playerBattle.setSecondPlayerEgg(egg);
         save(playerBattle);
     }
 
-    public void applyIsFirstPlayerWinner(PlayerBattle playerBattle, Boolean isFirstPlayerWinner) {
+    public void applyIsFirstPlayerWinner(final PlayerBattle playerBattle, final Boolean isFirstPlayerWinner) {
         playerBattle.setIsFirstPlayerWinner(isFirstPlayerWinner);
         save(playerBattle);
     }

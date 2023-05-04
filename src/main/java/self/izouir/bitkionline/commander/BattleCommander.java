@@ -41,7 +41,7 @@ public class BattleCommander {
     private final PlayerStatisticsService playerStatisticsService;
     private final PlayerService playerService;
 
-    public void processCallbackQuery(DispatcherBot bot, Long chatId, Integer messageId, String callbackData) {
+    public void processCallbackQuery(final DispatcherBot bot, final Long chatId, final Integer messageId, final String callbackData) {
         if (callbackData.startsWith("BATTLE_EGG_CHOICE_")) {
             if (CHATS_TO_BATTLES.get(chatId) == null) {
                 deleteMessage(bot, chatId, messageId);
@@ -49,8 +49,8 @@ public class BattleCommander {
             }
             CHATS_TO_MESSAGES.put(chatId, messageId);
             PlayerBattle battle = playerBattleService.findById(CHATS_TO_BATTLES.get(chatId));
-            Player player = playerService.findByChatId(chatId);
-            Egg egg = eggService.findById(Long.parseLong(callbackData.substring("BATTLE_EGG_CHOICE_".length())));
+            final Player player = playerService.findByChatId(chatId);
+            final Egg egg = eggService.findById(Long.parseLong(callbackData.substring("BATTLE_EGG_CHOICE_".length())));
             if (Objects.equals(player.getId(), battle.getFirstPlayer().getId())) {
                 playerBattleService.applyFirstPlayerEgg(battle, egg);
             } else {
@@ -81,9 +81,9 @@ public class BattleCommander {
                 return;
             }
             CHATS_TO_MESSAGES.put(chatId, messageId);
-            PlayerBattle battle = playerBattleService.findById(CHATS_TO_BATTLES.get(chatId));
-            Player player = playerService.findByChatId(chatId);
-            Player opponent;
+            final PlayerBattle battle = playerBattleService.findById(CHATS_TO_BATTLES.get(chatId));
+            final Player player = playerService.findByChatId(chatId);
+            final Player opponent;
             Egg egg;
             Egg opponentEgg;
             if (Objects.equals(player.getId(), battle.getFirstPlayer().getId())) {
@@ -96,9 +96,9 @@ public class BattleCommander {
                 opponentEgg = battle.getFirstPlayerEgg();
             }
 
-            EggAttackType attackType = EggAttackType.valueOf(callbackData.substring("BATTLE_ATTACK_".length()));
+            final EggAttackType attackType = EggAttackType.valueOf(callbackData.substring("BATTLE_ATTACK_".length()));
             playerStatisticsService.applyAttackChoice(player, attackType);
-            Integer opponentMessageId = CHATS_TO_MESSAGES.get(opponent.getChatId());
+            final Integer opponentMessageId = CHATS_TO_MESSAGES.get(opponent.getChatId());
             sendEditMessageText(bot, chatId, messageId,
                     String.format(ATTACK_MESSAGE, player.getUsername(), attackType.toString().toLowerCase(), opponent.getUsername()));
             sendEditMessageText(bot, opponent.getChatId(), opponentMessageId,
@@ -111,13 +111,13 @@ public class BattleCommander {
                     sendEditMessageText(bot, chatId, messageId, String.format(COUNT_DOWN_MESSAGE, i));
                     sendEditMessageText(bot, opponent.getChatId(), opponentMessageId, String.format(COUNT_DOWN_MESSAGE, i));
                 }
-            } catch (InterruptedException e) {
+            } catch (final InterruptedException e) {
                 LOGGER.error(e.getMessage());
             }
 
-            Integer damage = eggService.generateDamage(egg, attackType);
-            Integer replyDamage = eggService.generateReplyDamage(egg, attackType);
-            Integer chance = eggService.generateChanceOfAttack(egg, opponentEgg, attackType);
+            final Integer damage = eggService.generateDamage(egg, attackType);
+            final Integer replyDamage = eggService.generateReplyDamage(egg, attackType);
+            final Integer chance = eggService.generateChanceOfAttack(egg, opponentEgg, attackType);
 
             if ((random.nextInt(100) + 1) <= chance) {
                 eggService.applyDamage(opponentEgg, damage);
@@ -144,7 +144,7 @@ public class BattleCommander {
 
             try {
                 Thread.sleep(5000);
-            } catch (InterruptedException e) {
+            } catch (final InterruptedException e) {
                 LOGGER.error(e.getMessage());
             }
 
@@ -157,7 +157,7 @@ public class BattleCommander {
             } else {
                 BATTLES_TO_ATTACKER_CHATS.put(battle.getId(), opponent.getChatId());
                 sendEditMessageText(bot, chatId, messageId, DEFENDER_MESSAGE);
-                EditMessageText opponentMessage = EditMessageText.builder()
+                final EditMessageText opponentMessage = EditMessageText.builder()
                         .chatId(String.valueOf(opponent.getChatId()))
                         .messageId(CHATS_TO_MESSAGES.get(opponent.getChatId()))
                         .text(ATTACKER_MESSAGE)
@@ -169,9 +169,9 @@ public class BattleCommander {
         }
     }
 
-    public void startBattle(DispatcherBot bot, Long chatId, PlayerBattle battle) {
+    public void startBattle(final DispatcherBot bot, final Long chatId, final PlayerBattle battle) {
         CHATS_TO_BATTLES.put(chatId, battle.getId());
-        SendMessage message = SendMessage.builder()
+        final SendMessage message = SendMessage.builder()
                 .chatId(String.valueOf(chatId))
                 .text(EGG_CHOICE_MESSAGE)
                 .build();
@@ -180,10 +180,10 @@ public class BattleCommander {
         awaitEggChoice(bot, chatId, battle);
     }
 
-    private void showOpponentInfo(DispatcherBot bot, Long chatId, PlayerBattle battle) {
-        Player player = playerService.findByChatId(chatId);
-        Player opponent;
-        Egg opponentEgg;
+    private void showOpponentInfo(final DispatcherBot bot, final Long chatId, final PlayerBattle battle) {
+        final Player player = playerService.findByChatId(chatId);
+        final Player opponent;
+        final Egg opponentEgg;
         if (Objects.equals(player.getId(), battle.getFirstPlayer().getId())) {
             opponent = battle.getSecondPlayer();
             opponentEgg = battle.getSecondPlayerEgg();
@@ -191,7 +191,7 @@ public class BattleCommander {
             opponent = battle.getFirstPlayer();
             opponentEgg = battle.getFirstPlayerEgg();
         }
-        SendSticker sticker = SendSticker.builder()
+        final SendSticker sticker = SendSticker.builder()
                 .chatId(String.valueOf(chatId))
                 .sticker(new InputFile(Path.of(opponentEgg.getImagePath()).toFile()))
                 .build();
@@ -199,16 +199,16 @@ public class BattleCommander {
         sendSticker(bot, sticker);
     }
 
-    private void chooseAttacker(DispatcherBot bot, Long chatId) {
-        PlayerBattle battle = playerBattleService.findById(CHATS_TO_BATTLES.get(chatId));
-        Player player = playerService.findByChatId(chatId);
-        Player opponent;
+    private void chooseAttacker(final DispatcherBot bot, final Long chatId) {
+        final PlayerBattle battle = playerBattleService.findById(CHATS_TO_BATTLES.get(chatId));
+        final Player player = playerService.findByChatId(chatId);
+        final Player opponent;
         if (Objects.equals(player.getId(), battle.getFirstPlayer().getId())) {
             opponent = battle.getSecondPlayer();
         } else {
             opponent = battle.getFirstPlayer();
         }
-        Integer messageId = CHATS_TO_MESSAGES.get(chatId);
+        final Integer messageId = CHATS_TO_MESSAGES.get(chatId);
         try {
             sendEditMessageText(bot, chatId, messageId, COIN_FLIP_MESSAGE);
             Thread.sleep(2500);
@@ -216,16 +216,16 @@ public class BattleCommander {
                 Thread.sleep(1000);
                 sendEditMessageText(bot, chatId, messageId, String.format(COUNT_DOWN_MESSAGE, i));
             }
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
             LOGGER.error(e.getMessage());
         }
-        EditMessageText message = EditMessageText.builder()
+        final EditMessageText message = EditMessageText.builder()
                 .chatId(String.valueOf(chatId))
                 .messageId(messageId)
                 .text("Stub")
                 .build();
         if (!BATTLES_TO_ATTACKER_CHATS.containsKey(battle.getId())) {
-            int chance = random.nextInt(2);
+            final int chance = random.nextInt(2);
             if (chance == 0) {
                 BATTLES_TO_ATTACKER_CHATS.put(battle.getId(), chatId);
                 message.setText(ATTACKER_MESSAGE);
@@ -245,8 +245,8 @@ public class BattleCommander {
         sendEditMessageText(bot, message);
     }
 
-    private void awaitEggChoice(DispatcherBot bot, Long chatId, PlayerBattle battle) {
-        Player player = playerService.findByChatId(chatId);
+    private void awaitEggChoice(final DispatcherBot bot, final Long chatId, PlayerBattle battle) {
+        final Player player = playerService.findByChatId(chatId);
         try {
             if (Objects.equals(player.getId(), battle.getFirstPlayer().getId())) {
                 int counter = 0;
@@ -272,13 +272,13 @@ public class BattleCommander {
                     battle = playerBattleService.findById(battle.getId());
                 }
             }
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
             LOGGER.error(e.getMessage());
         }
     }
 
-    private void awaitOpponentEggChoice(DispatcherBot bot, Long chatId, Integer messageId, PlayerBattle battle) {
-        Player player = playerService.findByChatId(chatId);
+    private void awaitOpponentEggChoice(final DispatcherBot bot, final Long chatId, final Integer messageId, PlayerBattle battle) {
+        final Player player = playerService.findByChatId(chatId);
         try {
             if (Objects.equals(player.getId(), battle.getFirstPlayer().getId())) {
                 while (battle.getSecondPlayerEgg() == null) {
@@ -300,12 +300,12 @@ public class BattleCommander {
                     battle = playerBattleService.findById(battle.getId());
                 }
             }
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
             LOGGER.error(e.getMessage());
         }
     }
 
-    private void awaitAttackChoice(DispatcherBot bot, Long chatId, PlayerBattle battle) {
+    private void awaitAttackChoice(final DispatcherBot bot, final Long chatId, PlayerBattle battle) {
         try {
             int counter = 0;
             while (Objects.equals(BATTLES_TO_ATTACKER_CHATS.get(battle.getId()), chatId)) {
@@ -317,38 +317,38 @@ public class BattleCommander {
                 }
                 battle = playerBattleService.findById(battle.getId());
             }
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
             LOGGER.error(e.getMessage());
         }
     }
 
-    private void stopBattle(DispatcherBot bot, PlayerBattle battle) {
-        Long firstPlayerChatId = battle.getFirstPlayer().getChatId();
-        Long secondPlayerChatId = battle.getSecondPlayer().getChatId();
+    private void stopBattle(final DispatcherBot bot, final PlayerBattle battle) {
+        final Long firstPlayerChatId = battle.getFirstPlayer().getChatId();
+        final Long secondPlayerChatId = battle.getSecondPlayer().getChatId();
         playerService.applyIsPlaying(firstPlayerChatId, false);
         playerService.applyIsPlaying(secondPlayerChatId, false);
         CHATS_TO_BATTLES.remove(firstPlayerChatId);
         CHATS_TO_BATTLES.remove(secondPlayerChatId);
-        Integer firstPlayerMessageId = CHATS_TO_MESSAGES.remove(firstPlayerChatId);
+        final Integer firstPlayerMessageId = CHATS_TO_MESSAGES.remove(firstPlayerChatId);
         if (firstPlayerMessageId != null) {
             deleteMessage(bot, firstPlayerChatId, firstPlayerMessageId);
         }
-        Integer secondPlayerMessageId = CHATS_TO_MESSAGES.remove(secondPlayerChatId);
+        final Integer secondPlayerMessageId = CHATS_TO_MESSAGES.remove(secondPlayerChatId);
         if (secondPlayerMessageId != null) {
             deleteMessage(bot, secondPlayerChatId, secondPlayerMessageId);
         }
         BATTLES_TO_ATTACKER_CHATS.remove(battle.getId());
-        Player firstPlayer = playerService.findByChatId(firstPlayerChatId);
-        Player secondPlayer = playerService.findByChatId(secondPlayerChatId);
+        final Player firstPlayer = playerService.findByChatId(firstPlayerChatId);
+        final Player secondPlayer = playerService.findByChatId(secondPlayerChatId);
         playerStatisticsService.incrementTotalBattlesPlayed(firstPlayer);
         playerStatisticsService.incrementTotalBattlesPlayed(secondPlayer);
     }
 
-    private void stopBattleOnDisconnection(DispatcherBot bot, Long disconnectedPlayerChatId, PlayerBattle battle) {
+    private void stopBattleOnDisconnection(final DispatcherBot bot, final Long disconnectedPlayerChatId, PlayerBattle battle) {
         stopBattle(bot, battle);
         battle = playerBattleService.findById(battle.getId());
-        Player disconnectedPlayer = playerService.findByChatId(disconnectedPlayerChatId);
-        Player opponent;
+        final Player disconnectedPlayer = playerService.findByChatId(disconnectedPlayerChatId);
+        final Player opponent;
         if (Objects.equals(disconnectedPlayer.getId(), battle.getFirstPlayer().getId())) {
             playerBattleService.applyIsFirstPlayerWinner(battle, false);
             opponent = battle.getSecondPlayer();
@@ -362,11 +362,11 @@ public class BattleCommander {
         playerService.calculateEloRanks(bot, opponent, disconnectedPlayer);
     }
 
-    private void stopBattleOnDefeat(DispatcherBot bot, Long winnerChatId, PlayerBattle battle) {
+    private void stopBattleOnDefeat(final DispatcherBot bot, final Long winnerChatId, PlayerBattle battle) {
         stopBattle(bot, battle);
         battle = playerBattleService.findById(battle.getId());
-        Player winner = playerService.findByChatId(winnerChatId);
-        Player looser;
+        final Player winner = playerService.findByChatId(winnerChatId);
+        final Player looser;
         if (Objects.equals(winner.getId(), battle.getFirstPlayer().getId())) {
             playerBattleService.applyIsFirstPlayerWinner(battle, true);
             looser = battle.getSecondPlayer();
@@ -380,17 +380,17 @@ public class BattleCommander {
         playerService.calculateEloRanks(bot, winner, looser);
     }
 
-    private void stopBattleOnDraw(DispatcherBot bot, PlayerBattle battle) {
+    private void stopBattleOnDraw(final DispatcherBot bot, final PlayerBattle battle) {
         stopBattle(bot, battle);
         sendMessage(bot, battle.getFirstPlayer().getChatId(), DRAW_MESSAGE);
         sendMessage(bot, battle.getSecondPlayer().getChatId(), DRAW_MESSAGE);
     }
 
-    private void stopBattleOnSurrender(DispatcherBot bot, Long looserChatId, PlayerBattle battle) {
+    private void stopBattleOnSurrender(final DispatcherBot bot, final Long looserChatId, PlayerBattle battle) {
         stopBattle(bot, battle);
         battle = playerBattleService.findById(battle.getId());
-        Player looser = playerService.findByChatId(looserChatId);
-        Player winner;
+        final Player looser = playerService.findByChatId(looserChatId);
+        final Player winner;
         if (Objects.equals(looser.getId(), battle.getFirstPlayer().getId())) {
             playerBattleService.applyIsFirstPlayerWinner(battle, true);
             winner = battle.getSecondPlayer();
@@ -404,16 +404,16 @@ public class BattleCommander {
         playerService.calculateEloRanks(bot, winner, looser);
     }
 
-    private InlineKeyboardMarkup generateEggChoiceReplyMarkup(Player player) {
-        List<Egg> notCrackedInventory = eggService.findAllByOwnerWhereIsNotCracked(player);
+    private InlineKeyboardMarkup generateEggChoiceReplyMarkup(final Player player) {
+        final List<Egg> notCrackedInventory = eggService.findAllByOwnerWhereIsNotCracked(player);
 
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        final InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        final List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
-        for (Egg egg : notCrackedInventory) {
-            List<InlineKeyboardButton> eggRow = new ArrayList<>();
-            InlineKeyboardButton eggButton = new InlineKeyboardButton();
-            StringBuilder stringInfo = new StringBuilder();
+        for (final Egg egg : notCrackedInventory) {
+            final List<InlineKeyboardButton> eggRow = new ArrayList<>();
+            final InlineKeyboardButton eggButton = new InlineKeyboardButton();
+            final StringBuilder stringInfo = new StringBuilder();
             if (egg.getType() == EggType.HOLY) {
                 stringInfo.append("\uD83C\uDF1F");
             } else if (egg.getType() == EggType.STRONG) {
@@ -435,25 +435,25 @@ public class BattleCommander {
         return markup;
     }
 
-    private InlineKeyboardMarkup generateOpponentInfoReplyMarkup(Player opponent) {
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+    private InlineKeyboardMarkup generateOpponentInfoReplyMarkup(final Player opponent) {
+        final InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        final List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
-        List<InlineKeyboardButton> opponentInfoRow = new ArrayList<>();
-        InlineKeyboardButton opponentInfoButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> opponentInfoRow = new ArrayList<>();
+        final InlineKeyboardButton opponentInfoButton = new InlineKeyboardButton();
         opponentInfoButton.setText(String.format(OPPONENT_INFO_BUTTON_TEXT, opponent.getUsername(), opponent.getRank(),
                 playerStatisticsService.calculateWinRate(playerStatisticsService.findByPlayerId(opponent.getId()))));
         opponentInfoButton.setCallbackData("IGNORE");
         opponentInfoRow.add(opponentInfoButton);
 
-        List<InlineKeyboardButton> joinFightRow = new ArrayList<>();
-        InlineKeyboardButton joinFightButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> joinFightRow = new ArrayList<>();
+        final InlineKeyboardButton joinFightButton = new InlineKeyboardButton();
         joinFightButton.setText(JOIN_FIGHT_BUTTON_TEXT);
         joinFightButton.setCallbackData("BATTLE_JOIN_FIGHT");
         joinFightRow.add(joinFightButton);
 
-        List<InlineKeyboardButton> surrenderRow = new ArrayList<>();
-        InlineKeyboardButton surrenderButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> surrenderRow = new ArrayList<>();
+        final InlineKeyboardButton surrenderButton = new InlineKeyboardButton();
         surrenderButton.setText(SURRENDER_BUTTON_TEXT);
         surrenderButton.setCallbackData("BATTLE_SURRENDER");
         surrenderRow.add(surrenderButton);
@@ -465,9 +465,9 @@ public class BattleCommander {
         return markup;
     }
 
-    private InlineKeyboardMarkup generateAttackerReplyMarkup(PlayerBattle battle) {
-        Egg attackerEgg;
-        Egg defenderEgg;
+    private InlineKeyboardMarkup generateAttackerReplyMarkup(final PlayerBattle battle) {
+        final Egg attackerEgg;
+        final Egg defenderEgg;
         if (Objects.equals(BATTLES_TO_ATTACKER_CHATS.get(battle.getId()), battle.getFirstPlayer().getChatId())) {
             attackerEgg = battle.getFirstPlayerEgg();
             defenderEgg = battle.getSecondPlayerEgg();
@@ -476,27 +476,27 @@ public class BattleCommander {
             defenderEgg = battle.getFirstPlayerEgg();
         }
 
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        final InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        final List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
-        List<InlineKeyboardButton> headAttackRow = new ArrayList<>();
-        InlineKeyboardButton headAttackButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> headAttackRow = new ArrayList<>();
+        final InlineKeyboardButton headAttackButton = new InlineKeyboardButton();
         headAttackButton.setText(String.format(HEAD_ATTACK_BUTTON_TEXT,
                 eggService.generateDamage(attackerEgg, EggAttackType.HEAD),
                 eggService.generateChanceOfAttack(attackerEgg, defenderEgg, EggAttackType.HEAD)));
         headAttackButton.setCallbackData("BATTLE_ATTACK_HEAD");
         headAttackRow.add(headAttackButton);
 
-        List<InlineKeyboardButton> sideAttackRow = new ArrayList<>();
-        InlineKeyboardButton sideAttackButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> sideAttackRow = new ArrayList<>();
+        final InlineKeyboardButton sideAttackButton = new InlineKeyboardButton();
         sideAttackButton.setText(String.format(SIDE_ATTACK_BUTTON_TEXT,
                 eggService.generateDamage(attackerEgg, EggAttackType.SIDE),
                 eggService.generateChanceOfAttack(attackerEgg, defenderEgg, EggAttackType.SIDE)));
         sideAttackButton.setCallbackData("BATTLE_ATTACK_SIDE");
         sideAttackRow.add(sideAttackButton);
 
-        List<InlineKeyboardButton> assAttackRow = new ArrayList<>();
-        InlineKeyboardButton assAttackButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> assAttackRow = new ArrayList<>();
+        final InlineKeyboardButton assAttackButton = new InlineKeyboardButton();
         assAttackButton.setText(String.format(ASS_ATTACK_BUTTON_TEXT,
                 eggService.generateDamage(attackerEgg, EggAttackType.ASS),
                 eggService.generateChanceOfAttack(attackerEgg, defenderEgg, EggAttackType.ASS)));

@@ -33,8 +33,8 @@ public class PlayerService {
     private final PlayerStatisticsService playerStatisticsService;
     private final PlayerRepository playerRepository;
 
-    public Player findByChatId(Long chatId) {
-        Optional<Player> optional = playerRepository.findByChatId(chatId);
+    public Player findByChatId(final Long chatId) {
+        final Optional<Player> optional = playerRepository.findByChatId(chatId);
         return optional.orElseThrow(() -> new PlayerNotFoundException("Player with chatId = " + chatId + " was not found"));
     }
 
@@ -42,36 +42,36 @@ public class PlayerService {
         return playerRepository.findAllOrderedByRankDesc();
     }
 
-    public List<Player> findAllOrderedByRankDesc(Integer limitCount) {
+    public List<Player> findAllOrderedByRankDesc(final Integer limitCount) {
         return playerRepository.findAllOrderedByRankDesc(limitCount);
     }
 
-    public boolean existsByChatId(Long chatId) {
+    public boolean existsByChatId(final Long chatId) {
         return playerRepository.findByChatId(chatId).isPresent();
     }
 
-    public boolean notExistsByUsernameIgnoreCase(String username) {
+    public boolean notExistsByUsernameIgnoreCase(final String username) {
         return playerRepository.findByUsernameIgnoreCase(username).isEmpty();
     }
 
-    public void save(Player player) {
+    public void save(final Player player) {
         playerRepository.save(player);
     }
 
     @Transactional
-    public void delete(Player player) {
+    public void delete(final Player player) {
         playerRepository.delete(player);
     }
 
-    public void applyIsPlaying(Long chatId, boolean isPlaying) {
-        Player player = findByChatId(chatId);
+    public void applyIsPlaying(final Long chatId, final boolean isPlaying) {
+        final Player player = findByChatId(chatId);
         player.setIsPlaying(isPlaying);
         save(player);
     }
 
     @Transactional
-    public void createNotRegisteredPlayer(Long chatId) {
-        Player player = Player.builder()
+    public void createNotRegisteredPlayer(final Long chatId) {
+        final Player player = Player.builder()
                 .chatId(chatId)
                 .username(String.format(NOT_REGISTERED_PLAYER_USERNAME, chatId))
                 .rank(NOT_REGISTERED_PLAYER_RANK)
@@ -83,7 +83,7 @@ public class PlayerService {
     }
 
     @Transactional
-    public void registerPlayer(DispatcherBot bot, Player player, String username) {
+    public void registerPlayer(final DispatcherBot bot, final Player player, final String username) {
         player.setUsername(username);
         player.setRegisteredAt(Timestamp.from(Instant.now()));
         save(player);
@@ -91,9 +91,9 @@ public class PlayerService {
         playerBotService.registerPlayerBot(player);
     }
 
-    public boolean isAccurateUsername(String username) {
+    public boolean isAccurateUsername(final String username) {
         if (username.length() >= MINIMUM_USERNAME_LENGTH && username.length() <= MAXIMUM_USERNAME_LENGTH) {
-            for (char c : username.toCharArray()) {
+            for (final char c : username.toCharArray()) {
                 if (USERNAME_ALPHABET.indexOf(c) == -1) {
                     return false;
                 }
@@ -103,8 +103,8 @@ public class PlayerService {
         return false;
     }
 
-    public String generateRankInfo(Long chatId) {
-        StringBuilder rankInfo = new StringBuilder();
+    public String generateRankInfo(final Long chatId) {
+        final StringBuilder rankInfo = new StringBuilder();
         rankInfo.append(generateLeadersRankInfo());
         if (existsByChatId(chatId)) {
             rankInfo.append(RANK_INFO_SEPARATOR);
@@ -114,8 +114,8 @@ public class PlayerService {
     }
 
     private String generateLeadersRankInfo() {
-        StringBuilder leadersRankInfo = new StringBuilder();
-        List<Player> leaders = findAllOrderedByRankDesc(LEADERS_COUNT);
+        final StringBuilder leadersRankInfo = new StringBuilder();
+        final List<Player> leaders = findAllOrderedByRankDesc(LEADERS_COUNT);
         if (!leaders.isEmpty()) {
             for (int i = 0; i < leaders.size(); i++) {
                 if (i == 0) {
@@ -127,7 +127,7 @@ public class PlayerService {
                 if (i == 2) {
                     leadersRankInfo.append("\uD83E\uDD49");
                 }
-                Player leader = leaders.get(i);
+                final Player leader = leaders.get(i);
                 leadersRankInfo.append(String.format(LEADER_RANK_INFO, leader.getUsername(), leader.getRank(),
                         playerStatisticsService.calculateWinRate(playerStatisticsService.findByPlayerId(leader.getId()))));
             }
@@ -137,36 +137,36 @@ public class PlayerService {
         return leadersRankInfo.toString();
     }
 
-    private String generatePlayerRankInfo(Player player) {
-        List<Player> allPlayers = findAllOrderedByRankDesc();
-        Long place = allPlayers.indexOf(player) + 1L;
+    private String generatePlayerRankInfo(final Player player) {
+        final List<Player> allPlayers = findAllOrderedByRankDesc();
+        final Long place = allPlayers.indexOf(player) + 1L;
         return String.format(PLAYER_RANK_INFO, place, player.getRank(),
                 playerStatisticsService.calculateWinRate(playerStatisticsService.findByPlayerId(player.getId())));
     }
 
-    public String generatePlayerProfileInfo(Player player) {
+    public String generatePlayerProfileInfo(final Player player) {
         return String.format(PLAYER_PROFILE_INFO, player.getUsername(), player.getRank(),
                 playerStatisticsService.calculateWinRate(playerStatisticsService.findByPlayerId(player.getId())),
                 player.getRegisteredAt().toLocalDateTime().format(DateTimeFormatter.ofPattern("dd.MM.yyyy [HH:mm]")));
     }
 
     @Transactional
-    public void changeUsername(Player player, String username) {
+    public void changeUsername(final Player player, final String username) {
         player.setUsername(username);
         save(player);
         playerBotService.applyLastState(player, PlayerBotState.NO_STATE);
     }
 
     @Transactional
-    public void refreshEggs(DispatcherBot bot, Long chatId) {
-        Player player = findByChatId(chatId);
+    public void refreshEggs(final DispatcherBot bot, final Long chatId) {
+        final Player player = findByChatId(chatId);
         eggService.unbindAllByOwner(player);
         eggService.generateStartInventory(bot, player);
     }
 
     @Transactional
-    public void dropPlayerProfile(Long chatId) {
-        Player player = findByChatId(chatId);
+    public void dropPlayerProfile(final Long chatId) {
+        final Player player = findByChatId(chatId);
         matchMakingBattleService.deleteAllByPlayer(player);
         privateBattleService.deleteAllByPlayer(player);
         playerBattleService.deleteAllByPlayer(player);
@@ -176,13 +176,13 @@ public class PlayerService {
     }
 
     @Transactional
-    public void calculateEloRanks(DispatcherBot bot, Player winner, Player looser) {
+    public void calculateEloRanks(final DispatcherBot bot, final Player winner, final Player looser) {
         int winnerPlayerRank = winner.getRank();
         int looserPlayerRank = looser.getRank();
-        double awaitFirstPlayerRankDifference = 1 / (1 + Math.pow(10, (looserPlayerRank - winnerPlayerRank) / ELO_COEFFICIENT));
-        double awaitSecondPlayerRankDifference = 1 / (1 + Math.pow(10, (winnerPlayerRank - looserPlayerRank) / ELO_COEFFICIENT));
-        int firstPlayerRankDifference = Math.toIntExact(Math.round((MAXIMUM_POINT_DIFFERENCE) * (WINNER_COEFFICIENT - awaitFirstPlayerRankDifference)));
-        int secondPlayerRankDifference = Math.toIntExact(Math.round((MAXIMUM_POINT_DIFFERENCE) * (LOOSER_COEFFICIENT - awaitSecondPlayerRankDifference)));
+        final double awaitFirstPlayerRankDifference = 1 / (1 + Math.pow(10, (looserPlayerRank - winnerPlayerRank) / ELO_COEFFICIENT));
+        final double awaitSecondPlayerRankDifference = 1 / (1 + Math.pow(10, (winnerPlayerRank - looserPlayerRank) / ELO_COEFFICIENT));
+        final int firstPlayerRankDifference = Math.toIntExact(Math.round((MAXIMUM_POINT_DIFFERENCE) * (WINNER_COEFFICIENT - awaitFirstPlayerRankDifference)));
+        final int secondPlayerRankDifference = Math.toIntExact(Math.round((MAXIMUM_POINT_DIFFERENCE) * (LOOSER_COEFFICIENT - awaitSecondPlayerRankDifference)));
         winnerPlayerRank = winnerPlayerRank + firstPlayerRankDifference;
         looserPlayerRank = looserPlayerRank + secondPlayerRankDifference;
         if (looserPlayerRank < 0) {

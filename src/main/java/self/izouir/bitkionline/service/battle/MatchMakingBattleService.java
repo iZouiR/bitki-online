@@ -14,19 +14,19 @@ public class MatchMakingBattleService {
     private final PlayerBattleService playerBattleService;
     private final MatchMakingBattleRepository matchMakingBattleRepository;
 
-    public void save(MatchMakingBattle matchMakingBattle) {
+    public void save(final MatchMakingBattle matchMakingBattle) {
         matchMakingBattleRepository.save(matchMakingBattle);
     }
 
     @Transactional
-    public void deleteAllByPlayer(Player player) {
+    public void deleteAllByPlayer(final Player player) {
         matchMakingBattleRepository.deleteAllByPlayerBattle_FirstPlayerOrPlayerBattle_SecondPlayer(player, player);
     }
 
     @Transactional
-    public MatchMakingBattle create(Player player, Player opponent) {
-        PlayerBattle playerBattle = playerBattleService.create(player, opponent);
-        MatchMakingBattle matchMakingBattle = MatchMakingBattle.builder()
+    public MatchMakingBattle create(final Player player, final Player opponent) {
+        final PlayerBattle playerBattle = playerBattleService.create(player, opponent);
+        final MatchMakingBattle matchMakingBattle = MatchMakingBattle.builder()
                 .playerBattle(playerBattle)
                 .build();
         save(matchMakingBattle);

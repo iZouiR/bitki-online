@@ -16,17 +16,17 @@ import java.util.Optional;
 public class PlayerStatisticsService {
     private final PlayerStatisticsRepository playerStatisticsRepository;
 
-    public PlayerStatistics findByPlayerId(Long playerId) {
-        Optional<PlayerStatistics> optional = playerStatisticsRepository.findByPlayerId(playerId);
+    public PlayerStatistics findByPlayerId(final Long playerId) {
+        final Optional<PlayerStatistics> optional = playerStatisticsRepository.findByPlayerId(playerId);
         return optional.orElseThrow(() -> new PlayerStatisticsNotFoundException("Player statistics with playerId = " + playerId + " was not found"));
     }
 
-    public void save(PlayerStatistics playerStatistics) {
+    public void save(final PlayerStatistics playerStatistics) {
         playerStatisticsRepository.save(playerStatistics);
     }
 
-    public void createPlayerStatistics(Player player) {
-        PlayerStatistics playerStatistics = PlayerStatistics.builder()
+    public void createPlayerStatistics(final Player player) {
+        final PlayerStatistics playerStatistics = PlayerStatistics.builder()
                 .playerId(player.getId())
                 .totalDamageDealt(0L)
                 .totalDamageTaken(0L)
@@ -48,20 +48,20 @@ public class PlayerStatisticsService {
         save(playerStatistics);
     }
 
-    public void applyDealtDamage(Player player, Integer damage) {
-        PlayerStatistics playerStatistics = findByPlayerId(player.getId());
+    public void applyDealtDamage(final Player player, final Integer damage) {
+        final PlayerStatistics playerStatistics = findByPlayerId(player.getId());
         playerStatistics.setTotalDamageDealt(playerStatistics.getTotalDamageDealt() + damage);
         save(playerStatistics);
     }
 
-    public void applyTakenDamage(Player player, Integer damage) {
-        PlayerStatistics playerStatistics = findByPlayerId(player.getId());
+    public void applyTakenDamage(final Player player, final Integer damage) {
+        final PlayerStatistics playerStatistics = findByPlayerId(player.getId());
         playerStatistics.setTotalDamageTaken(playerStatistics.getTotalDamageTaken() + damage);
         save(playerStatistics);
     }
 
-    public void applyRankDifference(Player player, int rankDifference) {
-        PlayerStatistics playerStatistics = findByPlayerId(player.getId());
+    public void applyRankDifference(final Player player, final int rankDifference) {
+        final PlayerStatistics playerStatistics = findByPlayerId(player.getId());
         if (rankDifference > 0) {
             playerStatistics.setTotalRankPointsEarned(playerStatistics.getTotalRankPointsEarned() + rankDifference);
         }
@@ -71,20 +71,20 @@ public class PlayerStatisticsService {
         save(playerStatistics);
     }
 
-    public void incrementTotalBattlesPlayed(Player player) {
-        PlayerStatistics playerStatistics = findByPlayerId(player.getId());
+    public void incrementTotalBattlesPlayed(final Player player) {
+        final PlayerStatistics playerStatistics = findByPlayerId(player.getId());
         playerStatistics.setTotalBattlesPlayed(playerStatistics.getTotalBattlesPlayed() + 1);
         save(playerStatistics);
     }
 
-    public void incrementTotalBattlesWon(Player player) {
-        PlayerStatistics playerStatistics = findByPlayerId(player.getId());
+    public void incrementTotalBattlesWon(final Player player) {
+        final PlayerStatistics playerStatistics = findByPlayerId(player.getId());
         playerStatistics.setTotalBattlesWon(playerStatistics.getTotalBattlesWon() + 1);
         save(playerStatistics);
     }
 
-    public void applyAttackChoice(Player player, EggAttackType attackType) {
-        PlayerStatistics playerStatistics = findByPlayerId(player.getId());
+    public void applyAttackChoice(final Player player, final EggAttackType attackType) {
+        final PlayerStatistics playerStatistics = findByPlayerId(player.getId());
         switch (attackType) {
             case HEAD -> playerStatistics.setHeadAttackChosen(playerStatistics.getHeadAttackChosen() + 1);
             case SIDE -> playerStatistics.setSideAttackChosen(playerStatistics.getSideAttackChosen() + 1);
@@ -93,8 +93,8 @@ public class PlayerStatisticsService {
         save(playerStatistics);
     }
 
-    public void applyAttackSuccess(Player player, EggAttackType attackType) {
-        PlayerStatistics playerStatistics = findByPlayerId(player.getId());
+    public void applyAttackSuccess(final Player player, final EggAttackType attackType) {
+        final PlayerStatistics playerStatistics = findByPlayerId(player.getId());
         switch (attackType) {
             case HEAD -> playerStatistics.setHeadAttackSucceed(playerStatistics.getHeadAttackSucceed() + 1);
             case SIDE -> playerStatistics.setSideAttackSucceed(playerStatistics.getSideAttackSucceed() + 1);
@@ -103,8 +103,8 @@ public class PlayerStatisticsService {
         save(playerStatistics);
     }
 
-    public void incrementEggsObtained(Player player, Egg egg) {
-        PlayerStatistics playerStatistics = findByPlayerId(player.getId());
+    public void incrementEggsObtained(final Player player, final Egg egg) {
+        final PlayerStatistics playerStatistics = findByPlayerId(player.getId());
         playerStatistics.setTotalEggsObtained(playerStatistics.getTotalEggsObtained() + 1);
         switch (egg.getType()) {
             case HOLY -> playerStatistics.setHolyEggsObtained(playerStatistics.getHolyEggsObtained() + 1);
@@ -114,19 +114,19 @@ public class PlayerStatisticsService {
         save(playerStatistics);
     }
 
-    public Integer calculateWinRate(PlayerStatistics playerStatistics) {
+    public Integer calculateWinRate(final PlayerStatistics playerStatistics) {
         return Math.toIntExact(Math.round(100.0 * playerStatistics.getTotalBattlesWon() / playerStatistics.getTotalBattlesPlayed()));
     }
 
-    public Integer calculateHeadAttackSuccessRate(PlayerStatistics playerStatistics) {
+    public Integer calculateHeadAttackSuccessRate(final PlayerStatistics playerStatistics) {
         return Math.toIntExact(Math.round(100.0 * playerStatistics.getHeadAttackSucceed() / playerStatistics.getHeadAttackChosen()));
     }
 
-    public Integer calculateSideAttackSuccessRate(PlayerStatistics playerStatistics) {
+    public Integer calculateSideAttackSuccessRate(final PlayerStatistics playerStatistics) {
         return Math.toIntExact(Math.round(100.0 * playerStatistics.getSideAttackSucceed() / playerStatistics.getSideAttackChosen()));
     }
 
-    public Integer calculateAssAttackSuccessRate(PlayerStatistics playerStatistics) {
+    public Integer calculateAssAttackSuccessRate(final PlayerStatistics playerStatistics) {
         return Math.toIntExact(Math.round(100.0 * playerStatistics.getAssAttackSucceed() / playerStatistics.getAssAttackChosen()));
     }
 }

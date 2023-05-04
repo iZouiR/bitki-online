@@ -30,7 +30,7 @@ public class EggsCommander {
     private final PlayerService playerService;
     private final PlayerBotService playerBotService;
 
-    public void processCallbackQuery(DispatcherBot bot, Long chatId, Integer messageId, String callbackData) {
+    public void processCallbackQuery(final DispatcherBot bot, final Long chatId, final Integer messageId, final String callbackData) {
         switch (callbackData) {
             case "EGGS_SWITCH_FORWARD" -> {
                 deleteMessage(bot, chatId, messageId);
@@ -46,9 +46,9 @@ public class EggsCommander {
         }
     }
 
-    public void eggs(DispatcherBot bot, Long chatId) {
+    public void eggs(final DispatcherBot bot, final Long chatId) {
         if (playerService.existsByChatId(chatId)) {
-            Player player = playerService.findByChatId(chatId);
+            final Player player = playerService.findByChatId(chatId);
             if (player.getRegisteredAt() != null) {
                 sendInventory(bot, chatId);
             } else {
@@ -59,18 +59,18 @@ public class EggsCommander {
         }
     }
 
-    private void sendInventory(DispatcherBot bot, Long chatId) {
-        Player player = playerService.findByChatId(chatId);
-        PlayerBot playerBot = playerBotService.findByPlayerId(player.getId());
-        List<Egg> playerInventory = eggService.findAllByOwner(player);
+    private void sendInventory(final DispatcherBot bot, final Long chatId) {
+        final Player player = playerService.findByChatId(chatId);
+        final PlayerBot playerBot = playerBotService.findByPlayerId(player.getId());
+        final List<Egg> playerInventory = eggService.findAllByOwner(player);
         if (playerInventory.size() != playerBot.getLastInventorySize()) {
             playerBot.setLastInventoryIndex(0);
             playerBot.setLastInventorySize(playerInventory.size());
             playerBotService.save(playerBot);
         }
         if (!playerInventory.isEmpty()) {
-            Integer inventoryIndex = playerBot.getLastInventoryIndex();
-            SendSticker sticker = SendSticker.builder()
+            final Integer inventoryIndex = playerBot.getLastInventoryIndex();
+            final SendSticker sticker = SendSticker.builder()
                     .chatId(String.valueOf(chatId))
                     .sticker(new InputFile(Path.of(playerInventory.get(inventoryIndex).getImagePath()).toFile()))
                     .build();
@@ -81,12 +81,12 @@ public class EggsCommander {
         }
     }
 
-    private ReplyKeyboard generateReplyMarkup(Egg egg) {
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+    private ReplyKeyboard generateReplyMarkup(final Egg egg) {
+        final InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        final List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
-        List<InlineKeyboardButton> eggDescriptionRow = new ArrayList<>();
-        InlineKeyboardButton eggDescriptionButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> eggDescriptionRow = new ArrayList<>();
+        final InlineKeyboardButton eggDescriptionButton = new InlineKeyboardButton();
         if (egg.getIsCracked()) {
             eggDescriptionButton.setText(String.format(CRACKED_EGG_MESSAGE, egg.getName()));
         } else {
@@ -95,24 +95,24 @@ public class EggsCommander {
         eggDescriptionButton.setCallbackData("IGNORE");
         eggDescriptionRow.add(eggDescriptionButton);
 
-        List<InlineKeyboardButton> eggStatsRow = new ArrayList<>();
-        InlineKeyboardButton eggStatsButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> eggStatsRow = new ArrayList<>();
+        final InlineKeyboardButton eggStatsButton = new InlineKeyboardButton();
         eggStatsButton.setText(eggService.generateStatsInfo(egg));
         eggStatsButton.setCallbackData("IGNORE");
         eggStatsRow.add(eggStatsButton);
 
-        List<InlineKeyboardButton> switchRow = new ArrayList<>();
-        InlineKeyboardButton switchBackwardButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> switchRow = new ArrayList<>();
+        final InlineKeyboardButton switchBackwardButton = new InlineKeyboardButton();
         switchBackwardButton.setText("◀️");
         switchBackwardButton.setCallbackData("EGGS_SWITCH_BACKWARD");
         switchRow.add(switchBackwardButton);
-        InlineKeyboardButton switchForwardButton = new InlineKeyboardButton();
+        final InlineKeyboardButton switchForwardButton = new InlineKeyboardButton();
         switchForwardButton.setText("▶️");
         switchForwardButton.setCallbackData("EGGS_SWITCH_FORWARD");
         switchRow.add(switchForwardButton);
 
-        List<InlineKeyboardButton> closeRow = new ArrayList<>();
-        InlineKeyboardButton eggsCloseButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> closeRow = new ArrayList<>();
+        final InlineKeyboardButton eggsCloseButton = new InlineKeyboardButton();
         eggsCloseButton.setText(CLOSE_BUTTON_TEXT);
         eggsCloseButton.setCallbackData("EGGS_CLOSE");
         closeRow.add(eggsCloseButton);

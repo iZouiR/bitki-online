@@ -30,20 +30,20 @@ public class SupportCommander {
     private final PlayerBotService playerBotService;
     private final SupportMessageService supportMessageService;
 
-    public void processCallbackQuery(DispatcherBot bot, Long chatId, Integer messageId, String callbackData) {
+    public void processCallbackQuery(final DispatcherBot bot, final Long chatId, final Integer messageId, final String callbackData) {
         if (callbackData.equals("SUPPORT_CLOSE")) {
-            Player player = playerService.findByChatId(chatId);
+            final Player player = playerService.findByChatId(chatId);
             playerBotService.applyLastState(player, PlayerBotState.NO_STATE);
             deleteMessage(bot, chatId, messageId);
         }
     }
 
-    public void support(DispatcherBot bot, Long chatId) {
+    public void support(final DispatcherBot bot, final Long chatId) {
         if (playerService.existsByChatId(chatId)) {
-            Player player = playerService.findByChatId(chatId);
+            final Player player = playerService.findByChatId(chatId);
             if (player.getRegisteredAt() != null) {
                 playerBotService.applyLastState(player, PlayerBotState.AWAIT_SUPPORT_MESSAGE);
-                SendMessage message = SendMessage.builder()
+                final SendMessage message = SendMessage.builder()
                         .chatId(String.valueOf(chatId))
                         .text(AWAIT_SUPPORT_MESSAGE_MESSAGE)
                         .build();
@@ -57,10 +57,10 @@ public class SupportCommander {
         }
     }
 
-    public boolean publishSupportMessage(DispatcherBot bot, Long chatId, String message) {
+    public boolean publishSupportMessage(final DispatcherBot bot, final Long chatId, final String message) {
         if (playerService.existsByChatId(chatId)) {
-            Player player = playerService.findByChatId(chatId);
-            PlayerBot playerBot = playerBotService.findByPlayerId(player.getId());
+            final Player player = playerService.findByChatId(chatId);
+            final PlayerBot playerBot = playerBotService.findByPlayerId(player.getId());
             if (playerBot.getLastState() == PlayerBotState.AWAIT_SUPPORT_MESSAGE) {
                 if (supportMessageService.isAccurateSupportMessage(message)) {
                     supportMessageService.publishSupportMessage(player, message);
@@ -75,11 +75,11 @@ public class SupportCommander {
     }
 
     private InlineKeyboardMarkup generateReplyMarkup() {
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        final InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        final List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
-        List<InlineKeyboardButton> closeRow = new ArrayList<>();
-        InlineKeyboardButton closeButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> closeRow = new ArrayList<>();
+        final InlineKeyboardButton closeButton = new InlineKeyboardButton();
         closeButton.setText(CLOSE_BUTTON_TEXT);
         closeButton.setCallbackData("SUPPORT_CLOSE");
         closeRow.add(closeButton);

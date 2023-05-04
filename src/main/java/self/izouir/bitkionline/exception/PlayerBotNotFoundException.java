@@ -1,7 +1,7 @@
 package self.izouir.bitkionline.exception;
 
 public class PlayerBotNotFoundException extends RuntimeException {
-    public PlayerBotNotFoundException(String message) {
+    public PlayerBotNotFoundException(final String message) {
         super(message);
     }
 }

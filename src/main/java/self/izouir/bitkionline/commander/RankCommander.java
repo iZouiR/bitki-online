@@ -21,10 +21,10 @@ import static self.izouir.bitkionline.util.constant.ReplyMarkupConstant.REFRESH_
 public class RankCommander {
     private final PlayerService playerService;
 
-    public void processCallbackQuery(DispatcherBot bot, Long chatId, Integer messageId, String callbackData) {
+    public void processCallbackQuery(final DispatcherBot bot, final Long chatId, final Integer messageId, final String callbackData) {
         switch (callbackData) {
             case "RANK_REFRESH" -> {
-                EditMessageText message = EditMessageText.builder()
+                final EditMessageText message = EditMessageText.builder()
                         .chatId(String.valueOf(chatId))
                         .messageId(messageId)
                         .text(playerService.generateRankInfo(chatId))
@@ -36,8 +36,8 @@ public class RankCommander {
         }
     }
 
-    public void rank(DispatcherBot bot, Long chatId) {
-        SendMessage message = SendMessage.builder()
+    public void rank(final DispatcherBot bot, final Long chatId) {
+        final SendMessage message = SendMessage.builder()
                 .chatId(String.valueOf(chatId))
                 .text(playerService.generateRankInfo(chatId))
                 .build();
@@ -46,17 +46,17 @@ public class RankCommander {
     }
 
     private InlineKeyboardMarkup generateReplyMarkup() {
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        final InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        final List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
-        List<InlineKeyboardButton> refreshRow = new ArrayList<>();
-        InlineKeyboardButton refreshButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> refreshRow = new ArrayList<>();
+        final InlineKeyboardButton refreshButton = new InlineKeyboardButton();
         refreshButton.setText(REFRESH_BUTTON_TEXT);
         refreshButton.setCallbackData("RANK_REFRESH");
         refreshRow.add(refreshButton);
 
-        List<InlineKeyboardButton> closeRow = new ArrayList<>();
-        InlineKeyboardButton closeButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> closeRow = new ArrayList<>();
+        final InlineKeyboardButton closeButton = new InlineKeyboardButton();
         closeButton.setText(CLOSE_BUTTON_TEXT);
         closeButton.setCallbackData("RANK_CLOSE");
         closeRow.add(closeButton);

@@ -19,13 +19,13 @@ public class SupportMessageService {
     private final PlayerBotService playerBotService;
     private final SupportMessageRepository supportMessageRepository;
 
-    public void save(SupportMessage supportMessage) {
+    public void save(final SupportMessage supportMessage) {
         supportMessageRepository.save(supportMessage);
     }
 
-    public boolean isAccurateSupportMessage(String message) {
+    public boolean isAccurateSupportMessage(final String message) {
         if (message.length() >= MINIMUM_SUPPORT_MESSAGE_LENGTH && message.length() <= MAXIMUM_SUPPORT_MESSAGE_LENGTH) {
-            for (char c : message.toCharArray()) {
+            for (final char c : message.toCharArray()) {
                 if (SUPPORT_MESSAGE_ALPHABET.indexOf(c) == -1) {
                     return false;
                 }
@@ -35,8 +35,8 @@ public class SupportMessageService {
         return false;
     }
 
-    public void publishSupportMessage(Player player, String message) {
-        SupportMessage supportMessage = SupportMessage.builder()
+    public void publishSupportMessage(final Player player, final String message) {
+        final SupportMessage supportMessage = SupportMessage.builder()
                 .chatId(player.getChatId())
                 .message(message)
                 .sentAt(Timestamp.from(Instant.now()))

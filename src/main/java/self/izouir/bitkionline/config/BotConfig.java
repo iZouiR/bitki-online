@@ -20,9 +20,9 @@ public class BotConfig {
     @EventListener({ContextRefreshedEvent.class})
     public void init() {
         try {
-            TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
+            final TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
             telegramBotsApi.registerBot(dispatcherBot);
-        } catch (TelegramApiException e) {
+        } catch (final TelegramApiException e) {
             LOGGER.error(e.getMessage());
         }
     }

@@ -38,37 +38,37 @@ public class EggService {
     private final EggRepository eggRepository;
     private final Random random = new Random();
 
-    public Egg findById(Long id) {
+    public Egg findById(final Long id) {
         return eggRepository.findById(id).orElseThrow(
                 () -> new EggNotFoundException("Egg with id = " + id + " wasn't found"));
     }
 
-    public List<Egg> findAllByOwner(Player owner) {
+    public List<Egg> findAllByOwner(final Player owner) {
         return eggRepository.findAllByOwner(owner);
     }
 
-    public List<Egg> findAllByOwnerWhereIsNotCracked(Player player) {
-        List<Egg> inventory = eggRepository.findAllByOwner(player);
+    public List<Egg> findAllByOwnerWhereIsNotCracked(final Player player) {
+        final List<Egg> inventory = eggRepository.findAllByOwner(player);
         return inventory.stream().filter(egg -> !egg.getIsCracked()).collect(Collectors.toList());
     }
 
-    public void save(Egg egg) {
+    public void save(final Egg egg) {
         eggRepository.save(egg);
     }
 
     @Transactional
-    public void deleteAllByOwner(Player owner) {
+    public void deleteAllByOwner(final Player owner) {
         eggRepository.deleteAllByOwner(owner);
     }
 
     @Transactional
-    public void unbindAllByOwner(Player owner) {
+    public void unbindAllByOwner(final Player owner) {
         eggRepository.unbindAllByOwner(owner);
     }
 
-    public void generateStartInventory(DispatcherBot bot, Player player) {
+    public void generateStartInventory(final DispatcherBot bot, final Player player) {
         for (int i = 0; i < START_INVENTORY_SIZE; i++) {
-            Egg egg = generateEgg();
+            final Egg egg = generateEgg();
             egg.setOwner(player);
             save(egg);
             playerStatisticsService.incrementEggsObtained(player, egg);
@@ -78,8 +78,8 @@ public class EggService {
     }
 
     private Egg generateEgg() {
-        Egg egg;
-        int chance = random.nextInt(100);
+        final Egg egg;
+        final int chance = random.nextInt(100);
         if (chance < WEAK_EGG_GENERATION_CHANCE) {
             egg = generateWeakEgg();
         } else if (chance < WEAK_EGG_GENERATION_CHANCE + STRONG_EGG_GENERATION_CHANCE) {
@@ -126,32 +126,32 @@ public class EggService {
                 .build();
     }
 
-    private String generateImagePath(EggType eggType) {
-        Path typedEggImagePath = Path.of(BASE_EGG_IMAGE_PATH, eggType.toString().toLowerCase());
-        try (Stream<Path> eggImagePathStream = Files.list(typedEggImagePath)) {
-            List<String> eggImagePaths = eggImagePathStream
+    private String generateImagePath(final EggType eggType) {
+        final Path typedEggImagePath = Path.of(BASE_EGG_IMAGE_PATH, eggType.toString().toLowerCase());
+        try (final Stream<Path> eggImagePathStream = Files.list(typedEggImagePath)) {
+            final List<String> eggImagePaths = eggImagePathStream
                     .map(Path::toString)
                     .toList();
             if (!eggImagePaths.isEmpty()) {
                 return eggImagePaths.get(random.nextInt(eggImagePaths.size()));
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOGGER.error(e.getMessage());
         }
         throw new ImageNotFoundException("Egg images for egg type " + eggType.toString().toLowerCase() + " weren't found");
     }
 
-    private String generateName(Egg egg) {
+    private String generateName(final Egg egg) {
         String name = egg.getImagePath();
-        for (EggType eggType : EggType.values()) {
+        for (final EggType eggType : EggType.values()) {
             name = name.replace(BASE_EGG_IMAGE_PATH + eggType.toString().toLowerCase() + "/", "");
         }
         name = name.replace(".png", "");
         return name;
     }
 
-    public String generateStatsInfo(Egg egg) {
-        StringBuilder statsInfo = new StringBuilder();
+    public String generateStatsInfo(final Egg egg) {
+        final StringBuilder statsInfo = new StringBuilder();
         statsInfo.append(egg.getEndurance());
         if (egg.getEndurance() >= GREAT_ENDURANCE) {
             statsInfo.append("🛡 ");
@@ -179,7 +179,7 @@ public class EggService {
         return statsInfo.toString();
     }
 
-    public Integer generateDamage(Egg egg, EggAttackType attackType) {
+    public Integer generateDamage(final Egg egg, final EggAttackType attackType) {
         double damage = egg.getPower();
         switch (attackType) {
             case HEAD -> {
@@ -198,7 +198,7 @@ public class EggService {
         return Math.toIntExact(Math.round(damage));
     }
 
-    public Integer generateReplyDamage(Egg egg, EggAttackType attackType) {
+    public Integer generateReplyDamage(final Egg egg, final EggAttackType attackType) {
         double replyDamage = egg.getPower() + MINIMUM_REPLY_DAMAGE;
         switch (attackType) {
             case HEAD ->
@@ -213,7 +213,7 @@ public class EggService {
         return Math.toIntExact(Math.round(replyDamage));
     }
 
-    public Integer generateChanceOfAttack(Egg attackerEgg, Egg defenderEgg, EggAttackType attackType) {
+    public Integer generateChanceOfAttack(final Egg attackerEgg, final Egg defenderEgg, final EggAttackType attackType) {
         double chance = 100.0 * attackerEgg.getLuck() / (attackerEgg.getLuck() + defenderEgg.getLuck());
         switch (attackType) {
             case HEAD -> chance *= HEAD_ATTACK_CHANCE_COEFFICIENT;
@@ -227,7 +227,7 @@ public class EggService {
         return Math.toIntExact(Math.round(chance));
     }
 
-    public void applyDamage(Egg egg, Integer damage) {
+    public void applyDamage(final Egg egg, final Integer damage) {
         egg.setEndurance(egg.getEndurance() - damage);
         if (egg.getEndurance() <= 0) {
             egg.setEndurance(0);

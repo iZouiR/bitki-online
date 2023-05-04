@@ -1,7 +1,7 @@
 package self.izouir.bitkionline.exception;
 
 public class PlayerNotFoundException extends RuntimeException {
-    public PlayerNotFoundException(String message) {
+    public PlayerNotFoundException(final String message) {
         super(message);
     }
 }

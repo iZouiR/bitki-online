@@ -16,14 +16,14 @@ import static self.izouir.bitkionline.util.constant.commander.HelpCommanderConst
 
 @Component
 public class HelpCommander {
-    public void processCallbackQuery(DispatcherBot bot, Long chatId, Integer messageId, String callbackData) {
+    public void processCallbackQuery(final DispatcherBot bot, final Long chatId, final Integer messageId, final String callbackData) {
         if (callbackData.equals("HELP_CLOSE")) {
             deleteMessage(bot, chatId, messageId);
         }
     }
 
-    public void help(DispatcherBot bot, Long chatId) {
-        SendMessage message = SendMessage.builder()
+    public void help(final DispatcherBot bot, final Long chatId) {
+        final SendMessage message = SendMessage.builder()
                 .chatId(String.valueOf(chatId))
                 .text(HELP_MESSAGE)
                 .build();
@@ -32,11 +32,11 @@ public class HelpCommander {
     }
 
     private InlineKeyboardMarkup generateReplyMarkup() {
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        final InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        final List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
-        List<InlineKeyboardButton> closeRow = new ArrayList<>();
-        InlineKeyboardButton closeButton = new InlineKeyboardButton();
+        final List<InlineKeyboardButton> closeRow = new ArrayList<>();
+        final InlineKeyboardButton closeButton = new InlineKeyboardButton();
         closeButton.setText(CLOSE_BUTTON_TEXT);
         closeButton.setCallbackData("HELP_CLOSE");
         closeRow.add(closeButton);

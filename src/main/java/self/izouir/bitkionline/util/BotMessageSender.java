@@ -15,63 +15,63 @@ import java.nio.file.Path;
 @Slf4j
 @UtilityClass
 public class BotMessageSender {
-    public static void sendMessage(TelegramLongPollingBot bot, Long chatId, String text) {
+    public static void sendMessage(final TelegramLongPollingBot bot, final Long chatId, final String text) {
         try {
             bot.executeAsync(SendMessage.builder()
                     .chatId(String.valueOf(chatId))
                     .text(text)
                     .build());
-        } catch (TelegramApiException e) {
+        } catch (final TelegramApiException e) {
             log.error(e.getMessage());
         }
     }
 
-    public static void sendMessage(TelegramLongPollingBot bot, SendMessage message) {
+    public static void sendMessage(final TelegramLongPollingBot bot, final SendMessage message) {
         try {
             bot.executeAsync(message);
-        } catch (TelegramApiException e) {
+        } catch (final TelegramApiException e) {
             log.error(e.getMessage());
         }
     }
 
-    public static void sendEditMessageText(TelegramLongPollingBot bot, Long chatId, Integer messageId, String text) {
+    public static void sendEditMessageText(final TelegramLongPollingBot bot, final Long chatId, final Integer messageId, final String text) {
         try {
             bot.executeAsync(EditMessageText.builder()
                     .chatId(String.valueOf(chatId))
                     .messageId(messageId)
                     .text(text)
                     .build());
-        } catch (TelegramApiException e) {
+        } catch (final TelegramApiException e) {
             log.error(e.getMessage());
         }
     }
 
-    public static void sendEditMessageText(TelegramLongPollingBot bot, EditMessageText message) {
+    public static void sendEditMessageText(final TelegramLongPollingBot bot, final EditMessageText message) {
         try {
             bot.executeAsync(message);
-        } catch (TelegramApiException e) {
+        } catch (final TelegramApiException e) {
             log.error(e.getMessage());
         }
     }
 
-    public static void sendSticker(TelegramLongPollingBot bot, Long chatId, Path image) {
+    public static void sendSticker(final TelegramLongPollingBot bot, final Long chatId, final Path image) {
         bot.executeAsync(SendSticker.builder()
                 .chatId(String.valueOf(chatId))
                 .sticker(new InputFile(image.toFile()))
                 .build());
     }
 
-    public static void sendSticker(TelegramLongPollingBot bot, SendSticker sticker) {
+    public static void sendSticker(final TelegramLongPollingBot bot, final SendSticker sticker) {
         bot.executeAsync(sticker);
     }
 
-    public static void deleteMessage(TelegramLongPollingBot bot, Long chatId, Integer messageId) {
+    public static void deleteMessage(final TelegramLongPollingBot bot, final Long chatId, final Integer messageId) {
         try {
             bot.executeAsync(DeleteMessage.builder()
                     .chatId(String.valueOf(chatId))
                     .messageId(messageId)
                     .build());
-        } catch (TelegramApiException e) {
+        } catch (final TelegramApiException e) {
             log.error(e.getMessage());
         }
     }
