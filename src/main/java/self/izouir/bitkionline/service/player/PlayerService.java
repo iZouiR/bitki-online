@@ -63,7 +63,7 @@ public class PlayerService {
         playerRepository.delete(player);
     }
 
-    public void setIsPlaying(Long chatId, boolean isPlaying) {
+    public void applyIsPlaying(Long chatId, boolean isPlaying) {
         Player player = findByChatId(chatId);
         player.setIsPlaying(isPlaying);
         save(player);
@@ -154,7 +154,7 @@ public class PlayerService {
     public void changeUsername(Player player, String username) {
         player.setUsername(username);
         save(player);
-        playerBotService.setLastState(player, PlayerBotState.NO_STATE);
+        playerBotService.applyLastState(player, PlayerBotState.NO_STATE);
     }
 
     @Transactional

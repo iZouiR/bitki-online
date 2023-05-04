@@ -33,7 +33,7 @@ public class SupportCommander {
     public void processCallbackQuery(DispatcherBot bot, Long chatId, Integer messageId, String callbackData) {
         if (callbackData.equals("SUPPORT_CLOSE")) {
             Player player = playerService.findByChatId(chatId);
-            playerBotService.setLastState(player, PlayerBotState.NO_STATE);
+            playerBotService.applyLastState(player, PlayerBotState.NO_STATE);
             deleteMessage(bot, chatId, messageId);
         }
     }
@@ -42,7 +42,7 @@ public class SupportCommander {
         if (playerService.existsByChatId(chatId)) {
             Player player = playerService.findByChatId(chatId);
             if (player.getRegisteredAt() != null) {
-                playerBotService.setLastState(player, PlayerBotState.AWAIT_SUPPORT_MESSAGE);
+                playerBotService.applyLastState(player, PlayerBotState.AWAIT_SUPPORT_MESSAGE);
                 SendMessage message = SendMessage.builder()
                         .chatId(String.valueOf(chatId))
                         .text(AWAIT_SUPPORT_MESSAGE_MESSAGE)

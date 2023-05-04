@@ -52,9 +52,9 @@ public class BattleCommander {
             Player player = playerService.findByChatId(chatId);
             Egg egg = eggService.findById(Long.parseLong(callbackData.substring("BATTLE_EGG_CHOICE_".length())));
             if (Objects.equals(player.getId(), battle.getFirstPlayer().getId())) {
-                playerBattleService.setFirstPlayerEgg(battle, egg);
+                playerBattleService.applyFirstPlayerEgg(battle, egg);
             } else {
-                playerBattleService.setSecondPlayerEgg(battle, egg);
+                playerBattleService.applySecondPlayerEgg(battle, egg);
             }
             sendEditMessageText(bot, chatId, messageId, EGG_CHOICE_SUCCESS_MESSAGE);
             awaitOpponentEggChoice(bot, chatId, messageId, battle);
@@ -325,8 +325,8 @@ public class BattleCommander {
     private void stopBattle(DispatcherBot bot, PlayerBattle battle) {
         Long firstPlayerChatId = battle.getFirstPlayer().getChatId();
         Long secondPlayerChatId = battle.getSecondPlayer().getChatId();
-        playerService.setIsPlaying(firstPlayerChatId, false);
-        playerService.setIsPlaying(secondPlayerChatId, false);
+        playerService.applyIsPlaying(firstPlayerChatId, false);
+        playerService.applyIsPlaying(secondPlayerChatId, false);
         CHATS_TO_BATTLES.remove(firstPlayerChatId);
         CHATS_TO_BATTLES.remove(secondPlayerChatId);
         Integer firstPlayerMessageId = CHATS_TO_MESSAGES.remove(firstPlayerChatId);
@@ -350,10 +350,10 @@ public class BattleCommander {
         Player disconnectedPlayer = playerService.findByChatId(disconnectedPlayerChatId);
         Player opponent;
         if (Objects.equals(disconnectedPlayer.getId(), battle.getFirstPlayer().getId())) {
-            playerBattleService.setIsFirstPlayerWinner(battle, false);
+            playerBattleService.applyIsFirstPlayerWinner(battle, false);
             opponent = battle.getSecondPlayer();
         } else {
-            playerBattleService.setIsFirstPlayerWinner(battle, true);
+            playerBattleService.applyIsFirstPlayerWinner(battle, true);
             opponent = battle.getFirstPlayer();
         }
         playerStatisticsService.incrementTotalBattlesWon(opponent);
@@ -368,10 +368,10 @@ public class BattleCommander {
         Player winner = playerService.findByChatId(winnerChatId);
         Player looser;
         if (Objects.equals(winner.getId(), battle.getFirstPlayer().getId())) {
-            playerBattleService.setIsFirstPlayerWinner(battle, true);
+            playerBattleService.applyIsFirstPlayerWinner(battle, true);
             looser = battle.getSecondPlayer();
         } else {
-            playerBattleService.setIsFirstPlayerWinner(battle, false);
+            playerBattleService.applyIsFirstPlayerWinner(battle, false);
             looser = battle.getFirstPlayer();
         }
         playerStatisticsService.incrementTotalBattlesWon(winner);
@@ -392,10 +392,10 @@ public class BattleCommander {
         Player looser = playerService.findByChatId(looserChatId);
         Player winner;
         if (Objects.equals(looser.getId(), battle.getFirstPlayer().getId())) {
-            playerBattleService.setIsFirstPlayerWinner(battle, true);
+            playerBattleService.applyIsFirstPlayerWinner(battle, true);
             winner = battle.getSecondPlayer();
         } else {
-            playerBattleService.setIsFirstPlayerWinner(battle, false);
+            playerBattleService.applyIsFirstPlayerWinner(battle, false);
             winner = battle.getFirstPlayer();
         }
         playerStatisticsService.incrementTotalBattlesWon(winner);

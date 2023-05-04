@@ -42,6 +42,6 @@ public class SupportMessageService {
                 .sentAt(Timestamp.from(Instant.now()))
                 .build();
         save(supportMessage);
-        playerBotService.setLastState(player, PlayerBotState.NO_STATE);
+        playerBotService.applyLastState(player, PlayerBotState.NO_STATE);
     }
 }

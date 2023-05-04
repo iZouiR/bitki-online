@@ -61,7 +61,7 @@ public class PlayCommander {
             case "PLAY_MATCH_MAKING" -> {
                 Player player = playerService.findByChatId(chatId);
                 if (!player.getIsPlaying()) {
-                    playerService.setIsPlaying(chatId, true);
+                    playerService.applyIsPlaying(chatId, true);
                     if (!MATCH_MAKING_CHATS_QUEUE.isEmpty() && !MATCH_MAKING_CHATS_QUEUE.contains(chatId)) {
                         startMatchMakingBattle(bot, chatId, messageId);
                         return;
@@ -73,7 +73,7 @@ public class PlayCommander {
             }
             case "PLAY_MATCH_MAKING_CANCEL" -> {
                 cancelMatchMakingBattle(bot, chatId, messageId);
-                playerService.setIsPlaying(chatId, false);
+                playerService.applyIsPlaying(chatId, false);
             }
             case "PLAY_PRIVATE_BATTLE" -> {
                 Player player = playerService.findByChatId(chatId);
@@ -92,7 +92,7 @@ public class PlayCommander {
             case "PLAY_PRIVATE_BATTLE_CREATE_GAME" -> {
                 Player player = playerService.findByChatId(chatId);
                 if (!player.getIsPlaying()) {
-                    playerService.setIsPlaying(chatId, true);
+                    playerService.applyIsPlaying(chatId, true);
                     PrivateBattle privateBattle = privateBattleService.createByFirstPlayer(player);
                     PRIVATE_BATTLE_CHATS_TO_LINKS.put(chatId, privateBattle.getLink());
                     awaitPrivateBattleOpponent(bot, chatId, messageId, privateBattle.getLink());
@@ -102,13 +102,13 @@ public class PlayCommander {
             }
             case "PLAY_PRIVATE_BATTLE_CREATE_GAME_CANCEL" -> {
                 cancelPrivateBattle(bot, chatId, messageId);
-                playerService.setIsPlaying(chatId, false);
+                playerService.applyIsPlaying(chatId, false);
             }
             case "PLAY_PRIVATE_BATTLE_JOIN_GAME" -> {
                 Player player = playerService.findByChatId(chatId);
                 if (!player.getIsPlaying()) {
-                    playerService.setIsPlaying(chatId, true);
-                    playerBotService.setLastState(player, PlayerBotState.AWAIT_PRIVATE_BATTLE_LINK);
+                    playerService.applyIsPlaying(chatId, true);
+                    playerBotService.applyLastState(player, PlayerBotState.AWAIT_PRIVATE_BATTLE_LINK);
                     EditMessageText message = EditMessageText.builder()
                             .chatId(String.valueOf(chatId))
                             .messageId(messageId)
@@ -122,7 +122,7 @@ public class PlayCommander {
             }
             case "PLAY_PRIVATE_BATTLE_JOIN_GAME_CANCEL" -> {
                 Player player = playerService.findByChatId(chatId);
-                playerBotService.setLastState(player, PlayerBotState.NO_STATE);
+                playerBotService.applyLastState(player, PlayerBotState.NO_STATE);
                 EditMessageText message = EditMessageText.builder()
                         .chatId(String.valueOf(chatId))
                         .messageId(messageId)
@@ -132,7 +132,7 @@ public class PlayCommander {
                 sendEditMessageText(bot, message);
             }
             case "PLAY_PRIVATE_BATTLE_CANCEL", "PLAY_OPPONENT_NOT_FOUND_CANCEL" -> {
-                playerService.setIsPlaying(chatId, false);
+                playerService.applyIsPlaying(chatId, false);
                 EditMessageText message = EditMessageText.builder()
                         .chatId(String.valueOf(chatId))
                         .messageId(messageId)
@@ -233,8 +233,8 @@ public class PlayCommander {
 
     private void startPrivateBattle(DispatcherBot bot, Long chatId, PlayerBattle playerBattle) {
         Player player = playerService.findByChatId(chatId);
-        playerBattleService.setSecondPlayer(playerBattle, player);
-        playerBotService.setLastState(player, PlayerBotState.NO_STATE);
+        playerBattleService.applySecondPlayer(playerBattle, player);
+        playerBotService.applyLastState(player, PlayerBotState.NO_STATE);
         Player opponent = playerBattle.getFirstPlayer();
         Integer opponentMessageId = PRIVATE_BATTLE_CHATS_TO_MESSAGES.remove(opponent.getChatId());
         deleteMessage(bot, opponent.getChatId(), opponentMessageId);

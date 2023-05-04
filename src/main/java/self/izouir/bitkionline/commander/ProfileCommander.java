@@ -118,7 +118,7 @@ public class ProfileCommander {
 
     private void startUsernameChange(DispatcherBot bot, Long chatId, Integer messageId) {
         Player player = playerService.findByChatId(chatId);
-        playerBotService.setLastState(player, PlayerBotState.AWAIT_NEW_USERNAME);
+        playerBotService.applyLastState(player, PlayerBotState.AWAIT_NEW_USERNAME);
         EditMessageText message = EditMessageText.builder()
                 .chatId(String.valueOf(chatId))
                 .messageId(messageId)
@@ -130,7 +130,7 @@ public class ProfileCommander {
 
     private void cancelUsernameChange(DispatcherBot bot, Long chatId, Integer messageId) {
         Player player = playerService.findByChatId(chatId);
-        playerBotService.setLastState(player, PlayerBotState.NO_STATE);
+        playerBotService.applyLastState(player, PlayerBotState.NO_STATE);
         EditMessageText message = EditMessageText.builder()
                 .chatId(String.valueOf(chatId))
                 .messageId(messageId)

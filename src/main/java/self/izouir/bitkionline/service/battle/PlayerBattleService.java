@@ -50,22 +50,22 @@ public class PlayerBattleService {
         return battle;
     }
 
-    public void setSecondPlayer(PlayerBattle playerBattle, Player player) {
+    public void applySecondPlayer(PlayerBattle playerBattle, Player player) {
         playerBattle.setSecondPlayer(player);
         save(playerBattle);
     }
 
-    public void setFirstPlayerEgg(PlayerBattle playerBattle, Egg egg) {
+    public void applyFirstPlayerEgg(PlayerBattle playerBattle, Egg egg) {
         playerBattle.setFirstPlayerEgg(egg);
         save(playerBattle);
     }
 
-    public void setSecondPlayerEgg(PlayerBattle playerBattle, Egg egg) {
+    public void applySecondPlayerEgg(PlayerBattle playerBattle, Egg egg) {
         playerBattle.setSecondPlayerEgg(egg);
         save(playerBattle);
     }
 
-    public void setIsFirstPlayerWinner(PlayerBattle playerBattle, Boolean isFirstPlayerWinner) {
+    public void applyIsFirstPlayerWinner(PlayerBattle playerBattle, Boolean isFirstPlayerWinner) {
         playerBattle.setIsFirstPlayerWinner(isFirstPlayerWinner);
         save(playerBattle);
     }

@@ -34,7 +34,7 @@ public class PlayerBotService {
         playerBotRepository.deleteByPlayerId(playerId);
     }
 
-    public void setLastState(Player player, PlayerBotState state) {
+    public void applyLastState(Player player, PlayerBotState state) {
         PlayerBot playerBot = findByPlayerId(player.getId());
         playerBot.setLastState(state);
         save(playerBot);
