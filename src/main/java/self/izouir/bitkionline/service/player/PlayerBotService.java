@@ -1,7 +1,7 @@
 package self.izouir.bitkionline.service.player;
 
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import self.izouir.bitkionline.entity.egg.Egg;
 import self.izouir.bitkionline.entity.player.Player;
@@ -14,17 +14,11 @@ import self.izouir.bitkionline.service.egg.EggService;
 import java.util.List;
 import java.util.Optional;
 
+@RequiredArgsConstructor
 @Service
 public class PlayerBotService {
     private final EggService eggService;
     private final PlayerBotRepository playerBotRepository;
-
-    @Autowired
-    public PlayerBotService(EggService eggService,
-                            PlayerBotRepository playerBotRepository) {
-        this.eggService = eggService;
-        this.playerBotRepository = playerBotRepository;
-    }
 
     public PlayerBot findByPlayerId(Long playerId) {
         Optional<PlayerBot> optional = playerBotRepository.findByPlayerId(playerId);
