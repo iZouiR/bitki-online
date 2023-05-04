@@ -1,7 +1,7 @@
 package self.izouir.bitkionline.service.player;
 
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import self.izouir.bitkionline.bot.DispatcherBot;
 import self.izouir.bitkionline.entity.player.Player;
@@ -20,8 +20,9 @@ import java.util.List;
 import java.util.Optional;
 
 import static self.izouir.bitkionline.util.BotMessageSender.sendMessage;
-import static self.izouir.bitkionline.util.constants.service.PlayerServiceConstants.*;
+import static self.izouir.bitkionline.util.constant.service.PlayerServiceConstant.*;
 
+@RequiredArgsConstructor
 @Service
 public class PlayerService {
     private final MatchMakingBattleService matchMakingBattleService;
@@ -31,23 +32,6 @@ public class PlayerService {
     private final PlayerBotService playerBotService;
     private final PlayerStatisticsService playerStatisticsService;
     private final PlayerRepository playerRepository;
-
-    @Autowired
-    public PlayerService(MatchMakingBattleService matchMakingBattleService,
-                         PlayerBattleService playerBattleService,
-                         PrivateBattleService privateBattleService,
-                         EggService eggService,
-                         PlayerBotService playerBotService,
-                         PlayerStatisticsService playerStatisticsService,
-                         PlayerRepository playerRepository) {
-        this.matchMakingBattleService = matchMakingBattleService;
-        this.playerBattleService = playerBattleService;
-        this.privateBattleService = privateBattleService;
-        this.eggService = eggService;
-        this.playerBotService = playerBotService;
-        this.playerStatisticsService = playerStatisticsService;
-        this.playerRepository = playerRepository;
-    }
 
     public Player findByChatId(Long chatId) {
         Optional<Player> optional = playerRepository.findByChatId(chatId);
