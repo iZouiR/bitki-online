@@ -1,6 +1,6 @@
 package self.izouir.bitkionline.commander;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -19,24 +19,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static self.izouir.bitkionline.util.BotMessageSender.*;
-import static self.izouir.bitkionline.util.constants.MessageConstants.*;
-import static self.izouir.bitkionline.util.constants.ReplyMarkupConstants.*;
-import static self.izouir.bitkionline.util.constants.commander.ProfileCommanderConstants.*;
+import static self.izouir.bitkionline.util.constant.MessageConstant.*;
+import static self.izouir.bitkionline.util.constant.ReplyMarkupConstant.*;
+import static self.izouir.bitkionline.util.constant.commander.ProfileCommanderConstant.*;
 
+@RequiredArgsConstructor
 @Component
 public class ProfileCommander {
     private final PlayerStatisticsService playerStatisticsService;
     private final PlayerService playerService;
     private final PlayerBotService playerBotService;
-
-    @Autowired
-    public ProfileCommander(PlayerStatisticsService playerStatisticsService,
-                            PlayerService playerService,
-                            PlayerBotService playerBotService) {
-        this.playerStatisticsService = playerStatisticsService;
-        this.playerService = playerService;
-        this.playerBotService = playerBotService;
-    }
 
     public void processCallbackQuery(DispatcherBot bot, Long chatId, Integer messageId, String callbackData) {
         switch (callbackData) {
