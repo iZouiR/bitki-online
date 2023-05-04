@@ -151,7 +151,7 @@ public class EggService {
     private String generateName(Egg egg) {
         String name = egg.getImagePath();
         for (EggType eggType : EggType.values()) {
-            name = name.replace(BASE_EGG_IMAGE_PATH + eggType.toString().toLowerCase() + "\\", "");
+            name = name.replace(BASE_EGG_IMAGE_PATH + eggType.toString().toLowerCase() + "/", "");
         }
         name = name.replace(".png", "");
         return name;
